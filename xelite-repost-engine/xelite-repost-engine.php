@@ -145,7 +145,8 @@ class XeliteRepostEngine {
         require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-assets.php';
         
         // Load admin and public classes
-        require_once $this->plugin_dir . 'admin/class-xelite-repost-engine-admin.php';
+        require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
+        require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';
         require_once $this->plugin_dir . 'public/class-xelite-repost-engine-public.php';
     }
     
@@ -198,6 +199,9 @@ class XeliteRepostEngine {
         // Create database tables
         $database = new XeliteRepostEngine_Database();
         $database->create_tables();
+        
+        // Upgrade database if needed
+        $database->upgrade_database();
         
         // Set default options
         $this->set_default_options();

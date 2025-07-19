@@ -12,15 +12,23 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Admin functionality class
+ * Admin functionality class - Main entry point
  */
 class XeliteRepostEngine_Admin extends XeliteRepostEngine_Abstract_Base {
+    
+    /**
+     * Full admin implementation instance
+     *
+     * @var XeliteRepostEngine_Admin_Settings
+     */
+    private $admin_settings;
     
     /**
      * Initialize the class
      */
     protected function init() {
-        // This will be expanded in Task 3 - Admin Settings Page
-        $this->log_debug('Admin class initialized');
+        // Initialize the full admin settings implementation
+        $this->admin_settings = new XeliteRepostEngine_Admin_Settings();
+        $this->log_debug('Admin class initialized with settings page');
     }
 } 

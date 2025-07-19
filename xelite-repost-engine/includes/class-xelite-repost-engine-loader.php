@@ -72,6 +72,8 @@ class XeliteRepostEngine_Loader {
         
         // Add admin AJAX handlers
         add_action('wp_ajax_xelite_repost_engine_admin_action', array($admin, 'handle_admin_ajax'));
+        add_action('wp_ajax_xelite_repost_engine_save_user_meta', array($admin, 'handle_save_user_meta'));
+        add_action('wp_ajax_xelite_repost_engine_preview_context', array($admin, 'handle_preview_context'));
     }
     
     /**
@@ -127,6 +129,10 @@ class XeliteRepostEngine_Loader {
         add_action('edit_user_profile', array($this, 'add_user_profile_fields'));
         add_action('personal_options_update', array($this, 'save_user_profile_fields'));
         add_action('edit_user_profile_update', array($this, 'save_user_profile_fields'));
+        
+        // Completeness check functionality
+        add_action('admin_notices', array($this, 'add_completeness_notices'));
+        add_action('wp_dashboard_setup', array($this, 'register_completeness_widget'));
     }
     
     /**
@@ -416,5 +422,21 @@ class XeliteRepostEngine_Loader {
     public function deactivate() {
         // Clear scheduled cron job
         wp_clear_scheduled_hook('xelite_repost_engine_scraper_cron');
+    }
+    
+    /**
+     * Add completeness notices
+     */
+    public function add_completeness_notices() {
+        $user_meta = $this->container->get('user_meta');
+        $user_meta->add_admin_notices();
+    }
+    
+    /**
+     * Register completeness widget
+     */
+    public function register_completeness_widget() {
+        $user_meta = $this->container->get('user_meta');
+        $user_meta->register_dashboard_widget();
     }
 } 

@@ -162,5 +162,15 @@ class XeliteRepostEngine_Container {
         $this->register('assets', function($container) {
             return new XeliteRepostEngine_Assets();
         }, true);
+        
+        // Register X Auth service
+        $this->register('x_auth', function($container) {
+            return new XeliteRepostEngine_X_Auth();
+        }, true);
+        
+        // Register X API service
+        $this->register('x_api', function($container) {
+            return new XeliteRepostEngine_X_API($container->get('x_auth'));
+        }, true);
     }
 } 

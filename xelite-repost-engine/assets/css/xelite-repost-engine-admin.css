@@ -125,4 +125,829 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Password field container */
+.password-field-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.password-field-container input[type="password"],
+.password-field-container input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+}
+
+.password-field-container .button {
+    white-space: nowrap;
+}
+
+.password-field-container .toggle-password {
+    color: #0073aa;
+    text-decoration: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.password-field-container .toggle-password:hover {
+    color: #005a87;
+}
+
+/* API test results */
+.api-test-result {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border-left: 4px solid;
+}
+
+.api-test-result.success {
+    background-color: #d4edda;
+    border-left-color: #28a745;
+    color: #155724;
+}
+
+.api-test-result.error {
+    background-color: #f8d7da;
+    border-left-color: #dc3545;
+    color: #721c24;
+}
+
+.api-test-result .test-status {
+    margin-right: 8px;
+}
+
+.api-test-result .dashicons {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Repeater fields */
+.repeater-field {
+    margin-top: 10px;
+}
+
+.repeater-items {
+    margin-bottom: 15px;
+}
+
+.repeater-item {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.repeater-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #e9e9e9;
+    border-bottom: 1px solid #ddd;
+}
+
+.repeater-item-header .item-number {
+    font-weight: 600;
+    color: #555;
+}
+
+.repeater-item-header .remove-item {
+    color: #dc3545;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 12px;
+}
+
+.repeater-item-header .remove-item:hover {
+    color: #c82333;
+    background: #f8d7da;
+    border-radius: 3px;
+}
+
+.repeater-item-content {
+    padding: 15px;
+}
+
+.repeater-item-content .field-group {
+    margin-bottom: 15px;
+}
+
+.repeater-item-content .field-group:last-child {
+    margin-bottom: 0;
+}
+
+.repeater-item-content .field-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #23282d;
+}
+
+.repeater-item-content input[type="text"],
+.repeater-item-content input[type="email"],
+.repeater-item-content input[type="url"] {
+    width: 100%;
+    max-width: 300px;
+}
+
+.repeater-item-content input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.add-item {
+    margin-top: 10px;
+}
+
+.repeater-template {
+    display: none;
+}
+
+/* Tools page */
+.tools-container {
+    max-width: 800px;
+}
+
+.tool-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.tool-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #23282d;
+}
+
+.tool-section .button {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+/* Connection status */
+.api-connection-status {
+    margin: 15px 0;
+}
+
+.connection-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.connection-label {
+    font-weight: 600;
+    min-width: 120px;
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.connection-status.unknown {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.connection-status.testing {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.connection-status.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.connection-status.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.connection-status .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.connection-status .dashicons.spinning {
+    animation: spin 1s linear infinite;
+}
+
+.api-test-info {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+.api-test-info h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.api-test-info ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.api-test-info li {
+    margin-bottom: 5px;
+    color: #6c757d;
+}
+
+/* User Meta Profile Styles */
+.xelite-user-meta-profile {
+    max-width: 800px;
+    margin: 20px 0;
+}
+
+.xelite-user-meta-profile h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #0073aa;
+}
+
+.xelite-user-meta-profile h2 .dashicons {
+    color: #0073aa;
+}
+
+/* Progress Indicator */
+.xelite-profile-progress {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.progress-header h3 {
+    margin: 0;
+    color: #23282d;
+}
+
+.progress-percentage {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0073aa;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #f1f1f1;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0073aa, #005a87);
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+.progress-message {
+    margin-top: 15px;
+}
+
+/* Tabbed Interface */
+.xelite-tabs {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.xelite-tab-nav {
+    display: flex;
+    background: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+}
+
+.xelite-tab-button {
+    flex: 1;
+    padding: 15px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.xelite-tab-button:hover {
+    background: #f1f1f1;
+    color: #0073aa;
+}
+
+.xelite-tab-button.active {
+    background: #0073aa;
+    color: white;
+}
+
+.xelite-tab-button .dashicons {
+    font-size: 16px;
+}
+
+.xelite-tab-content {
+    padding: 30px;
+}
+
+.xelite-tab-pane {
+    display: none;
+}
+
+.xelite-tab-pane.active {
+    display: block;
+}
+
+.xelite-tab-pane h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #23282d;
+    font-size: 18px;
+}
+
+.xelite-tab-pane .description {
+    margin-bottom: 25px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Form Field Enhancements */
+.field-required {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.field-optional {
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.field-incomplete {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 1px #dc3545 !important;
+}
+
+.field-incomplete:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 1px #dc3545 !important;
+}
+
+/* Action Buttons */
+.xelite-profile-actions {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.xelite-profile-actions .button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.xelite-profile-actions .button .dashicons {
+    font-size: 16px;
+}
+
+/* Modal Styles */
+.xelite-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.xelite-modal-content {
+    background: #fff;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.xelite-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.xelite-modal-header h3 {
+    margin: 0;
+    color: #23282d;
+}
+
+.xelite-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.xelite-modal-close:hover {
+    color: #dc3545;
+}
+
+.xelite-modal-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .xelite-tab-nav {
+        flex-direction: column;
+    }
+    
+    .xelite-tab-button {
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .xelite-profile-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .xelite-modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+}
+
+/* Dashboard Widget Styles */
+.xelite-dashboard-widget {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.xelite-dashboard-widget .completeness-overview {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.xelite-dashboard-widget .completeness-percentage {
+    text-align: center;
+    min-width: 80px;
+}
+
+.xelite-dashboard-widget .percentage-number {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #0073aa;
+    line-height: 1;
+}
+
+.xelite-dashboard-widget .percentage-label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.xelite-dashboard-widget .completeness-stats {
+    display: flex;
+    gap: 15px;
+    flex: 1;
+}
+
+.xelite-dashboard-widget .stat-item {
+    text-align: center;
+    flex: 1;
+}
+
+.xelite-dashboard-widget .stat-number {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    color: #23282d;
+    line-height: 1;
+}
+
+.xelite-dashboard-widget .stat-label {
+    display: block;
+    font-size: 11px;
+    color: #666;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.xelite-dashboard-widget .completeness-distribution {
+    margin-bottom: 20px;
+}
+
+.xelite-dashboard-widget .completeness-distribution h4 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    color: #23282d;
+    font-weight: 600;
+}
+
+.xelite-dashboard-widget .distribution-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.xelite-dashboard-widget .distribution-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+}
+
+.xelite-dashboard-widget .range-label {
+    min-width: 40px;
+    font-weight: 600;
+    color: #23282d;
+}
+
+.xelite-dashboard-widget .bar-container {
+    flex: 1;
+    height: 12px;
+    background: #f1f1f1;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.xelite-dashboard-widget .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0073aa, #005a87);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.xelite-dashboard-widget .count-label {
+    min-width: 30px;
+    text-align: right;
+    font-weight: 600;
+    color: #666;
+}
+
+.xelite-dashboard-widget .widget-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.xelite-dashboard-widget .widget-actions .button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    padding: 6px 12px;
+}
+
+.xelite-dashboard-widget .widget-actions .button .dashicons {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+
+/* Responsive dashboard widget */
+@media (max-width: 768px) {
+    .xelite-dashboard-widget .completeness-overview {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .xelite-dashboard-widget .completeness-stats {
+        justify-content: center;
+    }
+    
+    .xelite-dashboard-widget .widget-actions {
+        justify-content: center;
+    }
+}
+
+/* X API Authentication Styles */
+.x-api-auth-container {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 10px;
+}
+
+.x-api-connected {
+    border-left: 4px solid #46b450;
+    padding-left: 15px;
+}
+
+.x-api-connected .connection-status {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #46b450;
+    margin-bottom: 15px;
+}
+
+.x-api-connected .connection-status .dashicons {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+.x-api-connected .user-info {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.x-api-connected .user-info p {
+    margin: 5px 0;
+}
+
+.x-api-manual-setup {
+    border-left: 4px solid #0073aa;
+    padding-left: 15px;
+}
+
+.x-api-manual-setup .form-table {
+    margin-top: 15px;
+}
+
+.x-api-manual-setup .form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+}
+
+.x-api-manual-setup .form-table td {
+    padding: 15px 10px;
+}
+
+.auth-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.auth-actions .button {
+    display: flex;
+    align-items: center;
+}
+
+.auth-actions .button .dashicons {
+    margin-right: 5px;
+}
+
+.x-api-help {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border-left: 4px solid #0073aa;
+}
+
+.x-api-help h4 {
+    margin-top: 0;
+    color: #0073aa;
+}
+
+.x-api-help ol {
+    margin-left: 20px;
+}
+
+.x-api-help li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.x-api-help a {
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.x-api-help a:hover {
+    text-decoration: underline;
+}
+
+/* Connection status indicators */
+.connection-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.connection-status.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.connection-status.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.connection-status.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* Loading states */
+.x-api-auth-container.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.x-api-auth-container.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0073aa;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 } 

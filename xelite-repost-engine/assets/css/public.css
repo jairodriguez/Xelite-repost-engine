@@ -1,0 +1,337 @@
+/**
+ * Xelite Repost Engine - Public Styles
+ *
+ * @package XeliteRepostEngine
+ * @since 1.0.0
+ */
+
+/* Public Container */
+.xelite-repost-engine-public {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+/* Dashboard Grid */
+.xelite-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+/* Dashboard Card */
+.xelite-dashboard-card {
+    background: #fff;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.xelite-dashboard-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.xelite-dashboard-card h3 {
+    margin: 0 0 15px 0;
+    color: #1d2327;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Stats Display */
+.xelite-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.xelite-stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.xelite-stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0073aa;
+    display: block;
+}
+
+.xelite-stat-label {
+    font-size: 12px;
+    color: #646970;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 5px;
+}
+
+/* Content Generator */
+.xelite-content-generator {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.xelite-content-generator h4 {
+    margin: 0 0 15px 0;
+    color: #1d2327;
+}
+
+.xelite-generator-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.xelite-generator-form input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.xelite-generator-form button {
+    padding: 10px 20px;
+    background: #0073aa;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.xelite-generator-form button:hover {
+    background: #005a87;
+}
+
+.xelite-generator-form button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Generated Content */
+.xelite-generated-content {
+    background: #fff;
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+    position: relative;
+}
+
+.xelite-generated-content .content-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #1d2327;
+    margin-bottom: 10px;
+}
+
+.xelite-generated-content .content-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.xelite-content-btn {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.xelite-content-btn.copy {
+    color: #0073aa;
+}
+
+.xelite-content-btn.copy:hover {
+    background: #0073aa;
+    color: #fff;
+}
+
+.xelite-content-btn.post {
+    color: #00a32a;
+}
+
+.xelite-content-btn.post:hover {
+    background: #00a32a;
+    color: #fff;
+}
+
+/* Repost Patterns */
+.xelite-repost-patterns {
+    margin-bottom: 20px;
+}
+
+.xelite-pattern-item {
+    background: #fff;
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.xelite-pattern-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.xelite-pattern-source {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.xelite-pattern-count {
+    background: #0073aa;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.xelite-pattern-text {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #646970;
+    margin-bottom: 8px;
+}
+
+.xelite-pattern-meta {
+    font-size: 12px;
+    color: #8c8f94;
+}
+
+/* Loading States */
+.xelite-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #646970;
+}
+
+.xelite-loading::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-top: 2px solid #0073aa;
+    border-radius: 50%;
+    animation: xelite-spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes xelite-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error States */
+.xelite-error {
+    background: #fef7f1;
+    border: 1px solid #dba617;
+    border-radius: 6px;
+    padding: 15px;
+    color: #8a6914;
+    margin-bottom: 20px;
+}
+
+.xelite-error::before {
+    content: '⚠️';
+    margin-right: 8px;
+}
+
+/* Success States */
+.xelite-success {
+    background: #f0f6fc;
+    border: 1px solid #0073aa;
+    border-radius: 6px;
+    padding: 15px;
+    color: #0073aa;
+    margin-bottom: 20px;
+}
+
+.xelite-success::before {
+    content: '✅';
+    margin-right: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .xelite-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .xelite-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .xelite-generator-form {
+        flex-direction: column;
+    }
+    
+    .xelite-content-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .xelite-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .xelite-dashboard-card {
+        padding: 15px;
+    }
+}
+
+/* Accessibility */
+.xelite-dashboard-card:focus-within {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+.xelite-content-btn:focus {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .xelite-dashboard-card {
+        border: 2px solid #000;
+    }
+    
+    .xelite-content-btn {
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .xelite-loading::before {
+        animation: none;
+    }
+    
+    .xelite-dashboard-card {
+        transition: none;
+    }
+    
+    .xelite-content-btn {
+        transition: none;
+    }
+} 

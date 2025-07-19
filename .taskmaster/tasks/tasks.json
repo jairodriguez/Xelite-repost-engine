@@ -1,0 +1,732 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Plugin Scaffolding and Base Structure",
+        "description": "Set up the WordPress plugin structure with proper file organization, activation hooks, and base classes.",
+        "details": "Create the plugin's main file with appropriate WordPress headers. Implement the following structure:\n\n```php\n<?php\n/**\n * Plugin Name: Repost Intelligence\n * Description: Helps digital creators improve their chances of being reposted on X (formerly Twitter).\n * Version: 1.0.0\n * Author: Your Name\n * Text Domain: repost-intelligence\n */\n\n// Prevent direct access\nif (!defined('ABSPATH')) exit;\n\n// Define plugin constants\ndefine('REPOST_INTELLIGENCE_VERSION', '1.0.0');\ndefine('REPOST_INTELLIGENCE_PATH', plugin_dir_path(__FILE__));\ndefine('REPOST_INTELLIGENCE_URL', plugin_dir_url(__FILE__));\n\n// Include necessary files\nrequire_once REPOST_INTELLIGENCE_PATH . 'includes/class-repost-intelligence.php';\n\n// Activation/deactivation hooks\nregister_activation_hook(__FILE__, array('Repost_Intelligence', 'activate'));\nregister_deactivation_hook(__FILE__, array('Repost_Intelligence', 'deactivate'));\n\n// Initialize the plugin\nfunction run_repost_intelligence() {\n    $plugin = new Repost_Intelligence();\n    $plugin->run();\n}\nrun_repost_intelligence();\n```\n\nCreate the main plugin class in `includes/class-repost-intelligence.php` with methods for initialization, activation, and deactivation. Set up autoloading for other classes using PSR-4 standards with Composer. Include a proper uninstall.php file to clean up database entries when the plugin is removed.",
+        "testStrategy": "Verify the plugin activates without errors in a WordPress environment. Test activation and deactivation hooks to ensure they perform expected actions. Check that all required files are loaded correctly. Use WordPress coding standards validation with PHPCS.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Plugin Base Structure",
+            "description": "Set up the main plugin file with proper WordPress headers, constants, and activation hooks",
+            "dependencies": [],
+            "details": "1. Create the main plugin file (repost-intelligence.php) with WordPress plugin headers\n2. Define plugin constants (version, paths, URLs)\n3. Implement activation and deactivation hooks\n4. Create a class autoloader system\n5. Set up the plugin's main class with initialization methods\n6. Implement basic security measures (ABSPATH check)\n7. Register activation/deactivation hooks for database setup\n<info added on 2025-07-19T01:01:47.482Z>\n**What was accomplished:**\n\n1. **Main Plugin File (xelite-repost-engine.php)**:\n   - WordPress plugin headers with proper metadata\n   - Plugin constants (version, paths, URLs)\n   - Security measures (ABSPATH check)\n   - Version compatibility checks (WordPress 5.8+, PHP 7.4+)\n   - Singleton pattern main class (XeliteRepostEngine)\n   - Activation/deactivation hooks\n   - Database table creation on activation\n   - Default options setup\n   - Autoloader system for plugin classes\n\n2. **Directory Structure Created**:\n   - Organized file hierarchy with includes, admin, public, assets, and languages directories\n   - Proper separation of concerns between core functionality and interfaces\n\n3. **Core Classes Created**:\n   - XeliteRepostEngine_Loader (main loader class)\n   - Placeholder classes for Admin, Public, Database, API, and User_Meta components\n\n4. **Database Schema**:\n   - Custom 'xelite_reposts' table with proper indexes\n   - Fields: id, source_handle, original_tweet_id, original_text, repost_count, timestamps\n\n5. **Asset Files**:\n   - README.md with comprehensive documentation\n   - Admin CSS with WordPress-compatible styling\n   - Admin JavaScript with AJAX functionality\n\n6. **Security & Best Practices**:\n   - Direct access prevention\n   - Nonce verification preparation\n   - Proper WordPress hooks and filters\n   - Internationalization support\n   - WooCommerce integration preparation\n</info added on 2025-07-19T01:01:47.482Z>",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Plugin Class Architecture",
+            "description": "Design and implement the core plugin classes following OOP principles",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Create a main plugin class (class-repost-intelligence.php)\n2. Implement singleton pattern for the main class\n3. Create abstract base classes for extensibility\n4. Set up interfaces for key functionality\n5. Implement namespacing for all plugin classes\n6. Create separate admin and public-facing class structures\n7. Set up proper class loading and initialization sequence\n8. Implement service container for dependency management\n<info added on 2025-07-19T01:29:53.152Z>\n✅ COMPLETED: Plugin Class Architecture Implementation\n\n**What was accomplished:**\n\n1. **Abstract Base Class (`XeliteRepostEngine_Abstract_Base`)**:\n   - ✅ Created comprehensive abstract base class for all plugin classes\n   - ✅ Implemented common functionality (logging, options, sanitization, nonces)\n   - ✅ Provides consistent interface for all plugin classes\n   - ✅ Includes debug and error logging methods\n   - ✅ Centralized option management with plugin prefix\n\n2. **Interfaces for Key Functionality**:\n   - ✅ `XeliteRepostEngine_API_Interface` - Defines API contract\n   - ✅ `XeliteRepostEngine_Database_Interface` - Defines database contract\n   - ✅ `XeliteRepostEngine_User_Meta_Interface` - Defines user meta contract\n   - ✅ All interfaces follow WordPress coding standards\n\n3. **Service Container (`XeliteRepostEngine_Container`)**:\n   - ✅ Implemented dependency injection container\n   - ✅ Singleton pattern for container instance\n   - ✅ Service registration and retrieval system\n   - ✅ Shared and non-shared service support\n   - ✅ Default service registration for all core components\n\n4. **Enhanced Core Classes**:\n   - ✅ **Database Class**: Full implementation with CRUD operations, query building, error handling\n   - ✅ **API Class**: Complete X API and OpenAI integration with authentication, error handling\n   - ✅ **User Meta Class**: Comprehensive user profile management with validation and sanitization\n   - ✅ **Admin/Public Classes**: Extended to use abstract base class\n\n5. **OOP Architecture Features**:\n   - ✅ **Singleton Pattern**: Main plugin class and container use singleton pattern\n   - ✅ **Dependency Injection**: Service container manages all dependencies\n   - ✅ **Interface Segregation**: Clear contracts for each major component\n   - ✅ **Abstract Base Class**: Common functionality shared across all classes\n   - ✅ **Proper Namespacing**: All classes follow WordPress naming conventions\n\n6. **Enhanced Loader Class**:\n   - ✅ **Service Container Integration**: Uses container for dependency management\n   - ✅ **Cron Job Management**: Automated scraping with custom schedules\n   - ✅ **REST API Endpoints**: Built-in API for reposts and content generation\n   - ✅ **User Profile Integration**: WordPress user profile field management\n   - ✅ **WooCommerce Integration**: Foundation for subscription management\n\n7. **Architecture Benefits**:\n   - ✅ **Extensibility**: Easy to add new services and functionality\n   - ✅ **Testability**: Dependency injection enables unit testing\n   - ✅ **Maintainability**: Clear separation of concerns\n   - ✅ **Reusability**: Common functionality in abstract base class\n   - ✅ **Scalability**: Service container supports growth\n\n**Technical Implementation Details:**\n\n- **File Structure**: Organized into abstracts/, interfaces/, and core classes\n- **Error Handling**: Comprehensive logging and error management\n- **Security**: Proper sanitization, validation, and nonce verification\n- **Performance**: Efficient database queries with proper indexing\n- **WordPress Integration**: Follows WordPress coding standards and best practices\n\n**Next Steps**: The architecture is now ready for Task 1.3 (Asset Management System) and subsequent tasks. All classes are properly structured and ready for expansion.\n</info added on 2025-07-19T01:29:53.152Z>",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Set Up Asset Management",
+            "description": "Create structure for managing plugin CSS, JavaScript, and other assets",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Create assets directory structure (css, js, images)\n2. Implement asset registration and enqueuing classes\n3. Set up build process with Webpack or Gulp\n4. Create separate admin and public asset loading methods\n5. Implement version control for assets to prevent caching issues\n6. Add minification support for production\n7. Create SCSS/LESS structure if using preprocessors\n8. Implement conditional asset loading based on plugin settings",
+            "status": "done",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Database Schema and Custom Table Creation",
+        "description": "Create the custom database table for storing repost data and ensure proper integration with WordPress database schema.",
+        "details": "Implement the database schema for the 'reposts' table as specified in the PRD. Create a database handler class that manages table creation, updates, and queries.\n\n```php\nclass Repost_Intelligence_DB {\n    private $wpdb;\n    private $table_name;\n    \n    public function __construct() {\n        global $wpdb;\n        $this->wpdb = $wpdb;\n        $this->table_name = $wpdb->prefix . 'reposts';\n    }\n    \n    public function create_tables() {\n        $charset_collate = $this->wpdb->get_charset_collate();\n        \n        $sql = \"CREATE TABLE {$this->table_name} (\n            id bigint(20) NOT NULL AUTO_INCREMENT,\n            source_handle varchar(255) NOT NULL,\n            original_tweet_id varchar(255) NOT NULL,\n            original_text text NOT NULL,\n            timestamp datetime DEFAULT CURRENT_TIMESTAMP,\n            PRIMARY KEY  (id),\n            KEY source_handle (source_handle),\n            KEY original_tweet_id (original_tweet_id)\n        ) $charset_collate;\";\n        \n        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');\n        dbDelta($sql);\n    }\n    \n    // Add methods for CRUD operations\n}\n```\n\nImplement this in the plugin's activation hook. Use dbDelta() for safe table creation/updates. Add database version tracking in options table for future migrations.",
+        "testStrategy": "Test table creation by activating the plugin in a test environment. Verify table structure matches the expected schema. Test CRUD operations on the table. Ensure proper error handling for database operations. Test database upgrades by simulating version changes.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Database Schema and Table Structure",
+            "description": "Design and implement the custom database table for storing repost data according to WordPress standards",
+            "dependencies": [],
+            "details": "1. Define the table schema with columns for post_id, original_post_id, platform, repost_date, engagement_metrics, and content_variations\n2. Create the SQL for table creation with proper charset and collation\n3. Implement dbDelta() for safe table creation/updates\n4. Add version tracking for future schema migrations\n5. Include proper indexes for performance optimization",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Develop Database Handler Class",
+            "description": "Create a comprehensive database handler class to manage all database operations for the plugin",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Create Repost_Intelligence_DB class with CRUD methods\n2. Implement prepared statements for all queries to prevent SQL injection\n3. Add methods for batch operations (bulk insert, update)\n4. Create utility methods for common queries (get_reposts_by_user, get_top_performing_reposts)\n5. Implement error logging and exception handling\n6. Add database upgrade functionality for future versions",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement Database Integration Tests",
+            "description": "Create comprehensive tests to verify database functionality and integration with WordPress",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Create test cases for table creation and structure verification\n2. Test CRUD operations with various data types and edge cases\n3. Implement performance testing for large datasets\n4. Test database upgrades by simulating version changes\n5. Create mock data generator for testing\n6. Verify proper cleanup on plugin deactivation/uninstallation\n7. Test concurrent database operations",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Admin Settings Page",
+        "description": "Create an admin settings page for configuring the plugin, including API keys for X (Twitter) and OpenAI, and target accounts to monitor.",
+        "details": "Implement a WordPress admin settings page using the Settings API. Create a class to handle the admin interface:\n\n```php\nclass Repost_Intelligence_Admin {\n    public function __construct() {\n        add_action('admin_menu', array($this, 'add_admin_menu'));\n        add_action('admin_init', array($this, 'register_settings'));\n    }\n    \n    public function add_admin_menu() {\n        add_menu_page(\n            'Repost Intelligence', \n            'Repost Intelligence', \n            'manage_options', \n            'repost-intelligence', \n            array($this, 'display_settings_page'),\n            'dashicons-share'\n        );\n    }\n    \n    public function register_settings() {\n        register_setting('repost_intelligence_settings', 'repost_intelligence_x_api_key');\n        register_setting('repost_intelligence_settings', 'repost_intelligence_x_api_secret');\n        register_setting('repost_intelligence_settings', 'repost_intelligence_openai_api_key');\n        register_setting('repost_intelligence_settings', 'repost_intelligence_target_accounts', array($this, 'sanitize_target_accounts'));\n        \n        add_settings_section('repost_intelligence_api_settings', 'API Settings', array($this, 'api_settings_callback'), 'repost-intelligence');\n        add_settings_section('repost_intelligence_target_settings', 'Target Accounts', array($this, 'target_settings_callback'), 'repost-intelligence');\n        \n        // Add settings fields\n        add_settings_field('x_api_key', 'X API Key', array($this, 'x_api_key_callback'), 'repost-intelligence', 'repost_intelligence_api_settings');\n        // Add other fields...\n    }\n    \n    // Implement callback methods for sections and fields\n    // Implement sanitize methods\n}\n```\n\nUse WordPress nonces for security. Store API keys securely using the WordPress options API with proper encryption for sensitive data. Implement field validation for API keys and target accounts.",
+        "testStrategy": "Test the admin page renders correctly with all fields. Verify settings are saved correctly to the database. Test input validation for all fields. Ensure proper error messages are displayed for invalid inputs. Test security measures like nonces and capability checks.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Admin Settings Page Structure",
+            "description": "Set up the basic structure for the admin settings page including menu registration and settings sections.",
+            "dependencies": [],
+            "details": "Create a new file `includes/admin/class-repost-intelligence-admin.php` that implements the WordPress Settings API. Register the main menu page using `add_menu_page()` and set up the basic HTML structure with tabs for different setting sections (API Keys, Target Accounts, General Settings). Implement proper security measures including nonce verification, capability checks (`manage_options`), and data sanitization. Create the settings form with proper form tags and submit button.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Settings Fields and Storage",
+            "description": "Create and register all required settings fields for API keys and target accounts with proper validation.",
+            "dependencies": [
+              1
+            ],
+            "details": "Use `register_setting()` and `add_settings_field()` to create fields for Twitter API key, Twitter API secret, OpenAI API key, and target accounts to monitor. Implement field validation callbacks that verify API keys are in the correct format. For target accounts, create a repeatable field that allows users to add multiple X/Twitter handles to monitor. Store settings in the WordPress options table using a single array with the key 'repost_intelligence_settings'. Implement proper data sanitization using WordPress sanitization functions.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create API Key Validation and Testing",
+            "description": "Implement functionality to test and validate API connections directly from the settings page.",
+            "dependencies": [
+              2
+            ],
+            "details": "Add a 'Test Connection' button next to each API key field that uses AJAX to verify the API credentials are valid without saving the form. Create an AJAX handler in `includes/admin/class-repost-intelligence-ajax.php` that attempts to connect to each API and returns success/error messages. Implement proper error handling to display user-friendly messages when API connections fail. Add inline documentation explaining the required permissions for each API. Include a settings section for connection status that displays the current state of each API connection.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "User Meta Integration",
+        "description": "Integrate with existing WordPress user meta fields to access user context data for personalization.",
+        "details": "Create a class to handle user meta data access and management. The PRD mentions several existing user meta fields that need to be accessed: personal-context, dream-client, writing-style, irresistible-offer, dream-client-pain-points, ikigai, and topic.\n\n```php\nclass Repost_Intelligence_User_Meta {\n    /**\n     * Get all relevant user meta for the specified user\n     */\n    public function get_user_context($user_id = null) {\n        if (!$user_id) {\n            $user_id = get_current_user_id();\n        }\n        \n        if (!$user_id) {\n            return false;\n        }\n        \n        $meta_keys = array(\n            'personal-context',\n            'dream-client',\n            'writing-style',\n            'irresistible-offer',\n            'dream-client-pain-points',\n            'ikigai',\n            'topic'\n        );\n        \n        $user_context = array();\n        foreach ($meta_keys as $key) {\n            $user_context[$key] = get_user_meta($user_id, $key, true);\n        }\n        \n        return $user_context;\n    }\n    \n    /**\n     * Check if user has completed their profile context\n     */\n    public function is_context_complete($user_id = null) {\n        $context = $this->get_user_context($user_id);\n        \n        // Check if essential fields are filled\n        $required_fields = array('writing-style', 'dream-client', 'dream-client-pain-points');\n        \n        foreach ($required_fields as $field) {\n            if (empty($context[$field])) {\n                return false;\n            }\n        }\n        \n        return true;\n    }\n}\n```\n\nImplement methods to check for missing user meta fields and provide guidance to users on completing their profile. Create a simple UI to display missing fields if needed.",
+        "testStrategy": "Test retrieving user meta for different users. Verify the context completeness check works correctly with various combinations of filled/empty fields. Test with users who have no meta data. Test with users who have partial meta data. Test with users who have complete meta data.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create User Meta Access Class",
+            "description": "Develop a class to handle WordPress user meta data access and management for personalization",
+            "dependencies": [],
+            "details": "1. Create a new file `includes/class-repost-intelligence-user-meta.php`\n2. Implement the `Repost_Intelligence_User_Meta` class with methods to:\n   - Get all user context data (`get_user_context()`)\n   - Check if user context is complete (`is_context_complete()`)\n   - Get specific meta fields (`get_meta_field()`)\n   - Update meta fields (`update_meta_field()`)\n3. Handle proper error checking for missing user IDs\n4. Implement caching for performance optimization\n5. Add documentation for all methods following WordPress standards",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Create User Meta Admin Interface",
+            "description": "Build an admin interface for users to manage their context data",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Create a new file `admin/partials/user-meta-profile.php`\n2. Add a new section to the WordPress user profile page\n3. Create form fields for all required meta fields:\n   - personal-context\n   - dream-client\n   - writing-style\n   - irresistible-offer\n   - dream-client-pain-points\n   - ikigai\n   - topic\n4. Implement validation and sanitization for all fields\n5. Add save functionality that uses the User Meta class\n6. Include helpful descriptions for each field\n7. Add visual indicators for incomplete fields",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement User Context Completeness Check",
+            "description": "Create functionality to verify if a user has provided all necessary context data",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Enhance the `is_context_complete()` method in the User Meta class\n2. Define required fields vs optional fields\n3. Implement a scoring system for context completeness (0-100%)\n4. Create admin notices for incomplete user context\n5. Add filters to allow other parts of the plugin to check context completeness\n6. Create a dashboard widget showing context completeness\n7. Implement unit tests to verify the completeness check works with various data combinations",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "X (Twitter) API Integration",
+        "description": "Implement the integration with X (Twitter) API to fetch posts and repost data from target accounts.",
+        "details": "Use the twitter-api-v2 PHP library (abraham/twitteroauth v4.0+) to interact with the X API. Create a service class to handle API requests:\n\n```php\nrequire_once REPOST_INTELLIGENCE_PATH . 'vendor/autoload.php';\n\nuse Abraham\\TwitterOAuth\\TwitterOAuth;\n\nclass Repost_Intelligence_X_API {\n    private $connection;\n    \n    public function __construct() {\n        $api_key = get_option('repost_intelligence_x_api_key');\n        $api_secret = get_option('repost_intelligence_x_api_secret');\n        $access_token = get_option('repost_intelligence_x_access_token');\n        $access_token_secret = get_option('repost_intelligence_x_access_token_secret');\n        \n        if ($api_key && $api_secret && $access_token && $access_token_secret) {\n            $this->connection = new TwitterOAuth($api_key, $api_secret, $access_token, $access_token_secret);\n            $this->connection->setApiVersion('2');\n        }\n    }\n    \n    public function is_configured() {\n        return !empty($this->connection);\n    }\n    \n    public function get_user_timeline($username, $count = 100) {\n        if (!$this->is_configured()) {\n            return new WP_Error('api_not_configured', 'X API is not properly configured');\n        }\n        \n        try {\n            // First get user ID from username\n            $user = $this->connection->get('users/by/username/' . $username, ['user.fields' => 'id']);\n            \n            if (isset($user->data->id)) {\n                $user_id = $user->data->id;\n                \n                // Get user timeline\n                $params = [\n                    'max_results' => $count,\n                    'tweet.fields' => 'created_at,public_metrics,referenced_tweets'\n                ];\n                \n                return $this->connection->get('users/' . $user_id . '/tweets', $params);\n            }\n            \n            return new WP_Error('user_not_found', 'User not found on X');\n        } catch (Exception $e) {\n            return new WP_Error('api_error', $e->getMessage());\n        }\n    }\n    \n    public function get_retweets($tweet_id) {\n        // Implementation to get retweets of a specific tweet\n    }\n}\n```\n\nImplement rate limiting and caching to avoid hitting API limits. Use WordPress transients API for caching API responses. Handle API errors gracefully with proper logging.",
+        "testStrategy": "Test API connection with valid and invalid credentials. Test fetching timelines for various accounts. Test error handling for rate limits and other API errors. Verify caching works correctly. Test with mock API responses for unit testing.",
+        "priority": "high",
+        "dependencies": [
+          1,
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "X API Authentication Setup",
+            "description": "Implement the authentication mechanism for X (Twitter) API integration using OAuth",
+            "dependencies": [],
+            "details": "Create a class `Repost_Intelligence_X_Auth` that handles API authentication:\n1. Create file `includes/api/class-repost-intelligence-x-auth.php`\n2. Implement methods for storing and retrieving API credentials securely using WordPress options API with encryption\n3. Add settings fields in the admin panel for API key, API secret, access token, and access token secret\n4. Implement connection testing functionality to verify credentials\n5. Create proper error handling for authentication failures\n6. Add nonce verification and capability checks for all admin actions",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "X API Data Fetching Implementation",
+            "description": "Create service classes to fetch posts and user data from X (Twitter) API",
+            "dependencies": [
+              1
+            ],
+            "details": "Create a class `Repost_Intelligence_X_API` that handles all API requests:\n1. Create file `includes/api/class-repost-intelligence-x-api.php`\n2. Implement methods to fetch user timelines, user information, and post details\n3. Add caching layer using WordPress transients to respect rate limits\n4. Implement error handling for API failures, rate limits, and network issues\n5. Create data normalization methods to convert API responses to a consistent format\n6. Add logging for API requests and responses for debugging\n7. Implement pagination support for fetching large datasets",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "X API Data Storage and Processing",
+            "description": "Implement storage and processing of fetched X (Twitter) data in the WordPress database",
+            "dependencies": [
+              2
+            ],
+            "details": "Create a class `Repost_Intelligence_X_Processor` that handles data processing:\n1. Create file `includes/api/class-repost-intelligence-x-processor.php`\n2. Implement methods to store fetched posts in the custom reposts table\n3. Create data analysis functions to extract hashtags, mentions, and engagement metrics\n4. Add scheduled events using WordPress cron to periodically fetch new posts\n5. Implement filters and hooks to allow extending the processing functionality\n6. Create admin interface to view and manage stored X data\n7. Add export functionality for processed data in CSV/JSON formats",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Repost Scraper Implementation",
+        "description": "Develop the scraper functionality to collect and store repost data from specified X accounts.",
+        "details": "Create a scraper class that uses the X API integration to fetch repost data and store it in the custom database table. Implement WordPress cron jobs to run the scraper periodically.\n\n```php\nclass Repost_Intelligence_Scraper {\n    private $x_api;\n    private $db;\n    \n    public function __construct() {\n        $this->x_api = new Repost_Intelligence_X_API();\n        $this->db = new Repost_Intelligence_DB();\n        \n        // Set up cron job\n        add_action('repost_intelligence_scrape_cron', array($this, 'scrape_target_accounts'));\n    }\n    \n    public function activate() {\n        // Schedule cron job if not already scheduled\n        if (!wp_next_scheduled('repost_intelligence_scrape_cron')) {\n            wp_schedule_event(time(), 'hourly', 'repost_intelligence_scrape_cron');\n        }\n    }\n    \n    public function deactivate() {\n        $timestamp = wp_next_scheduled('repost_intelligence_scrape_cron');\n        if ($timestamp) {\n            wp_unschedule_event($timestamp, 'repost_intelligence_scrape_cron');\n        }\n    }\n    \n    public function scrape_target_accounts() {\n        $target_accounts = get_option('repost_intelligence_target_accounts', array());\n        \n        if (empty($target_accounts) || !$this->x_api->is_configured()) {\n            return;\n        }\n        \n        foreach ($target_accounts as $account) {\n            $this->scrape_account($account);\n            \n            // Sleep to avoid rate limiting\n            sleep(2);\n        }\n    }\n    \n    private function scrape_account($account) {\n        $timeline = $this->x_api->get_user_timeline($account);\n        \n        if (is_wp_error($timeline)) {\n            // Log error and continue\n            error_log('Repost Intelligence: ' . $timeline->get_error_message());\n            return;\n        }\n        \n        if (!isset($timeline->data)) {\n            return;\n        }\n        \n        foreach ($timeline->data as $tweet) {\n            // Check if this is a retweet/repost\n            if (isset($tweet->referenced_tweets)) {\n                foreach ($tweet->referenced_tweets as $ref_tweet) {\n                    if ($ref_tweet->type === 'retweeted') {\n                        // This is a retweet - store the original tweet info\n                        $original_tweet_id = $ref_tweet->id;\n                        \n                        // Get original tweet content\n                        $original_tweet = $this->x_api->get_tweet($original_tweet_id);\n                        \n                        if (!is_wp_error($original_tweet) && isset($original_tweet->data)) {\n                            $this->db->store_repost(\n                                $account,\n                                $original_tweet_id,\n                                $original_tweet->data->text\n                            );\n                        }\n                    }\n                }\n            }\n        }\n    }\n}\n```\n\nImplement asynchronous HTTP requests where possible to improve performance. Add logging for debugging and monitoring. Implement error handling and retry mechanisms for failed API calls.",
+        "testStrategy": "Test scraping with mock API responses. Verify data is correctly stored in the database. Test cron job scheduling and execution. Test error handling for various API failure scenarios. Test rate limiting mechanisms. Verify the scraper can handle large volumes of data.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Scraper Core Class",
+            "description": "Develop the main scraper class that will handle fetching repost data from X accounts via the API",
+            "dependencies": [],
+            "details": "Create a new file `includes/class-repost-intelligence-scraper.php` with the Repost_Intelligence_Scraper class. Implement methods for authentication with X API, fetching reposts from specified accounts, processing the response data, and error handling. Include rate limiting mechanisms and logging functionality. The class should have methods like get_reposts_by_account(), process_repost_data(), and save_to_database().",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Database Storage for Reposts",
+            "description": "Create functionality to store and manage scraped repost data in the custom database table",
+            "dependencies": [
+              1
+            ],
+            "details": "Extend the scraper class to work with the database handler. Implement methods to save fetched reposts to the database, check for duplicates, and update existing entries. Create functions for data sanitization before storage. Include transaction support for batch operations. Add methods to handle different types of repost data (quotes, retweets, replies) and extract relevant metadata like engagement metrics, timestamps, and content analysis.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Set Up WordPress Cron for Automated Scraping",
+            "description": "Configure WordPress cron jobs to periodically run the scraper and collect new repost data",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Create a cron scheduler class in `includes/class-repost-intelligence-cron.php` that registers custom cron schedules (hourly, twice daily, daily). Implement hooks for activation/deactivation to properly register and clean up cron jobs. Add admin settings to configure scraping frequency and target accounts. Include safeguards against overlapping cron executions and implement a locking mechanism. Add monitoring and notification functionality for failed scraping attempts. Test with both WordPress default cron and server-based cron implementations.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Pattern Analyzer Engine",
+        "description": "Develop the pattern analyzer to identify repost-worthy tweet structures, including tone, length, and format patterns.",
+        "details": "Create a pattern analyzer class that processes stored repost data to identify patterns in successful reposts. Implement statistical analysis to identify common characteristics.\n\n```php\nclass Repost_Intelligence_Pattern_Analyzer {\n    private $db;\n    \n    public function __construct() {\n        $this->db = new Repost_Intelligence_DB();\n    }\n    \n    public function analyze_patterns($source_handle = null, $limit = 100) {\n        // Get repost data from database\n        $reposts = $this->db->get_reposts($source_handle, $limit);\n        \n        if (empty($reposts)) {\n            return array();\n        }\n        \n        $patterns = array(\n            'length' => $this->analyze_length($reposts),\n            'sentiment' => $this->analyze_sentiment($reposts),\n            'hashtags' => $this->analyze_hashtags($reposts),\n            'mentions' => $this->analyze_mentions($reposts),\n            'media' => $this->analyze_media_usage($reposts),\n            'time_patterns' => $this->analyze_time_patterns($reposts),\n            'common_phrases' => $this->extract_common_phrases($reposts),\n            'question_usage' => $this->analyze_question_usage($reposts)\n        );\n        \n        return $patterns;\n    }\n    \n    private function analyze_length($reposts) {\n        $lengths = array_map(function($repost) {\n            return strlen($repost->original_text);\n        }, $reposts);\n        \n        return array(\n            'min' => min($lengths),\n            'max' => max($lengths),\n            'avg' => array_sum($lengths) / count($lengths),\n            'distribution' => $this->calculate_length_distribution($lengths)\n        );\n    }\n    \n    private function analyze_sentiment($reposts) {\n        // Basic sentiment analysis using keyword matching\n        // For production, consider using a proper NLP service\n        $positive_words = array('great', 'amazing', 'awesome', 'good', 'love', 'excellent');\n        $negative_words = array('bad', 'terrible', 'awful', 'hate', 'poor', 'disappointing');\n        \n        $sentiments = array('positive' => 0, 'negative' => 0, 'neutral' => 0);\n        \n        foreach ($reposts as $repost) {\n            $text = strtolower($repost->original_text);\n            $positive_count = 0;\n            $negative_count = 0;\n            \n            foreach ($positive_words as $word) {\n                $positive_count += substr_count($text, $word);\n            }\n            \n            foreach ($negative_words as $word) {\n                $negative_count += substr_count($text, $word);\n            }\n            \n            if ($positive_count > $negative_count) {\n                $sentiments['positive']++;\n            } elseif ($negative_count > $positive_count) {\n                $sentiments['negative']++;\n            } else {\n                $sentiments['neutral']++;\n            }\n        }\n        \n        // Convert to percentages\n        $total = count($reposts);\n        foreach ($sentiments as $key => $value) {\n            $sentiments[$key] = round(($value / $total) * 100, 2);\n        }\n        \n        return $sentiments;\n    }\n    \n    // Implement other analysis methods...\n}\n```\n\nImplement more sophisticated text analysis using PHP libraries like PHP-ML for machine learning or TextAnalysis for NLP. Consider using external APIs for more advanced sentiment analysis if budget allows. Cache analysis results to improve performance.",
+        "testStrategy": "Test with a variety of repost datasets. Verify pattern detection accuracy with known patterns. Test performance with large datasets. Unit test each analysis method separately. Compare results with manual analysis to validate accuracy.",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Core Pattern Analysis Class",
+            "description": "Create the foundation class for pattern analysis with methods to identify common patterns in successful reposts",
+            "dependencies": [],
+            "details": "Create a `Repost_Intelligence_Pattern_Analyzer` class with the following components:\n- Constructor that initializes database connection\n- Methods for analyzing tweet length patterns (short/medium/long)\n- Methods for tone analysis (question, statement, call-to-action)\n- Methods for format pattern detection (hashtag usage, emoji patterns, URL placement)\n- Statistical analysis functions to calculate correlation between patterns and engagement\n- Store analysis results in a standardized format for later retrieval\n\nFile path: `includes/class-repost-intelligence-pattern-analyzer.php`",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Develop Pattern Visualization Methods",
+            "description": "Create methods to transform pattern analysis data into visual representations for the dashboard",
+            "dependencies": [
+              1
+            ],
+            "details": "Extend the pattern analyzer with visualization capabilities:\n- Create methods to generate data for charts and graphs\n- Implement functions to identify top-performing patterns\n- Add methods to compare patterns across different accounts\n- Create pattern scoring algorithm to rank effectiveness\n- Generate JSON-formatted data for JavaScript charts\n- Include helper methods for data normalization\n\nFile path: `includes/class-repost-intelligence-pattern-visualizer.php`",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create Pattern Testing and Validation System",
+            "description": "Implement a system to test identified patterns against new content and validate their effectiveness",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Build a pattern validation system with these components:\n- Methods to apply identified patterns to new content\n- A/B testing framework to compare pattern effectiveness\n- Confidence scoring system for pattern reliability\n- Historical performance tracking for patterns over time\n- Pattern decay detection to identify when patterns become less effective\n- Integration with WordPress transients for caching analysis results\n\nFile path: `includes/class-repost-intelligence-pattern-validator.php`",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "OpenAI Integration",
+        "description": "Implement integration with OpenAI API for generating personalized content based on user context and repost patterns.",
+        "details": "Create a service class to handle OpenAI API interactions. Use the official OpenAI PHP client (openai-php/client v0.6+) for reliable API communication.\n\n```php\nrequire_once REPOST_INTELLIGENCE_PATH . 'vendor/autoload.php';\n\nuse OpenAI\\Client;\n\nclass Repost_Intelligence_AI {\n    private $client;\n    private $user_meta;\n    private $pattern_analyzer;\n    \n    public function __construct() {\n        $api_key = get_option('repost_intelligence_openai_api_key');\n        \n        if ($api_key) {\n            $this->client = OpenAI::client($api_key);\n        }\n        \n        $this->user_meta = new Repost_Intelligence_User_Meta();\n        $this->pattern_analyzer = new Repost_Intelligence_Pattern_Analyzer();\n    }\n    \n    public function is_configured() {\n        return !empty($this->client);\n    }\n    \n    public function generate_content($user_id = null, $source_handle = null, $count = 3) {\n        if (!$this->is_configured()) {\n            return new WP_Error('ai_not_configured', 'OpenAI API is not properly configured');\n        }\n        \n        $user_context = $this->user_meta->get_user_context($user_id);\n        \n        if (empty($user_context) || !$this->user_meta->is_context_complete($user_id)) {\n            return new WP_Error('incomplete_context', 'User profile context is incomplete');\n        }\n        \n        // Get repost patterns\n        $patterns = $this->pattern_analyzer->analyze_patterns($source_handle);\n        \n        // Construct prompt\n        $prompt = $this->build_prompt($user_context, $patterns);\n        \n        try {\n            $response = $this->client->chat()->create([\n                'model' => 'gpt-4',\n                'messages' => [\n                    ['role' => 'system', 'content' => 'You are an expert social media content creator specializing in crafting highly shareable posts for X (formerly Twitter). Your goal is to create content that big accounts will want to repost.'],\n                    ['role' => 'user', 'content' => $prompt]\n                ],\n                'temperature' => 0.7,\n                'n' => $count,\n                'max_tokens' => 280\n            ]);\n            \n            $generated_content = [];\n            foreach ($response->choices as $choice) {\n                $generated_content[] = trim($choice->message->content);\n            }\n            \n            return $generated_content;\n        } catch (Exception $e) {\n            return new WP_Error('ai_error', $e->getMessage());\n        }\n    }\n    \n    private function build_prompt($user_context, $patterns) {\n        $prompt = \"Create {$count} posts for X (formerly Twitter) that are likely to be reposted by big accounts. \";\n        \n        // Add user context\n        $prompt .= \"The content should be for someone with the following characteristics:\\n\";\n        $prompt .= \"- Writing style: {$user_context['writing-style']}\\n\";\n        $prompt .= \"- Target audience: {$user_context['dream-client']}\\n\";\n        $prompt .= \"- Offering: {$user_context['irresistible-offer']}\\n\";\n        $prompt .= \"- Audience pain points: {$user_context['dream-client-pain-points']}\\n\";\n        \n        if (!empty($user_context['topic'])) {\n            $prompt .= \"- Topic focus: {$user_context['topic']}\\n\";\n        }\n        \n        // Add pattern insights\n        if (!empty($patterns)) {\n            $prompt .= \"\\nBased on analysis of successful reposts, include these characteristics:\\n\";\n            \n            if (!empty($patterns['length'])) {\n                $prompt .= \"- Optimal length: between {$patterns['length']['min']} and {$patterns['length']['max']} characters (aim for {$patterns['length']['avg']})\\n\";\n            }\n            \n            if (!empty($patterns['sentiment'])) {\n                $dominant_sentiment = array_keys($patterns['sentiment'], max($patterns['sentiment']))[0];\n                $prompt .= \"- Tone: primarily {$dominant_sentiment}\\n\";\n            }\n            \n            if (!empty($patterns['common_phrases']) && count($patterns['common_phrases']) > 0) {\n                $phrases = array_slice($patterns['common_phrases'], 0, 3);\n                $prompt .= \"- Consider using phrases like: \" . implode(', ', $phrases) . \"\\n\";\n            }\n        }\n        \n        $prompt .= \"\\nEach post should be concise, engaging, and formatted for maximum shareability on X.\";\n        \n        return $prompt;\n    }\n}\n```\n\nImplement caching for API responses to reduce costs. Add error handling for API rate limits and other potential issues. Consider implementing a fallback mechanism if the API is unavailable.",
+        "testStrategy": "Test API integration with valid and invalid API keys. Test content generation with various user contexts. Verify error handling for API failures. Test prompt construction with different pattern data. Measure response times and optimize if needed. Test with mock API responses for unit testing.",
+        "priority": "high",
+        "dependencies": [
+          4,
+          7
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create OpenAI API Service Class",
+            "description": "Develop a service class to handle all OpenAI API interactions with proper authentication, error handling, and response processing.",
+            "dependencies": [],
+            "details": "1. Create a new file `includes/class-repost-intelligence-openai.php`\n2. Implement the `Repost_Intelligence_AI` class with constructor for API initialization\n3. Add methods for API key validation and connection testing\n4. Implement error handling for API failures (rate limits, authentication errors)\n5. Create a method to generate content based on user context\n6. Add proper logging for API interactions\n7. Implement caching to reduce API calls\n8. Register the class in the main plugin file\n9. Create unit tests in `tests/test-openai-integration.php`",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Context-Aware Prompt Engineering",
+            "description": "Create a system for building effective prompts that incorporate user context data and repost patterns for optimal AI-generated content.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Create a new file `includes/class-repost-intelligence-prompt-builder.php`\n2. Implement methods to extract relevant user meta data (writing style, target audience, etc.)\n3. Create functions to analyze past successful reposts for pattern identification\n4. Develop a prompt template system with placeholders for dynamic content\n5. Implement few-shot learning examples in prompts based on successful reposts\n6. Add methods to optimize token usage while maintaining context richness\n7. Create A/B testing capability for prompt variations\n8. Implement prompt versioning for tracking effectiveness\n9. Add unit tests in `tests/test-prompt-builder.php`",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Develop Admin Settings for OpenAI Integration",
+            "description": "Create admin interface components for configuring OpenAI API settings, managing API usage, and controlling AI-generated content parameters.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Add a new tab in the plugin settings page for OpenAI configuration\n2. Create fields for API key management (with secure storage)\n3. Implement API key validation with test connection button\n4. Add usage tracking and quota management features\n5. Create controls for content generation parameters (creativity, length, tone)\n6. Implement sample content generation in admin to test settings\n7. Add usage statistics dashboard for API calls and token consumption\n8. Create documentation section with implementation examples\n9. Implement proper nonce verification and capability checks\n10. Add settings validation and sanitization\n11. Create integration tests in `tests/test-openai-admin.php`",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "User Dashboard UI",
+        "description": "Create a WordPress admin/front-end UI for displaying repost patterns and AI-generated content to users.",
+        "details": "Implement a user dashboard using WordPress admin pages and/or shortcodes for front-end display. Create a class to handle the dashboard UI:\n\n```php\nclass Repost_Intelligence_Dashboard {\n    private $pattern_analyzer;\n    private $ai;\n    \n    public function __construct() {\n        $this->pattern_analyzer = new Repost_Intelligence_Pattern_Analyzer();\n        $this->ai = new Repost_Intelligence_AI();\n        \n        // Add admin page\n        add_action('admin_menu', array($this, 'add_dashboard_menu'));\n        \n        // Register shortcode for front-end\n        add_shortcode('repost_intelligence_dashboard', array($this, 'dashboard_shortcode'));\n    }\n    \n    public function add_dashboard_menu() {\n        add_submenu_page(\n            'repost-intelligence',\n            'Repost Dashboard',\n            'Dashboard',\n            'edit_posts',\n            'repost-intelligence-dashboard',\n            array($this, 'render_dashboard')\n        );\n    }\n    \n    public function render_dashboard() {\n        // Check user capabilities\n        if (!current_user_can('edit_posts')) {\n            wp_die(__('You do not have sufficient permissions to access this page.'));\n        }\n        \n        $target_accounts = get_option('repost_intelligence_target_accounts', array());\n        $selected_account = isset($_GET['account']) ? sanitize_text_field($_GET['account']) : reset($target_accounts);\n        \n        // Get patterns and generated content\n        $patterns = $this->pattern_analyzer->analyze_patterns($selected_account);\n        $generated_content = $this->ai->generate_content(get_current_user_id(), $selected_account);\n        \n        // Render the dashboard UI\n        include REPOST_INTELLIGENCE_PATH . 'admin/partials/dashboard.php';\n    }\n    \n    public function dashboard_shortcode($atts) {\n        $atts = shortcode_atts(array(\n            'account' => '',\n        ), $atts, 'repost_intelligence_dashboard');\n        \n        // Check if user is logged in\n        if (!is_user_logged_in()) {\n            return '<p>Please log in to view your repost dashboard.</p>';\n        }\n        \n        // Buffer output\n        ob_start();\n        \n        $target_accounts = get_option('repost_intelligence_target_accounts', array());\n        $selected_account = !empty($atts['account']) ? $atts['account'] : reset($target_accounts);\n        \n        // Get patterns and generated content\n        $patterns = $this->pattern_analyzer->analyze_patterns($selected_account);\n        $generated_content = $this->ai->generate_content(get_current_user_id(), $selected_account);\n        \n        // Render the front-end dashboard\n        include REPOST_INTELLIGENCE_PATH . 'public/partials/dashboard.php';\n        \n        return ob_get_clean();\n    }\n}\n```\n\nCreate template files for both admin and front-end dashboards. Use WordPress dashicons and admin UI components for a native look and feel. Implement responsive design for mobile compatibility. Use AJAX for dynamic content loading to improve user experience.",
+        "testStrategy": "Test dashboard rendering in both admin and front-end contexts. Verify all data is displayed correctly. Test with various screen sizes to ensure responsive design. Test with different user roles to verify capability checks. Test AJAX functionality for dynamic content loading.",
+        "priority": "medium",
+        "dependencies": [
+          7,
+          8
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create User Dashboard UI Framework",
+            "description": "Develop the base structure for the user dashboard including the main dashboard class, admin menu integration, and basic layout components.",
+            "dependencies": [],
+            "details": "1. Create a new file `includes/class-repost-intelligence-dashboard.php`\n2. Implement the `Repost_Intelligence_Dashboard` class with constructor and initialization methods\n3. Add admin menu registration using `add_action('admin_menu', ...)`\n4. Create dashboard page callback function that renders the main container\n5. Implement responsive CSS for the dashboard in `assets/css/dashboard.css`\n6. Register and enqueue dashboard styles and scripts\n7. Add capability checks to ensure only authorized users can access the dashboard",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Repost Pattern Display Interface",
+            "description": "Create the UI components to display repost patterns, trends, and analytics in a user-friendly format with interactive elements.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Create a tabbed interface for different data views (patterns, trends, content suggestions)\n2. Implement data tables to display repost pattern information with sortable columns\n3. Add AJAX functionality to load pattern data dynamically using `wp_ajax` hooks\n4. Create visual representations (charts/graphs) using a library like Chart.js\n5. Implement filters for time periods, content types, and performance metrics\n6. Add tooltips and help text to explain metrics and data points\n7. Ensure all tables and charts are responsive for different screen sizes",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Develop Front-end Shortcode Interface",
+            "description": "Create shortcodes to allow users to embed dashboard components on front-end pages of their WordPress site.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Create a new file `includes/class-repost-intelligence-shortcodes.php`\n2. Implement a shortcode registration class that connects to the dashboard functionality\n3. Create shortcodes for different dashboard components: `[repost_patterns]`, `[repost_suggestions]`, `[repost_analytics]`\n4. Implement shortcode rendering functions that output properly styled and responsive content\n5. Add shortcode attributes to allow customization (e.g., number of items to display, time period)\n6. Ensure proper asset loading when shortcodes are used on front-end pages\n7. Add user capability checks to control what data is visible to different user roles\n8. Test shortcodes in various WordPress themes and page builders",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "WooCommerce Integration",
+        "description": "Implement integration with WooCommerce subscriptions to control feature access based on subscription tiers.",
+        "details": "Create a class to handle WooCommerce subscription integration and feature access control:\n\n```php\nclass Repost_Intelligence_WooCommerce {\n    public function __construct() {\n        // Check if WooCommerce and WooCommerce Subscriptions are active\n        if (!$this->is_woocommerce_active()) {\n            add_action('admin_notices', array($this, 'woocommerce_missing_notice'));\n            return;\n        }\n        \n        // Add hooks for subscription status changes\n        add_action('woocommerce_subscription_status_updated', array($this, 'subscription_status_changed'), 10, 3);\n    }\n    \n    public function is_woocommerce_active() {\n        return class_exists('WooCommerce') && class_exists('WC_Subscriptions');\n    }\n    \n    public function woocommerce_missing_notice() {\n        echo '<div class=\"error\"><p>Repost Intelligence requires WooCommerce and WooCommerce Subscriptions to be installed and active.</p></div>';\n    }\n    \n    public function subscription_status_changed($subscription, $new_status, $old_status) {\n        // Update user capabilities based on subscription status\n        if ($new_status === 'active' && $old_status !== 'active') {\n            $this->activate_user_features($subscription->get_user_id());\n        } elseif ($new_status !== 'active' && $old_status === 'active') {\n            $this->deactivate_user_features($subscription->get_user_id());\n        }\n    }\n    \n    private function activate_user_features($user_id) {\n        // Get subscription product to determine tier\n        $tier = $this->get_user_subscription_tier($user_id);\n        update_user_meta($user_id, 'repost_intelligence_tier', $tier);\n    }\n    \n    private function deactivate_user_features($user_id) {\n        update_user_meta($user_id, 'repost_intelligence_tier', 'none');\n    }\n    \n    public function get_user_subscription_tier($user_id) {\n        $subscriptions = wcs_get_users_subscriptions($user_id);\n        \n        foreach ($subscriptions as $subscription) {\n            if ($subscription->has_status('active')) {\n                foreach ($subscription->get_items() as $item) {\n                    $product_id = $item->get_product_id();\n                    \n                    // Map product IDs to tiers\n                    $tier_mapping = array(\n                        // Replace with actual product IDs\n                        123 => 'basic',\n                        456 => 'premium',\n                        789 => 'enterprise'\n                    );\n                    \n                    if (isset($tier_mapping[$product_id])) {\n                        return $tier_mapping[$product_id];\n                    }\n                }\n            }\n        }\n        \n        return 'none';\n    }\n    \n    public function can_user_access_feature($feature, $user_id = null) {\n        if (!$user_id) {\n            $user_id = get_current_user_id();\n        }\n        \n        if (!$user_id) {\n            return false;\n        }\n        \n        $tier = get_user_meta($user_id, 'repost_intelligence_tier', true);\n        \n        // Define feature access by tier\n        $feature_access = array(\n            'basic' => array('view_patterns', 'generate_content_limited'),\n            'premium' => array('view_patterns', 'generate_content_unlimited', 'scheduling'),\n            'enterprise' => array('view_patterns', 'generate_content_unlimited', 'scheduling', 'multi_account')\n        );\n        \n        if (empty($tier) || $tier === 'none') {\n            return false;\n        }\n        \n        return in_array($feature, $feature_access[$tier]);\n    }\n}\n```\n\nImplement admin settings to configure product ID to tier mappings. Create usage quotas based on subscription tiers. Add hooks to check feature access before performing restricted actions.",
+        "testStrategy": "Test integration with active and inactive WooCommerce installations. Test subscription status change handling. Verify feature access control works correctly for different tiers. Test with various subscription products. Test subscription expiration and renewal handling.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "WooCommerce Subscription Detection and Activation",
+            "description": "Create a class to detect WooCommerce and WooCommerce Subscriptions plugins and handle integration activation/deactivation logic.",
+            "dependencies": [],
+            "details": "1. Create `class Repost_Intelligence_WooCommerce` with constructor that checks for active plugins\n2. Implement `is_woocommerce_active()` method to verify both WooCommerce and WooCommerce Subscriptions are active\n3. Add admin notice functionality for missing dependencies\n4. Register activation/deactivation hooks to handle plugin dependency changes\n5. Create file structure: `includes/integrations/class-repost-intelligence-woocommerce.php`\n6. Add proper plugin loading in main plugin file",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Subscription Tier Management and Feature Access Control",
+            "description": "Implement subscription tier detection and feature access control based on user subscription status.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Create methods to detect user's active subscriptions\n2. Implement tier-based feature access control system\n3. Add hooks for subscription status changes (woocommerce_subscription_status_updated)\n4. Create subscription product mapping to features in admin settings\n5. Implement caching for subscription status checks\n6. Create helper methods like `can_access_feature($feature_name)` for easy integration\n7. Add unit tests for feature access control logic",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "WooCommerce Subscription Events and Webhooks",
+            "description": "Handle subscription lifecycle events and implement webhook listeners for real-time subscription updates.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Create event handlers for subscription creation, cancellation, expiration and renewal\n2. Implement webhook endpoints for external subscription notifications\n3. Add database logging for subscription status changes\n4. Create admin UI for viewing subscription status history\n5. Implement automatic feature access updates when subscription status changes\n6. Add transactional emails for subscription status changes related to feature access\n7. Create comprehensive testing suite for subscription lifecycle events",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "X Posting and Scheduling Integration",
+        "description": "Implement functionality to post or schedule content to X (Twitter) via the API.",
+        "details": "Extend the X API integration to include posting and scheduling capabilities. Create a class to handle posting and scheduling:\n\n```php\nclass Repost_Intelligence_Poster {\n    private $x_api;\n    private $woocommerce;\n    \n    public function __construct() {\n        $this->x_api = new Repost_Intelligence_X_API();\n        $this->woocommerce = new Repost_Intelligence_WooCommerce();\n        \n        // Add AJAX handlers for posting\n        add_action('wp_ajax_repost_intelligence_post_now', array($this, 'ajax_post_now'));\n        add_action('wp_ajax_repost_intelligence_schedule_post', array($this, 'ajax_schedule_post'));\n        \n        // Add cron action for scheduled posts\n        add_action('repost_intelligence_scheduled_post', array($this, 'process_scheduled_post'), 10, 2);\n    }\n    \n    public function ajax_post_now() {\n        // Verify nonce\n        check_ajax_referer('repost_intelligence_posting', 'security');\n        \n        // Check user capabilities\n        if (!$this->woocommerce->can_user_access_feature('generate_content_unlimited')) {\n            wp_send_json_error('You do not have permission to post content.');\n            return;\n        }\n        \n        $content = isset($_POST['content']) ? sanitize_textarea_field($_POST['content']) : '';\n        \n        if (empty($content)) {\n            wp_send_json_error('No content provided.');\n            return;\n        }\n        \n        $result = $this->post_to_x($content);\n        \n        if (is_wp_error($result)) {\n            wp_send_json_error($result->get_error_message());\n        } else {\n            wp_send_json_success(array(\n                'message' => 'Content posted successfully!',\n                'tweet_id' => $result->data->id\n            ));\n        }\n        \n        wp_die();\n    }\n    \n    public function ajax_schedule_post() {\n        // Verify nonce\n        check_ajax_referer('repost_intelligence_posting', 'security');\n        \n        // Check user capabilities\n        if (!$this->woocommerce->can_user_access_feature('scheduling')) {\n            wp_send_json_error('You do not have permission to schedule posts.');\n            return;\n        }\n        \n        $content = isset($_POST['content']) ? sanitize_textarea_field($_POST['content']) : '';\n        $schedule_time = isset($_POST['schedule_time']) ? sanitize_text_field($_POST['schedule_time']) : '';\n        \n        if (empty($content) || empty($schedule_time)) {\n            wp_send_json_error('Content and schedule time are required.');\n            return;\n        }\n        \n        // Convert to timestamp\n        $timestamp = strtotime($schedule_time);\n        \n        if ($timestamp === false || $timestamp <= time()) {\n            wp_send_json_error('Invalid schedule time.');\n            return;\n        }\n        \n        // Schedule the post\n        $user_id = get_current_user_id();\n        wp_schedule_single_event($timestamp, 'repost_intelligence_scheduled_post', array($user_id, $content));\n        \n        // Store in user meta for reference\n        $scheduled_posts = get_user_meta($user_id, 'repost_intelligence_scheduled_posts', true);\n        if (!is_array($scheduled_posts)) {\n            $scheduled_posts = array();\n        }\n        \n        $scheduled_posts[] = array(\n            'content' => $content,\n            'timestamp' => $timestamp\n        );\n        \n        update_user_meta($user_id, 'repost_intelligence_scheduled_posts', $scheduled_posts);\n        \n        wp_send_json_success(array(\n            'message' => 'Post scheduled successfully!',\n            'scheduled_time' => date('Y-m-d H:i:s', $timestamp)\n        ));\n        \n        wp_die();\n    }\n    \n    public function process_scheduled_post($user_id, $content) {\n        // Post to X\n        $result = $this->post_to_x($content, $user_id);\n        \n        // Update user meta to remove from scheduled list\n        $scheduled_posts = get_user_meta($user_id, 'repost_intelligence_scheduled_posts', true);\n        \n        if (is_array($scheduled_posts)) {\n            foreach ($scheduled_posts as $key => $post) {\n                if ($post['content'] === $content) {\n                    unset($scheduled_posts[$key]);\n                    break;\n                }\n            }\n            \n            update_user_meta($user_id, 'repost_intelligence_scheduled_posts', array_values($scheduled_posts));\n        }\n        \n        // Log the result\n        if (is_wp_error($result)) {\n            error_log('Repost Intelligence: Failed to post scheduled content for user ' . $user_id . ': ' . $result->get_error_message());\n        } else {\n            // Success - could notify user if desired\n        }\n    }\n    \n    private function post_to_x($content, $user_id = null) {\n        if (!$user_id) {\n            $user_id = get_current_user_id();\n        }\n        \n        if (!$this->x_api->is_configured()) {\n            return new WP_Error('api_not_configured', 'X API is not properly configured');\n        }\n        \n        try {\n            return $this->x_api->post_tweet($content);\n        } catch (Exception $e) {\n            return new WP_Error('posting_error', $e->getMessage());\n        }\n    }\n}\n```\n\nImplement a UI for scheduling posts with a datetime picker. Add a calendar view to see upcoming scheduled posts. Implement post queue management to allow users to edit or delete scheduled posts.",
+        "testStrategy": "Test posting with valid and invalid content. Test scheduling for various times. Verify scheduled posts are executed at the correct time. Test error handling for API failures. Test queue management functionality. Test with different user permission levels.",
+        "priority": "medium",
+        "dependencies": [
+          5,
+          10
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement X API Posting Class",
+            "description": "Create a class to handle posting content to X (Twitter) via the API, including authentication and error handling.",
+            "dependencies": [],
+            "details": "1. Create a new file `includes/class-repost-intelligence-x-poster.php`\n2. Implement the `Repost_Intelligence_X_Poster` class with methods for authentication and posting\n3. Add methods for content validation and formatting\n4. Implement error handling for API failures\n5. Create unit tests for the posting functionality\n6. Add proper documentation and code comments",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Develop Scheduling System",
+            "description": "Create a scheduling system that allows users to schedule posts to X at specific times using WordPress cron jobs.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Extend the X poster class with scheduling capabilities\n2. Create database tables for storing scheduled posts\n3. Implement WordPress cron hooks for executing scheduled posts\n4. Add methods to manage the scheduling queue (add, remove, edit)\n5. Create admin UI components for scheduling interface\n6. Implement time zone handling for accurate scheduling\n7. Add logging for scheduled post execution",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Integrate with WooCommerce Subscription Tiers",
+            "description": "Connect the X posting and scheduling functionality with WooCommerce subscription tiers to control feature access.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Create capability checks for posting and scheduling features\n2. Implement tier-based limits (posts per day, scheduling window, etc.)\n3. Add subscription status validation before posting/scheduling\n4. Create admin settings to configure limits per subscription tier\n5. Implement graceful degradation for expired subscriptions\n6. Add user notifications about subscription requirements\n7. Test with various subscription scenarios",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Analytics Dashboard",
+        "description": "Create an analytics dashboard to display repost likelihood, engagement trends, and other metrics.",
+        "details": "Implement an analytics dashboard to provide insights on repost patterns and content performance. Create a class to handle analytics data collection and display:\n\n```php\nclass Repost_Intelligence_Analytics {\n    private $db;\n    private $pattern_analyzer;\n    \n    public function __construct() {\n        $this->db = new Repost_Intelligence_DB();\n        $this->pattern_analyzer = new Repost_Intelligence_Pattern_Analyzer();\n        \n        // Add admin page\n        add_action('admin_menu', array($this, 'add_analytics_menu'));\n        \n        // Register shortcode for front-end\n        add_shortcode('repost_intelligence_analytics', array($this, 'analytics_shortcode'));\n    }\n    \n    public function add_analytics_menu() {\n        add_submenu_page(\n            'repost-intelligence',\n            'Repost Analytics',\n            'Analytics',\n            'edit_posts',\n            'repost-intelligence-analytics',\n            array($this, 'render_analytics')\n        );\n    }\n    \n    public function render_analytics() {\n        // Check user capabilities\n        if (!current_user_can('edit_posts')) {\n            wp_die(__('You do not have sufficient permissions to access this page.'));\n        }\n        \n        $target_accounts = get_option('repost_intelligence_target_accounts', array());\n        $selected_account = isset($_GET['account']) ? sanitize_text_field($_GET['account']) : reset($target_accounts);\n        \n        // Get analytics data\n        $time_period = isset($_GET['period']) ? sanitize_text_field($_GET['period']) : '30days';\n        $analytics_data = $this->get_analytics_data($selected_account, $time_period);\n        \n        // Enqueue Chart.js\n        wp_enqueue_script('chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js', array(), '3.9.1', true);\n        wp_enqueue_script('repost-intelligence-analytics', REPOST_INTELLIGENCE_URL . 'admin/js/analytics.js', array('chartjs', 'jquery'), REPOST_INTELLIGENCE_VERSION, true);\n        wp_localize_script('repost-intelligence-analytics', 'repostAnalyticsData', $analytics_data);\n        \n        // Render the analytics UI\n        include REPOST_INTELLIGENCE_PATH . 'admin/partials/analytics.php';\n    }\n    \n    public function analytics_shortcode($atts) {\n        $atts = shortcode_atts(array(\n            'account' => '',\n            'period' => '30days',\n        ), $atts, 'repost_intelligence_analytics');\n        \n        // Check if user is logged in\n        if (!is_user_logged_in()) {\n            return '<p>Please log in to view your repost analytics.</p>';\n        }\n        \n        // Buffer output\n        ob_start();\n        \n        $target_accounts = get_option('repost_intelligence_target_accounts', array());\n        $selected_account = !empty($atts['account']) ? $atts['account'] : reset($target_accounts);\n        \n        // Get analytics data\n        $analytics_data = $this->get_analytics_data($selected_account, $atts['period']);\n        \n        // Enqueue Chart.js\n        wp_enqueue_script('chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js', array(), '3.9.1', true);\n        wp_enqueue_script('repost-intelligence-analytics', REPOST_INTELLIGENCE_URL . 'public/js/analytics.js', array('chartjs', 'jquery'), REPOST_INTELLIGENCE_VERSION, true);\n        wp_localize_script('repost-intelligence-analytics', 'repostAnalyticsData', $analytics_data);\n        \n        // Render the front-end analytics\n        include REPOST_INTELLIGENCE_PATH . 'public/partials/analytics.php';\n        \n        return ob_get_clean();\n    }\n    \n    private function get_analytics_data($account, $period) {\n        // Calculate date range based on period\n        $end_date = current_time('mysql');\n        \n        switch ($period) {\n            case '7days':\n                $start_date = date('Y-m-d H:i:s', strtotime('-7 days'));\n                break;\n            case '90days':\n                $start_date = date('Y-m-d H:i:s', strtotime('-90 days'));\n                break;\n            default: // 30days\n                $start_date = date('Y-m-d H:i:s', strtotime('-30 days'));\n        }\n        \n        // Get repost data for the period\n        $reposts = $this->db->get_reposts_by_date_range($account, $start_date, $end_date);\n        \n        // Process data for charts\n        $repost_count_by_day = $this->calculate_repost_count_by_day($reposts, $start_date, $end_date);\n        $content_type_distribution = $this->calculate_content_type_distribution($reposts);\n        $optimal_posting_times = $this->calculate_optimal_posting_times($reposts);\n        \n        return array(\n            'repost_count_by_day' => $repost_count_by_day,\n            'content_type_distribution' => $content_type_distribution,\n            'optimal_posting_times' => $optimal_posting_times,\n            'repost_patterns' => $this->pattern_analyzer->analyze_patterns($account)\n        );\n    }\n    \n    // Implement data calculation methods...\n}\n```\n\nImplement JavaScript using Chart.js for visualizing analytics data. Create template files for both admin and front-end analytics dashboards. Use AJAX for dynamic data loading to improve user experience. Implement data export functionality for CSV/PDF reports.",
+        "testStrategy": "Test analytics calculations with various datasets. Verify chart rendering in both admin and front-end contexts. Test with different time periods. Test data export functionality. Test performance with large datasets. Test responsiveness on different screen sizes.",
+        "priority": "low",
+        "dependencies": [
+          7,
+          9
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Analytics Data Collection System",
+            "description": "Develop a system to collect and store analytics data for repost patterns and content performance metrics.",
+            "dependencies": [],
+            "details": "Implement a class `Repost_Intelligence_Analytics_Collector` that hooks into post creation and repost events. Create methods to track metrics like engagement rates, repost likelihood scores, and content performance over time. Design database schema extensions to store analytics data efficiently with proper indexing. Implement scheduled tasks using WordPress cron to aggregate data periodically. Include functions to calculate trend data and statistical analysis of content performance.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Develop Dashboard UI Components",
+            "description": "Create the visual components and charts for the analytics dashboard using a JavaScript charting library.",
+            "dependencies": [
+              1
+            ],
+            "details": "Select and integrate a JavaScript charting library (like Chart.js or D3.js) compatible with WordPress. Create reusable chart components for displaying metrics such as repost frequency, engagement trends, and content performance. Implement filters for time periods (daily, weekly, monthly, custom range). Design responsive layouts that work in both admin and front-end contexts. Create exportable reports in CSV/PDF formats. Include real-time data refresh capabilities using AJAX.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Integrate Analytics Dashboard with WordPress Admin",
+            "description": "Integrate the analytics dashboard into the WordPress admin interface with proper user capabilities and navigation.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Create a new admin page under the main plugin menu using `add_submenu_page()`. Implement proper capability checks to restrict access to appropriate user roles. Create a tabbed interface for different analytics views (Overview, Content Performance, Repost Patterns, Predictions). Add contextual help documentation for interpreting analytics data. Implement user preferences for dashboard layout and default views. Ensure compatibility with WordPress admin styling and JavaScript environment.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Enhanced AI Prompts with Few-Shot Learning",
+        "description": "Implement enhanced AI prompts using few-shot learning with repost examples to improve content generation quality.",
+        "details": "Extend the AI integration to include few-shot learning examples based on successful reposts. Modify the AI class to incorporate these examples:\n\n```php\nclass Repost_Intelligence_Enhanced_AI extends Repost_Intelligence_AI {\n    private $db;\n    \n    public function __construct() {\n        parent::__construct();\n        $this->db = new Repost_Intelligence_DB();\n    }\n    \n    public function generate_content($user_id = null, $source_handle = null, $count = 3) {\n        if (!$this->is_configured()) {\n            return new WP_Error('ai_not_configured', 'OpenAI API is not properly configured');\n        }\n        \n        $user_context = $this->user_meta->get_user_context($user_id);\n        \n        if (empty($user_context) || !$this->user_meta->is_context_complete($user_id)) {\n            return new WP_Error('incomplete_context', 'User profile context is incomplete');\n        }\n        \n        // Get repost patterns\n        $patterns = $this->pattern_analyzer->analyze_patterns($source_handle);\n        \n        // Get few-shot examples\n        $examples = $this->get_few_shot_examples($source_handle, 5);\n        \n        // Construct enhanced prompt with examples\n        $prompt = $this->build_enhanced_prompt($user_context, $patterns, $examples);\n        \n        try {\n            $response = $this->client->chat()->create([\n                'model' => 'gpt-4',\n                'messages' => [\n                    ['role' => 'system', 'content' => 'You are an expert social media content creator specializing in crafting highly shareable posts for X (formerly Twitter). Your goal is to create content that big accounts will want to repost.'],\n                    ['role' => 'user', 'content' => $prompt]\n                ],\n                'temperature' => 0.7,\n                'n' => $count,\n                'max_tokens' => 280\n            ]);\n            \n            $generated_content = [];\n            foreach ($response->choices as $choice) {\n                $generated_content[] = trim($choice->message->content);\n            }\n            \n            return $generated_content;\n        } catch (Exception $e) {\n            return new WP_Error('ai_error', $e->getMessage());\n        }\n    }\n    \n    private function get_few_shot_examples($source_handle, $limit = 5) {\n        // Get the most recent reposts for the source handle\n        return $this->db->get_reposts($source_handle, $limit);\n    }\n    \n    private function build_enhanced_prompt($user_context, $patterns, $examples) {\n        $prompt = parent::build_prompt($user_context, $patterns);\n        \n        if (!empty($examples)) {\n            $prompt .= \"\\n\\nHere are examples of posts that were reposted by {$source_handle}:\\n\";\n            \n            foreach ($examples as $index => $example) {\n                $prompt .= \"\\nExample \" . ($index + 1) . \": \\\"\" . $example->original_text . \"\\\"\\n\";\n            }\n            \n            $prompt .= \"\\nCreate new posts that follow similar patterns but are unique and tailored to the user's context.\";\n        }\n        \n        return $prompt;\n    }\n    \n    // Add methods for analyzing example effectiveness and refining prompts over time\n    public function track_content_performance($content_id, $metrics) {\n        // Store performance metrics for generated content to improve future prompts\n    }\n}\n```\n\nImplement a feedback mechanism to track which generated content performs best. Use this data to refine future prompts. Implement A/B testing for different prompt structures to optimize results. Consider implementing a prompt template system for easier management and testing.",
+        "testStrategy": "Test few-shot learning with various example sets. Compare content quality with and without few-shot examples. Test prompt construction with different numbers of examples. Verify performance tracking works correctly. Test A/B testing functionality for prompt optimization.",
+        "priority": "medium",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Few-Shot Learning Data Collection",
+            "description": "Create a system to collect and store successful repost examples for use in few-shot learning prompts.",
+            "dependencies": [],
+            "details": "Develop a class extension to Repost_Intelligence_DB to store exemplary reposts. Create methods to identify and flag high-performing content. Implement database schema updates with new tables for storing example content, engagement metrics, and categorization. Add admin interface components to manually select examples for the few-shot learning dataset. Include functionality to automatically identify successful reposts based on engagement thresholds.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Develop Enhanced AI Prompt Templates with Few-Shot Examples",
+            "description": "Create a flexible prompt template system that incorporates few-shot learning examples into AI requests.",
+            "dependencies": [
+              1
+            ],
+            "details": "Extend the Repost_Intelligence_AI class to include methods for constructing prompts with few-shot examples. Implement template patterns that effectively frame the examples for the AI model. Create functions to select relevant examples based on content category, target audience, or engagement goals. Develop a configuration system for controlling the number of examples included in each prompt. Add logging functionality to track prompt performance for different example combinations.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Implement A/B Testing for Few-Shot Prompt Optimization",
+            "description": "Create a system to test different few-shot prompt configurations and track their performance.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Develop an A/B testing framework that compares different few-shot prompt configurations. Implement metrics tracking to measure engagement rates of content generated with different prompt strategies. Create an admin dashboard to visualize prompt performance data. Build automated optimization functionality that gradually improves prompt templates based on performance data. Implement a versioning system for prompt templates to track changes and improvements over time.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Chrome Extension Scraping Fallback",
+        "description": "Implement a Chrome extension fallback for scraping repost data when API limitations are encountered.",
+        "details": "Create a Chrome extension that can scrape X (Twitter) for repost data and send it back to the WordPress plugin. This serves as a fallback when API limitations are encountered.\n\n```javascript\n// manifest.json\n{\n  \"manifest_version\": 3,\n  \"name\": \"Repost Intelligence Scraper\",\n  \"version\": \"1.0\",\n  \"description\": \"Scrapes repost data from X (Twitter) for the Repost Intelligence WordPress plugin\",\n  \"permissions\": [\"activeTab\", \"storage\", \"scripting\"],\n  \"host_permissions\": [\"https://twitter.com/*\", \"https://x.com/*\"],\n  \"action\": {\n    \"default_popup\": \"popup.html\",\n    \"default_icon\": {\n      \"16\": \"images/icon16.png\",\n      \"48\": \"images/icon48.png\",\n      \"128\": \"images/icon128.png\"\n    }\n  },\n  \"background\": {\n    \"service_worker\": \"background.js\"\n  },\n  \"content_scripts\": [\n    {\n      \"matches\": [\"https://twitter.com/*\", \"https://x.com/*\"],\n      \"js\": [\"content.js\"]\n    }\n  ]\n}\n```\n\nImplement the content script to scrape repost data:\n\n```javascript\n// content.js\nfunction scrapeReposts() {\n  const reposts = [];\n  \n  // Find retweet elements on the page\n  const retweetElements = document.querySelectorAll('[data-testid=\"retweet\"]');\n  \n  retweetElements.forEach(element => {\n    // Navigate up to find the tweet container\n    const tweetContainer = element.closest('article');\n    \n    if (tweetContainer) {\n      // Extract tweet data\n      const tweetId = tweetContainer.getAttribute('data-tweet-id');\n      const tweetText = tweetContainer.querySelector('[data-testid=\"tweetText\"]')?.textContent;\n      const tweetAuthor = tweetContainer.querySelector('[data-testid=\"User-Name\"]')?.textContent;\n      \n      if (tweetId && tweetText) {\n        reposts.push({\n          tweet_id: tweetId,\n          text: tweetText,\n          author: tweetAuthor,\n          timestamp: new Date().toISOString()\n        });\n      }\n    }\n  });\n  \n  return reposts;\n}\n\n// Listen for messages from the popup or background script\nchrome.runtime.onMessage.addListener((message, sender, sendResponse) => {\n  if (message.action === 'scrapeReposts') {\n    const reposts = scrapeReposts();\n    sendResponse({ reposts });\n  }\n});\n```\n\nImplement the WordPress side to receive and process the scraped data:\n\n```php\nclass Repost_Intelligence_Chrome_Fallback {\n    private $db;\n    \n    public function __construct() {\n        $this->db = new Repost_Intelligence_DB();\n        \n        // Register REST API endpoint to receive data from Chrome extension\n        add_action('rest_api_init', array($this, 'register_api_endpoints'));\n    }\n    \n    public function register_api_endpoints() {\n        register_rest_route('repost-intelligence/v1', '/import-reposts', array(\n            'methods' => 'POST',\n            'callback' => array($this, 'import_reposts'),\n            'permission_callback' => array($this, 'check_import_permission')\n        ));\n    }\n    \n    public function check_import_permission() {\n        return current_user_can('edit_posts');\n    }\n    \n    public function import_reposts($request) {\n        $params = $request->get_params();\n        \n        if (empty($params['reposts']) || !is_array($params['reposts'])) {\n            return new WP_Error('invalid_data', 'Invalid repost data', array('status' => 400));\n        }\n        \n        $source_handle = sanitize_text_field($params['source_handle']);\n        $api_key = sanitize_text_field($params['api_key']);\n        \n        // Verify API key (implement a secure verification method)\n        if (!$this->verify_api_key($api_key)) {\n            return new WP_Error('invalid_api_key', 'Invalid API key', array('status' => 401));\n        }\n        \n        $imported_count = 0;\n        \n        foreach ($params['reposts'] as $repost) {\n            $result = $this->db->store_repost(\n                $source_handle,\n                sanitize_text_field($repost['tweet_id']),\n                sanitize_textarea_field($repost['text'])\n            );\n            \n            if ($result) {\n                $imported_count++;\n            }\n        }\n        \n        return array(\n            'success' => true,\n            'imported_count' => $imported_count\n        );\n    }\n    \n    private function verify_api_key($api_key) {\n        // Implement secure API key verification\n        $stored_key = get_option('repost_intelligence_extension_api_key');\n        return $stored_key && hash_equals($stored_key, $api_key);\n    }\n}\n```\n\nImplement a mechanism to detect when API limits are reached and prompt the user to use the Chrome extension instead. Create a simple UI in the WordPress admin to generate and manage API keys for the extension.",
+        "testStrategy": "Test Chrome extension on various X (Twitter) pages. Verify data scraping accuracy. Test the WordPress API endpoint with valid and invalid data. Test security measures for the API endpoint. Test the fallback mechanism when API limits are reached. Test with different browser versions.",
+        "priority": "low",
+        "dependencies": [
+          5,
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Chrome Extension Manifest and Structure",
+            "description": "Set up the basic Chrome extension structure with manifest.json and necessary files for the scraping fallback mechanism.",
+            "dependencies": [],
+            "details": "Create the following files:\n1. manifest.json - Define extension metadata, permissions (activeTab, storage, scripting), and host permissions for X (Twitter)\n2. background.js - Set up service worker for background tasks\n3. content.js - Create script for DOM manipulation and data extraction\n4. popup.html/js - Build simple UI for manual triggering and status display\n\nEnsure the extension follows Manifest V3 standards and requests minimal permissions needed for scraping X (Twitter) data.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement X (Twitter) Scraping Logic",
+            "description": "Develop the core scraping functionality to extract repost data from X (Twitter) pages.",
+            "dependencies": [
+              1
+            ],
+            "details": "In content.js, implement:\n1. DOM traversal functions to identify and extract repost data elements\n2. Data parsing to extract usernames, timestamps, content, and engagement metrics\n3. Mutation observers to handle dynamic content loading\n4. Error handling for different page structures and edge cases\n5. Rate limiting and throttling to avoid detection\n\nTest with various X (Twitter) page layouts and ensure the scraper can handle timeline changes gracefully.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create WordPress Integration API",
+            "description": "Develop the communication channel between the Chrome extension and WordPress plugin.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Create a secure REST API endpoint in the WordPress plugin:\n   - Add endpoint to wp-json/repost-intelligence/v1/extension-data\n   - Implement authentication using application passwords or custom tokens\n   - Add data validation and sanitization\n\n2. In the extension's background.js:\n   - Implement secure communication with the WordPress site\n   - Add retry logic for failed connections\n   - Create data formatting to match expected WordPress schema\n   - Add local storage caching for offline operation\n\n3. Create a fallback detection system that activates the extension when API limits are reached.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Plugin Documentation and User Guide",
+        "description": "Create comprehensive documentation and user guides for the plugin, including installation, configuration, and usage instructions.",
+        "details": "Develop comprehensive documentation for the plugin, including:\n\n1. **README.md file** with installation instructions, requirements, and basic usage\n2. **Admin help tabs** using the WordPress contextual help API\n3. **In-plugin onboarding wizard** for first-time setup\n4. **User guide PDF** for detailed instructions\n\nImplement contextual help using the WordPress help API:\n\n```php\nclass Repost_Intelligence_Documentation {\n    public function __construct() {\n        // Add help tabs to plugin pages\n        add_action('admin_head', array($this, 'add_help_tabs'));\n        \n        // Add welcome page redirect on activation\n        add_action('admin_init', array($this, 'welcome_redirect'));\n        \n        // Register welcome page\n        add_action('admin_menu', array($this, 'add_welcome_page'));\n    }\n    \n    public function add_help_tabs() {\n        $screen = get_current_screen();\n        \n        // Only add help tabs to plugin pages\n        if (!$screen || strpos($screen->id, 'repost-intelligence') === false) {\n            return;\n        }\n        \n        // Add general help tab\n        $screen->add_help_tab(array(\n            'id' => 'repost-intelligence-help-general',\n            'title' => 'General',\n            'content' => '<h2>Repost Intelligence Plugin</h2>' .\n                        '<p>This plugin helps digital creators improve their chances of being reposted on X (formerly Twitter).</p>' .\n                        '<p>For detailed instructions, please see our <a href=\"' . admin_url('admin.php?page=repost-intelligence-welcome') . '\">documentation page</a>.</p>'\n        ));\n        \n        // Add page-specific help tabs based on current screen\n        switch ($screen->id) {\n            case 'toplevel_page_repost-intelligence':\n                $this->add_settings_help_tabs($screen);\n                break;\n            case 'repost-intelligence_page_repost-intelligence-dashboard':\n                $this->add_dashboard_help_tabs($screen);\n                break;\n            // Add other page-specific help tabs\n        }\n        \n        // Add help sidebar with links\n        $screen->set_help_sidebar(\n            '<p><strong>For more information:</strong></p>' .\n            '<p><a href=\"https://example.com/docs\">Documentation</a></p>' .\n            '<p><a href=\"https://example.com/support\">Support</a></p>'\n        );\n    }\n    \n    private function add_settings_help_tabs($screen) {\n        $screen->add_help_tab(array(\n            'id' => 'repost-intelligence-help-settings',\n            'title' => 'Settings',\n            'content' => '<h2>Plugin Settings</h2>' .\n                        '<p>Configure your API keys and target accounts here.</p>' .\n                        '<ul>' .\n                        '<li><strong>X API Key:</strong> Your X (Twitter) API key from the developer portal.</li>' .\n                        '<li><strong>OpenAI API Key:</strong> Your OpenAI API key for content generation.</li>' .\n                        '<li><strong>Target Accounts:</strong> X accounts to monitor for repost patterns.</li>' .\n                        '</ul>'\n        ));\n    }\n    \n    // Add other help tab methods\n    \n    public function welcome_redirect() {\n        // Check if we should redirect to welcome page\n        if (get_option('repost_intelligence_activation_redirect', false)) {\n            delete_option('repost_intelligence_activation_redirect');\n            \n            // Only redirect if not activating multiple plugins or doing an AJAX request\n            if (!isset($_GET['activate-multi']) && !wp_doing_ajax()) {\n                wp_redirect(admin_url('admin.php?page=repost-intelligence-welcome'));\n                exit;\n            }\n        }\n    }\n    \n    public function add_welcome_page() {\n        add_submenu_page(\n            'repost-intelligence',\n            'Documentation',\n            'Documentation',\n            'edit_posts',\n            'repost-intelligence-welcome',\n            array($this, 'render_welcome_page')\n        );\n    }\n    \n    public function render_welcome_page() {\n        // Render welcome/documentation page\n        include REPOST_INTELLIGENCE_PATH . 'admin/partials/welcome.php';\n    }\n}\n```\n\nCreate a detailed user guide PDF covering all aspects of the plugin. Implement an interactive onboarding wizard for first-time users. Add tooltips and contextual help throughout the plugin interface. Create video tutorials for key features.",
+        "testStrategy": "Test help tabs display correctly on all plugin pages. Verify all documentation links work. Test the welcome page redirect after activation. Review documentation for accuracy and completeness. Test with users of different experience levels to ensure clarity. Test PDF download functionality.",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          3,
+          9
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create README.md and Installation Documentation",
+            "description": "Develop comprehensive README.md file with installation instructions, requirements, and basic usage information for the plugin.",
+            "dependencies": [],
+            "details": "1. Create a well-structured README.md following WordPress plugin repository standards\n2. Include sections for: Introduction, Features, Requirements, Installation, Basic Configuration, FAQ\n3. Document system requirements (PHP version, WordPress version, etc.)\n4. Provide step-by-step installation instructions for both manual and WP admin installation\n5. Add screenshots with annotations for key features\n6. Include troubleshooting section for common issues\n7. Document changelog and version history\n8. Test README.md rendering on GitHub and WordPress repository\n9. Ensure all links are functional and documentation is accurate",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Implement Admin Help Tabs using WordPress Contextual Help API",
+            "description": "Create contextual help tabs that appear in the WordPress admin when users are on plugin-related pages.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Create a Repost_Intelligence_Help_Tabs class to manage all help tabs\n2. Implement hooks to add help tabs on all plugin admin pages\n3. Create separate help content for each plugin feature (Settings, Analytics, Content Creation)\n4. Use the WordPress help API: $screen->add_help_tab() and $screen->set_help_sidebar()\n5. Include code examples where appropriate\n6. Add links to external documentation resources\n7. Implement tabbed interface for complex features\n8. Test help tabs display correctly across different screen sizes\n9. Ensure help content is accessible and follows WordPress UI guidelines",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Develop In-Plugin Onboarding Wizard",
+            "description": "Create a step-by-step onboarding wizard to guide users through initial plugin setup after activation.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Create a multi-step wizard interface using WordPress admin pages\n2. Implement transient storage for wizard progress\n3. Design steps: Welcome, API Configuration, User Context Setup, Target Account Selection, Features Overview\n4. Add skip functionality for experienced users\n5. Implement form validation for each step\n6. Create database handler for saving configuration\n7. Add activation hook to trigger wizard on first activation\n8. Implement progress indicator and navigation controls\n9. Add completion page with next steps and documentation links\n10. Test wizard flow on fresh installations and ensure it can be revisited later",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Create Comprehensive User Guide PDF",
+            "description": "Develop a detailed PDF user guide that covers all plugin features, configuration options, and advanced usage scenarios.",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "1. Design PDF template with proper branding and table of contents\n2. Write comprehensive documentation covering all plugin features\n3. Include screenshots and step-by-step instructions for all functionality\n4. Document advanced usage scenarios and best practices\n5. Create troubleshooting section with solutions to common issues\n6. Add case studies or example workflows\n7. Implement PDF generation using a library like FPDF or TCPDF\n8. Add download link in plugin admin area\n9. Version the PDF to match plugin versions\n10. Test PDF rendering across different PDF readers\n11. Ensure PDF is accessible and properly bookmarked",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Implement Video Tutorials and Tooltips",
+            "description": "Create video tutorials for key features and implement contextual tooltips throughout the plugin interface.",
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "details": "1. Script and record 5-7 video tutorials covering key plugin functionality\n2. Host videos on YouTube or Vimeo with proper playlists and organization\n3. Embed video tutorials in relevant admin pages\n4. Implement tooltip system using WordPress pointers API\n5. Create contextual tooltips for all form fields and complex features\n6. Add dismissible tooltips that remember user preferences\n7. Implement a help icon system for accessing tooltips on demand\n8. Create a central video tutorial library page within the plugin\n9. Test video playback in different browsers and devices\n10. Ensure tooltips are responsive and properly positioned on all screen sizes\n11. Implement accessibility features for both videos and tooltips",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-19T00:36:39.765Z",
+      "updated": "2025-07-19T01:43:35.531Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

@@ -1,0 +1,133 @@
+{
+	"meta": {
+		"generatedAt": "2025-07-19T00:55:19.788Z",
+		"tasksAnalyzed": 15,
+		"totalTasks": 15,
+		"analysisCount": 15,
+		"thresholdScore": 5,
+		"projectName": "Taskmaster",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 15,
+			"taskTitle": "Plugin Documentation and User Guide",
+			"complexityScore": 6,
+			"recommendedSubtasks": 5,
+			"expansionPrompt": "Break down the Plugin Documentation and User Guide task into 5 subtasks covering: 1) README.md and installation documentation, 2) Admin help tabs implementation using WordPress contextual help API, 3) In-plugin onboarding wizard for first-time setup, 4) Comprehensive user guide PDF creation, and 5) Video tutorials and tooltips implementation. For each subtask, include specific requirements, implementation details, and testing criteria.",
+			"reasoning": "This task involves multiple documentation formats (README, help tabs, PDF guide, onboarding wizard) requiring both technical implementation and content creation. The complexity comes from needing to implement WordPress-specific APIs for help tabs, creating an interactive onboarding wizard, generating comprehensive documentation, and ensuring everything is accurate and user-friendly. The task requires both coding skills for the WordPress integration and technical writing skills for the documentation content."
+		},
+		{
+			"taskId": 1,
+			"taskTitle": "Plugin Scaffolding and Base Structure",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on plugin scaffolding and base structure.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Database Schema and Custom Table Creation",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on database schema and custom table creation.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Admin Settings Page",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on admin settings page.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "User Meta Integration",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on user meta integration.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "X (Twitter) API Integration",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on x (twitter) api integration.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Repost Scraper Implementation",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on repost scraper implementation.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Pattern Analyzer Engine",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on pattern analyzer engine.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "OpenAI Integration",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on openai integration.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "User Dashboard UI",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on user dashboard ui.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "WooCommerce Integration",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on woocommerce integration.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 11,
+			"taskTitle": "X Posting and Scheduling Integration",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on x posting and scheduling integration.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 12,
+			"taskTitle": "Analytics Dashboard",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on analytics dashboard.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 13,
+			"taskTitle": "Enhanced AI Prompts with Few-Shot Learning",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on enhanced ai prompts with few-shot learning.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		},
+		{
+			"taskId": 14,
+			"taskTitle": "Chrome Extension Scraping Fallback",
+			"complexityScore": 5,
+			"recommendedSubtasks": 3,
+			"expansionPrompt": "Break down this task with a focus on chrome extension scraping fallback.",
+			"reasoning": "Automatically added due to missing analysis in AI response."
+		}
+	]
+}

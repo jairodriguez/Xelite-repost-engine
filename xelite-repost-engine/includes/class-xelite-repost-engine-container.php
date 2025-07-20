@@ -197,5 +197,15 @@ class XeliteRepostEngine_Container {
         $this->register('woocommerce', function($container) {
             return new XeliteRepostEngine_WooCommerce($container->get('database'), $container->get('user_meta'), $container->get('logger'));
         }, true);
+
+        // Register Pattern Analyzer service
+        $this->register('pattern_analyzer', function($container) {
+            return new XeliteRepostEngine_Pattern_Analyzer($container->get('database'), $container->get('logger'));
+        }, true);
+
+        // Register Pattern Visualizer service
+        $this->register('pattern_visualizer', function($container) {
+            return new XeliteRepostEngine_Pattern_Visualizer($container->get('pattern_analyzer'), $container->get('database'), $container->get('logger'));
+        }, true);
     }
 } 

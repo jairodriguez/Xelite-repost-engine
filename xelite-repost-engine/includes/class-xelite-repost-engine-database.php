@@ -40,6 +40,7 @@ class XeliteRepostEngine_Database extends XeliteRepostEngine_Abstract_Base imple
         // Define table names
         $this->tables = array(
             'reposts' => $this->wpdb->prefix . 'xelite_reposts',
+            'pattern_analysis' => $this->wpdb->prefix . 'xelite_pattern_analysis',
         );
         
         $this->log_debug('Database class initialized');
@@ -85,13 +86,34 @@ class XeliteRepostEngine_Database extends XeliteRepostEngine_Abstract_Base imple
             KEY updated_at (updated_at)
         ) $charset_collate;";
         
+        // Pattern Analysis table
+        $pattern_table_name = $this->tables['pattern_analysis'];
+        $pattern_sql = "CREATE TABLE $pattern_table_name (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            source_handle varchar(255) DEFAULT NULL COMMENT 'Source handle analyzed (NULL for all accounts)',
+            analysis_data longtext NOT NULL COMMENT 'JSON object containing complete analysis results',
+            analysis_type varchar(50) DEFAULT 'comprehensive' COMMENT 'Type of analysis performed',
+            repost_count int(11) DEFAULT 0 COMMENT 'Number of reposts analyzed',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY source_handle (source_handle),
+            KEY analysis_type (analysis_type),
+            KEY created_at (created_at),
+            KEY updated_at (updated_at)
+        ) $charset_collate;";
+        
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         $result = dbDelta($sql);
+        $pattern_result = dbDelta($pattern_sql);
         
         // Store database version for future migrations
         $this->update_database_version();
         
-        $this->log_debug('Database tables created', array('result' => $result));
+        $this->log_debug('Database tables created', array(
+            'reposts_result' => $result,
+            'pattern_analysis_result' => $pattern_result
+        ));
         
         return true;
     }

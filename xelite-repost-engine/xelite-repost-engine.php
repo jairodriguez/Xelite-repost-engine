@@ -161,6 +161,12 @@ class XeliteRepostEngine {
         // Load integrations
         require_once $this->plugin_dir . 'includes/integrations/class-xelite-repost-engine-woocommerce.php';
         
+        // Load pattern analyzer
+        require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-pattern-analyzer.php';
+        
+        // Load pattern visualizer
+        require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-pattern-visualizer.php';
+        
         // Load admin and public classes
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';
@@ -210,6 +216,12 @@ class XeliteRepostEngine {
         
         // Initialize WooCommerce service
         $this->container->get('woocommerce');
+        
+        // Initialize Pattern Analyzer service
+        $this->container->get('pattern_analyzer');
+        
+        // Initialize Pattern Visualizer service
+        $this->container->get('pattern_visualizer');
     }
     
 

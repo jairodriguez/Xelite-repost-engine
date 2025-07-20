@@ -356,6 +356,161 @@ class XeliteRepostEngine_X_Processor {
     }
 
     /**
+     * Store multiple reposts in batch
+     *
+     * @param array $reposts_array Array of repost data arrays.
+     * @return array Results with success/error counts.
+     */
+    public function store_reposts_batch($reposts_array) {
+        if (empty($reposts_array)) {
+            return array('success' => 0, 'errors' => 0, 'results' => array());
+        }
+
+        $results = array(
+            'success' => 0,
+            'errors' => 0,
+            'results' => array()
+        );
+
+        // Start transaction for batch operation
+        $this->database->start_transaction();
+
+        try {
+            foreach ($reposts_array as $index => $repost_data) {
+                $result = $this->store_repost_data($repost_data);
+                
+                if (is_wp_error($result)) {
+                    $results['errors']++;
+                    $results['results'][$index] = array(
+                        'success' => false,
+                        'error' => $result->get_error_message(),
+                        'tweet_id' => $repost_data['original_tweet_id'] ?? 'unknown'
+                    );
+                } else {
+                    $results['success']++;
+                    $results['results'][$index] = array(
+                        'success' => true,
+                        'tweet_id' => $repost_data['original_tweet_id'] ?? 'unknown'
+                    );
+                }
+            }
+
+            // Commit transaction
+            $this->database->commit_transaction();
+            
+            $this->log('info', "Batch storage completed: {$results['success']} successful, {$results['errors']} errors");
+
+        } catch (Exception $e) {
+            // Rollback transaction on error
+            $this->database->rollback_transaction();
+            
+            $this->log('error', "Batch storage failed: " . $e->getMessage());
+            
+            $results['errors'] = count($reposts_array);
+            $results['success'] = 0;
+            $results['batch_error'] = $e->getMessage();
+        }
+
+        return $results;
+    }
+
+    /**
+     * Check for duplicate reposts
+     *
+     * @param array $reposts_array Array of repost data arrays.
+     * @return array Array with duplicates filtered out.
+     */
+    public function filter_duplicates($reposts_array) {
+        if (empty($reposts_array)) {
+            return array();
+        }
+
+        $filtered_reposts = array();
+        $duplicate_count = 0;
+
+        foreach ($reposts_array as $repost_data) {
+            $tweet_id = $repost_data['original_tweet_id'] ?? '';
+            $source_handle = $repost_data['source_handle'] ?? '';
+            
+            if (empty($tweet_id) || empty($source_handle)) {
+                continue;
+            }
+
+            // Check if repost already exists
+            $existing = $this->database->get_repost_by_tweet($tweet_id, $source_handle);
+            
+            if (!$existing) {
+                $filtered_reposts[] = $repost_data;
+            } else {
+                $duplicate_count++;
+            }
+        }
+
+        if ($duplicate_count > 0) {
+            $this->log('info', "Filtered out {$duplicate_count} duplicate reposts");
+        }
+
+        return $filtered_reposts;
+    }
+
+
+
+    /**
+     * Clean up old repost data
+     *
+     * @param int $days_old Number of days old to consider for cleanup.
+     * @return int Number of records cleaned up.
+     */
+    public function cleanup_old_reposts($days_old = 365) {
+        try {
+            $cutoff_date = date('Y-m-d H:i:s', strtotime("-{$days_old} days"));
+            
+            $deleted_count = $this->database->delete('reposts', array(
+                'created_at <' => $cutoff_date
+            ));
+
+            if ($deleted_count > 0) {
+                $this->log('info', "Cleaned up {$deleted_count} old repost records (older than {$days_old} days)");
+            }
+
+            return $deleted_count;
+
+        } catch (Exception $e) {
+            $this->log('error', "Error cleaning up old reposts: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Export repost data
+     *
+     * @param array $filters Filters to apply.
+     * @param string $format Export format (csv, json).
+     * @return string|WP_Error Exported data or error.
+     */
+    public function export_repost_data($filters = array(), $format = 'csv') {
+        try {
+            $reposts = $this->database->get_reposts($filters, array('created_at' => 'DESC'));
+
+            if (empty($reposts)) {
+                return new WP_Error('no_data', 'No repost data found for export');
+            }
+
+            switch ($format) {
+                case 'json':
+                    return $this->export_json($reposts);
+                case 'csv':
+                default:
+                    return $this->export_csv($reposts);
+            }
+
+        } catch (Exception $e) {
+            $this->log('error', "Error exporting repost data: " . $e->getMessage());
+            return new WP_Error('export_error', $e->getMessage());
+        }
+    }
+
+    /**
      * Store tweet data in database
      *
      * @param array $tweet Tweet data.

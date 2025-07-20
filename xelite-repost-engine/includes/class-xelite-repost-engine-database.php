@@ -1440,4 +1440,34 @@ class XeliteRepostEngine_Database extends XeliteRepostEngine_Abstract_Base imple
         
         return $export_data;
     }
+
+    /**
+     * Start database transaction
+     *
+     * @return bool True on success
+     */
+    public function start_transaction() {
+        $this->wpdb->query('START TRANSACTION');
+        return true;
+    }
+
+    /**
+     * Commit database transaction
+     *
+     * @return bool True on success
+     */
+    public function commit_transaction() {
+        $this->wpdb->query('COMMIT');
+        return true;
+    }
+
+    /**
+     * Rollback database transaction
+     *
+     * @return bool True on success
+     */
+    public function rollback_transaction() {
+        $this->wpdb->query('ROLLBACK');
+        return true;
+    }
 } 

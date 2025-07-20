@@ -360,6 +360,42 @@ class XeliteRepostEngine_Scraper extends XeliteRepostEngine_Abstract_Base {
     }
 
     /**
+     * Save multiple reposts to database with duplicate checking
+     *
+     * @param array $reposts_array Array of repost data
+     * @param string $source_handle Source account handle
+     * @return array Results with success/error counts
+     */
+    public function save_reposts_batch($reposts_array, $source_handle) {
+        if (empty($reposts_array) || empty($source_handle)) {
+            return array('success' => 0, 'errors' => 0, 'results' => array());
+        }
+
+        // Add source handle to all reposts
+        $processed_reposts = array();
+        foreach ($reposts_array as $repost_data) {
+            $repost_data['source_handle'] = $source_handle;
+            $processed_reposts[] = $repost_data;
+        }
+
+        // Filter out duplicates
+        $unique_reposts = $this->processor->filter_duplicates($processed_reposts);
+        
+        if (empty($unique_reposts)) {
+            $this->log('info', "All reposts from @{$source_handle} were duplicates");
+            return array('success' => 0, 'errors' => 0, 'duplicates' => count($processed_reposts), 'results' => array());
+        }
+
+        // Store unique reposts in batch
+        $results = $this->processor->store_reposts_batch($unique_reposts);
+        $results['duplicates'] = count($processed_reposts) - count($unique_reposts);
+        
+        $this->log('info', "Batch saved reposts from @{$source_handle}: {$results['success']} successful, {$results['errors']} errors, {$results['duplicates']} duplicates");
+        
+        return $results;
+    }
+
+    /**
      * Scrape multiple accounts in batch
      *
      * @param array $accounts Array of account handles
@@ -404,14 +440,9 @@ class XeliteRepostEngine_Scraper extends XeliteRepostEngine_Abstract_Base {
                 );
                 $total_errors++;
             } else {
-                // Save reposts to database
-                $saved_count = 0;
-                foreach ($result['reposts'] as $repost) {
-                    $save_result = $this->save_to_database($repost, $account);
-                    if (!is_wp_error($save_result)) {
-                        $saved_count++;
-                    }
-                }
+                // Save reposts to database using batch storage
+                $save_results = $this->save_reposts_batch($result['reposts'], $account);
+                $saved_count = $save_results['success'];
                 
                 $results[$account] = array(
                     'success' => true,

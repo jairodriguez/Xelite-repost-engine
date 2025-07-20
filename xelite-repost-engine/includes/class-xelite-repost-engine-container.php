@@ -207,5 +207,10 @@ class XeliteRepostEngine_Container {
         $this->register('pattern_visualizer', function($container) {
             return new XeliteRepostEngine_Pattern_Visualizer($container->get('pattern_analyzer'), $container->get('database'), $container->get('logger'));
         }, true);
+
+        // Register Pattern Validator service
+        $this->register('pattern_validator', function($container) {
+            return new XeliteRepostEngine_Pattern_Validator($container->get('pattern_analyzer'), $container->get('database'), $container->get('logger'));
+        }, true);
     }
 } 

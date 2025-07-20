@@ -41,6 +41,7 @@ class XeliteRepostEngine_Database extends XeliteRepostEngine_Abstract_Base imple
         $this->tables = array(
             'reposts' => $this->wpdb->prefix . 'xelite_reposts',
             'pattern_analysis' => $this->wpdb->prefix . 'xelite_pattern_analysis',
+            'pattern_performance' => $this->wpdb->prefix . 'xelite_pattern_performance',
         );
         
         $this->log_debug('Database class initialized');
@@ -102,17 +103,35 @@ class XeliteRepostEngine_Database extends XeliteRepostEngine_Abstract_Base imple
             KEY created_at (created_at),
             KEY updated_at (updated_at)
         ) $charset_collate;";
+
+        // Pattern Performance table
+        $pattern_performance_table = $this->wpdb->prefix . 'xelite_pattern_performance';
+        $pattern_performance_sql = "CREATE TABLE $pattern_performance_table (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            pattern_type varchar(100) NOT NULL COMMENT 'Type of pattern (length, tone, format, etc.)',
+            pattern_data longtext NOT NULL COMMENT 'JSON object containing pattern data',
+            performance_data longtext NOT NULL COMMENT 'JSON object containing performance metrics',
+            timestamp datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'When the performance was recorded',
+            date date NOT NULL COMMENT 'Date for grouping performance data',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY pattern_type (pattern_type),
+            KEY date (date),
+            KEY timestamp (timestamp)
+        ) $charset_collate;";
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         $result = dbDelta($sql);
         $pattern_result = dbDelta($pattern_sql);
+        $pattern_performance_result = dbDelta($pattern_performance_sql);
         
         // Store database version for future migrations
         $this->update_database_version();
         
         $this->log_debug('Database tables created', array(
             'reposts_result' => $result,
-            'pattern_analysis_result' => $pattern_result
+            'pattern_analysis_result' => $pattern_result,
+            'pattern_performance_result' => $pattern_performance_result
         ));
         
         return true;

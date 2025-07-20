@@ -64,6 +64,10 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         add_action('wp_ajax_xelite_test_api_connection', array($this, 'test_api_connection'));
         add_action('wp_ajax_xelite_save_settings', array($this, 'save_settings'));
         add_action('wp_ajax_xelite_save_x_credentials', array($this, 'save_x_credentials'));
+        
+        // X Data processing AJAX handlers
+        add_action('wp_ajax_xelite_fetch_posts', array($this, 'ajax_fetch_posts'));
+        add_action('wp_ajax_xelite_analyze_data', array($this, 'ajax_analyze_data'));
     }
     
     /**
@@ -1270,5 +1274,52 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
             </div>
         </div>
         <?php
+    }
+    
+    /**
+     * AJAX handler for fetching posts
+     */
+    public function ajax_fetch_posts() {
+        check_ajax_referer('xelite_fetch_posts', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        try {
+            $container = XeliteRepostEngine_Container::instance();
+            $processor = $container->get('x_processor');
+            
+            $result = $processor->fetch_and_store_posts();
+            
+            if (is_wp_error($result)) {
+                wp_send_json_error($result->get_error_message());
+            } else {
+                wp_send_json_success($result);
+            }
+        } catch (Exception $e) {
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * AJAX handler for analyzing data
+     */
+    public function ajax_analyze_data() {
+        check_ajax_referer('xelite_analyze_data', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        try {
+            $container = XeliteRepostEngine_Container::instance();
+            $processor = $container->get('x_processor');
+            
+            $processor->analyze_stored_data();
+            wp_send_json_success('Data analysis completed successfully');
+        } catch (Exception $e) {
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
     }
 } 

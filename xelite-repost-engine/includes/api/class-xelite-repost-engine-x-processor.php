@@ -182,6 +182,180 @@ class XeliteRepostEngine_X_Processor {
     }
 
     /**
+     * Store repost data in database
+     *
+     * @param array $repost_data Repost data from scraper.
+     * @return bool|WP_Error Success status or error.
+     */
+    public function store_repost_data($repost_data) {
+        try {
+            // Validate and sanitize data
+            $validated_data = $this->validate_repost_data($repost_data);
+            if (is_wp_error($validated_data)) {
+                return $validated_data;
+            }
+
+            // Check for duplicates
+            $existing = $this->database->get_repost_by_tweet($repost_data['original_tweet_id'], $repost_data['source_handle']);
+            if ($existing) {
+                // Update existing record
+                return $this->update_repost_data($repost_data, $existing['id']);
+            }
+
+            // Prepare data for storage
+            $data = $this->prepare_repost_data_for_storage($repost_data);
+            
+            // Insert into database
+            $repost_id = $this->database->insert_repost($data);
+            
+            if ($repost_id) {
+                $this->log('info', "Stored repost data: {$repost_id} for tweet {$repost_data['original_tweet_id']}");
+                return true;
+            } else {
+                $this->log('error', "Failed to store repost data for tweet {$repost_data['original_tweet_id']}");
+                return new WP_Error('storage_failed', 'Failed to store repost data');
+            }
+
+        } catch (Exception $e) {
+            $this->log('error', "Exception storing repost data: " . $e->getMessage());
+            return new WP_Error('storage_exception', $e->getMessage());
+        }
+    }
+
+    /**
+     * Validate repost data
+     *
+     * @param array $repost_data Repost data to validate.
+     * @return array|WP_Error Validated data or error.
+     */
+    private function validate_repost_data($repost_data) {
+        $required_fields = array('original_tweet_id', 'original_text', 'source_handle');
+        
+        foreach ($required_fields as $field) {
+            if (empty($repost_data[$field])) {
+                return new WP_Error('missing_field', "Missing required field: {$field}");
+            }
+        }
+
+        // Validate tweet ID format
+        if (!preg_match('/^\d+$/', $repost_data['original_tweet_id'])) {
+            return new WP_Error('invalid_tweet_id', 'Invalid tweet ID format');
+        }
+
+        // Validate source handle
+        if (!preg_match('/^[a-zA-Z0-9_]{1,15}$/', $repost_data['source_handle'])) {
+            return new WP_Error('invalid_handle', 'Invalid source handle format');
+        }
+
+        return $repost_data;
+    }
+
+    /**
+     * Prepare repost data for storage
+     *
+     * @param array $repost_data Raw repost data.
+     * @return array Prepared data for database storage.
+     */
+    private function prepare_repost_data_for_storage($repost_data) {
+        $data = array(
+            'source_handle' => sanitize_text_field($repost_data['source_handle']),
+            'original_tweet_id' => sanitize_text_field($repost_data['original_tweet_id']),
+            'original_text' => sanitize_textarea_field($repost_data['original_text']),
+            'platform' => 'x',
+            'repost_date' => current_time('mysql'),
+            'engagement_metrics' => json_encode($repost_data['engagement_metrics'] ?? array()),
+            'content_variations' => json_encode(array()),
+            'post_id' => null,
+            'original_post_id' => null,
+            'user_id' => null,
+            'repost_count' => 0,
+            'is_analyzed' => 0,
+            'analysis_data' => json_encode(array()),
+            'created_at' => current_time('mysql'),
+            'updated_at' => current_time('mysql')
+        );
+
+        // Add additional metadata if available
+        if (isset($repost_data['created_at'])) {
+            $data['repost_date'] = $this->format_date_for_mysql($repost_data['created_at']);
+        }
+
+        if (isset($repost_data['entities'])) {
+            $data['analysis_data'] = json_encode(array(
+                'entities' => $repost_data['entities'],
+                'context_annotations' => $repost_data['context_annotations'] ?? array()
+            ));
+        }
+
+        if (isset($repost_data['referenced_tweet_id'])) {
+            $data['analysis_data'] = json_encode(array_merge(
+                json_decode($data['analysis_data'], true) ?: array(),
+                array('referenced_tweet_id' => $repost_data['referenced_tweet_id'])
+            ));
+        }
+
+        return $data;
+    }
+
+    /**
+     * Update existing repost data
+     *
+     * @param array $repost_data New repost data.
+     * @param int $repost_id Existing repost ID.
+     * @return bool Success status.
+     */
+    private function update_repost_data($repost_data, $repost_id) {
+        try {
+            $update_data = array(
+                'engagement_metrics' => json_encode($repost_data['engagement_metrics'] ?? array()),
+                'updated_at' => current_time('mysql')
+            );
+
+            // Update analysis data if new entities are available
+            if (isset($repost_data['entities']) || isset($repost_data['context_annotations'])) {
+                $existing = $this->database->get_row('reposts', array('id' => $repost_id));
+                $existing_analysis = json_decode($existing['analysis_data'], true) ?: array();
+                
+                $new_analysis = array_merge($existing_analysis, array(
+                    'entities' => $repost_data['entities'] ?? array(),
+                    'context_annotations' => $repost_data['context_annotations'] ?? array()
+                ));
+                
+                $update_data['analysis_data'] = json_encode($new_analysis);
+            }
+
+            $result = $this->database->update_repost($update_data, array('id' => $repost_id));
+            
+            if ($result) {
+                $this->log('info', "Updated repost data: {$repost_id}");
+                return true;
+            } else {
+                $this->log('error', "Failed to update repost data: {$repost_id}");
+                return false;
+            }
+
+        } catch (Exception $e) {
+            $this->log('error', "Exception updating repost data: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Format date for MySQL storage
+     *
+     * @param string $date_string Date string from API.
+     * @return string Formatted date for MySQL.
+     */
+    private function format_date_for_mysql($date_string) {
+        try {
+            $date = new DateTime($date_string);
+            return $date->format('Y-m-d H:i:s');
+        } catch (Exception $e) {
+            return current_time('mysql');
+        }
+    }
+
+    /**
      * Store tweet data in database
      *
      * @param array $tweet Tweet data.

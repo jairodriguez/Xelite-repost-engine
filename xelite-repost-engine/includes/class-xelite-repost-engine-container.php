@@ -172,5 +172,15 @@ class XeliteRepostEngine_Container {
         $this->register('x_api', function($container) {
             return new XeliteRepostEngine_X_API($container->get('x_auth'));
         }, true);
+        
+        // Register X Processor service
+        $this->register('x_processor', function($container) {
+            return new XeliteRepostEngine_X_Processor($container->get('database'), $container->get('x_api'));
+        }, true);
+        
+        // Register Scraper service
+        $this->register('scraper', function($container) {
+            return new XeliteRepostEngine_Scraper($container->get('x_api'), $container->get('x_processor'), $container->get('database'));
+        }, true);
     }
 } 

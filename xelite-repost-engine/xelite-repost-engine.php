@@ -144,6 +144,14 @@ class XeliteRepostEngine {
         require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-user-meta.php';
         require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-assets.php';
         
+        // Load API classes
+        require_once $this->plugin_dir . 'includes/api/class-xelite-repost-engine-x-auth.php';
+        require_once $this->plugin_dir . 'includes/api/class-xelite-repost-engine-x-api.php';
+        require_once $this->plugin_dir . 'includes/api/class-xelite-repost-engine-x-processor.php';
+        
+        // Load scraper class
+        require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-scraper.php';
+        
         // Load admin and public classes
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';
@@ -179,6 +187,24 @@ class XeliteRepostEngine {
     public function init_plugin() {
         // Initialize the loader
         new XeliteRepostEngine_Loader();
+        
+        // Initialize admin settings
+        if (is_admin()) {
+            $this->container->get('admin_settings');
+        }
+        
+        // Register cron hooks
+        add_action('xelite_scraper_cron', array($this, 'run_scheduled_scraping'));
+    }
+    
+    /**
+     * Run scheduled scraping job
+     *
+     * @param array $accounts Array of account handles
+     */
+    public function run_scheduled_scraping($accounts) {
+        $scraper = $this->container->get('scraper');
+        $scraper->run_scheduled_scraping($accounts);
     }
     
     /**

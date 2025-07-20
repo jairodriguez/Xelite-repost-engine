@@ -68,6 +68,11 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         // X Data processing AJAX handlers
         add_action('wp_ajax_xelite_fetch_posts', array($this, 'ajax_fetch_posts'));
         add_action('wp_ajax_xelite_analyze_data', array($this, 'ajax_analyze_data'));
+        
+        // OpenAI AJAX handlers
+        add_action('wp_ajax_xelite_test_openai_connection', array($this, 'ajax_test_openai_connection'));
+        add_action('wp_ajax_xelite_refresh_openai_usage', array($this, 'ajax_refresh_openai_usage'));
+        add_action('wp_ajax_xelite_test_content_generation', array($this, 'ajax_test_content_generation'));
     }
     
     /**
@@ -83,7 +88,12 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
             'api_keys' => array(
                 'title' => __('API Keys', 'xelite-repost-engine'),
                 'icon' => 'dashicons-admin-network',
-                'description' => __('Configure API keys for X (Twitter) and OpenAI integration.', 'xelite-repost-engine')
+                'description' => __('Configure API keys for X (Twitter) integration.', 'xelite-repost-engine')
+            ),
+            'openai' => array(
+                'title' => __('OpenAI Integration', 'xelite-repost-engine'),
+                'icon' => 'dashicons-admin-generic',
+                'description' => __('Configure OpenAI API settings, usage tracking, and content generation parameters.', 'xelite-repost-engine')
             ),
             'target_accounts' => array(
                 'title' => __('Target Accounts', 'xelite-repost-engine'),
@@ -175,6 +185,9 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
                 break;
             case 'api_keys':
                 $this->register_api_settings();
+                break;
+            case 'openai':
+                $this->register_openai_settings();
                 break;
             case 'target_accounts':
                 $this->register_target_accounts_settings();
@@ -280,18 +293,7 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
             )
         );
         
-        add_settings_field(
-            'openai_api_key',
-            __('OpenAI API Key', 'xelite-repost-engine'),
-            array($this, 'password_field_callback'),
-            $this->settings_page,
-            'api_settings_section',
-            array(
-                'field' => 'openai_api_key',
-                'description' => __('Your OpenAI API key for AI content generation.', 'xelite-repost-engine'),
-                'test_button' => true
-            )
-        );
+
         
         add_settings_field(
             'api_connection_status',
@@ -305,6 +307,153 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         );
     }
     
+    /**
+     * Register OpenAI settings
+     */
+    private function register_openai_settings() {
+        // API Configuration Section
+        add_settings_section(
+            'openai_api_section',
+            __('OpenAI API Configuration', 'xelite-repost-engine'),
+            array($this, 'openai_api_section_callback'),
+            $this->settings_page
+        );
+        
+        add_settings_field(
+            'openai_api_key',
+            __('API Key', 'xelite-repost-engine'),
+            array($this, 'openai_api_key_field_callback'),
+            $this->settings_page,
+            'openai_api_section',
+            array(
+                'description' => __('Your OpenAI API key for AI content generation. Keep this secure.', 'xelite-repost-engine')
+            )
+        );
+        
+        add_settings_field(
+            'openai_model',
+            __('Default Model', 'xelite-repost-engine'),
+            array($this, 'openai_model_field_callback'),
+            $this->settings_page,
+            'openai_api_section',
+            array(
+                'description' => __('Default OpenAI model to use for content generation.', 'xelite-repost-engine')
+            )
+        );
+        
+        add_settings_field(
+            'openai_connection_status',
+            __('Connection Status', 'xelite-repost-engine'),
+            array($this, 'openai_connection_status_field_callback'),
+            $this->settings_page,
+            'openai_api_section',
+            array(
+                'description' => __('Test your OpenAI API connection and view available models.', 'xelite-repost-engine')
+            )
+        );
+        
+        // Content Generation Parameters Section
+        add_settings_section(
+            'openai_content_section',
+            __('Content Generation Parameters', 'xelite-repost-engine'),
+            array($this, 'openai_content_section_callback'),
+            $this->settings_page
+        );
+        
+        add_settings_field(
+            'openai_temperature',
+            __('Creativity Level', 'xelite-repost-engine'),
+            array($this, 'openai_temperature_field_callback'),
+            $this->settings_page,
+            'openai_content_section',
+            array(
+                'description' => __('Controls creativity in content generation. Higher values = more creative, Lower values = more focused.', 'xelite-repost-engine')
+            )
+        );
+        
+        add_settings_field(
+            'openai_max_tokens',
+            __('Maximum Tokens', 'xelite-repost-engine'),
+            array($this, 'openai_max_tokens_field_callback'),
+            $this->settings_page,
+            'openai_content_section',
+            array(
+                'description' => __('Maximum number of tokens to generate per request.', 'xelite-repost-engine')
+            )
+        );
+        
+        add_settings_field(
+            'openai_content_tone',
+            __('Default Content Tone', 'xelite-repost-engine'),
+            array($this, 'openai_content_tone_field_callback'),
+            $this->settings_page,
+            'openai_content_section',
+            array(
+                'description' => __('Default tone for generated content.', 'xelite-repost-engine')
+            )
+        );
+        
+        // Usage Tracking Section
+        add_settings_section(
+            'openai_usage_section',
+            __('Usage Tracking & Quotas', 'xelite-repost-engine'),
+            array($this, 'openai_usage_section_callback'),
+            $this->settings_page
+        );
+        
+        add_settings_field(
+            'openai_daily_limit',
+            __('Daily API Call Limit', 'xelite-repost-engine'),
+            array($this, 'openai_daily_limit_field_callback'),
+            $this->settings_page,
+            'openai_usage_section',
+            array(
+                'description' => __('Maximum number of API calls per day (0 = unlimited).', 'xelite-repost-engine')
+            )
+        );
+        
+        add_settings_field(
+            'openai_monthly_budget',
+            __('Monthly Budget Limit ($)', 'xelite-repost-engine'),
+            array($this, 'openai_monthly_budget_field_callback'),
+            $this->settings_page,
+            'openai_usage_section',
+            array(
+                'description' => __('Maximum monthly spending on OpenAI API (0 = unlimited).', 'xelite-repost-engine')
+            )
+        );
+        
+        add_settings_field(
+            'openai_usage_dashboard',
+            __('Usage Statistics', 'xelite-repost-engine'),
+            array($this, 'openai_usage_dashboard_field_callback'),
+            $this->settings_page,
+            'openai_usage_section',
+            array(
+                'description' => __('View current usage statistics and API consumption.', 'xelite-repost-engine')
+            )
+        );
+        
+        // Testing Section
+        add_settings_section(
+            'openai_testing_section',
+            __('Content Generation Testing', 'xelite-repost-engine'),
+            array($this, 'openai_testing_section_callback'),
+            $this->settings_page
+        );
+        
+        add_settings_field(
+            'openai_test_generation',
+            __('Test Content Generation', 'xelite-repost-engine'),
+            array($this, 'openai_test_generation_field_callback'),
+            $this->settings_page,
+            'openai_testing_section',
+            array(
+                'description' => __('Test content generation with current settings.', 'xelite-repost-engine')
+            )
+        );
+    }
+
     /**
      * Register target accounts settings
      */
@@ -1321,5 +1470,360 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         } catch (Exception $e) {
             wp_send_json_error('Error: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * OpenAI API section callback
+     */
+    public function openai_api_section_callback() {
+        echo '<p>' . __('Configure your OpenAI API settings for AI-powered content generation.', 'xelite-repost-engine') . '</p>';
+    }
+
+    /**
+     * OpenAI API key field callback
+     */
+    public function openai_api_key_field_callback() {
+        $api_key = get_option('xelite_repost_engine_openai_api_key', '');
+        ?>
+        <input type="password" id="openai_api_key" name="xelite_repost_engine_openai_api_key" 
+               class="regular-text" value="<?php echo esc_attr($api_key); ?>" />
+        <button type="button" class="button button-secondary test-openai-connection" 
+                data-nonce="<?php echo wp_create_nonce('xelite_openai_test_connection'); ?>">
+            <span class="dashicons dashicons-update"></span>
+            <?php _e('Test Connection', 'xelite-repost-engine'); ?>
+        </button>
+        <p class="description"><?php _e('Your OpenAI API key for AI content generation. Keep this secure.', 'xelite-repost-engine'); ?></p>
+        <?php
+    }
+
+    /**
+     * OpenAI model field callback
+     */
+    public function openai_model_field_callback() {
+        $current_model = get_option('xelite_repost_engine_openai_model', 'gpt-4');
+        $available_models = array(
+            'gpt-4' => 'GPT-4 (Most capable)',
+            'gpt-4-turbo' => 'GPT-4 Turbo (Fast & capable)',
+            'gpt-3.5-turbo' => 'GPT-3.5 Turbo (Fast & cost-effective)'
+        );
+        ?>
+        <select id="openai_model" name="xelite_repost_engine_openai_model">
+            <?php foreach ($available_models as $model => $description): ?>
+                <option value="<?php echo esc_attr($model); ?>" <?php selected($current_model, $model); ?>>
+                    <?php echo esc_html($description); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <p class="description"><?php _e('Default OpenAI model to use for content generation.', 'xelite-repost-engine'); ?></p>
+        <?php
+    }
+
+    /**
+     * OpenAI connection status field callback
+     */
+    public function openai_connection_status_field_callback() {
+        $api_key = get_option('xelite_repost_engine_openai_api_key', '');
+        ?>
+        <div class="openai-connection-status">
+            <?php if (empty($api_key)): ?>
+                <div class="connection-status error">
+                    <span class="dashicons dashicons-warning"></span>
+                    <?php _e('API Key not configured', 'xelite-repost-engine'); ?>
+                </div>
+            <?php else: ?>
+                <div class="connection-status checking">
+                    <span class="dashicons dashicons-update"></span>
+                    <?php _e('Checking connection...', 'xelite-repost-engine'); ?>
+                </div>
+                <div class="connection-details" style="display: none;">
+                    <h4><?php _e('Available Models:', 'xelite-repost-engine'); ?></h4>
+                    <ul class="available-models"></ul>
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
+
+    /**
+     * OpenAI content section callback
+     */
+    public function openai_content_section_callback() {
+        echo '<p>' . __('Configure parameters for AI content generation.', 'xelite-repost-engine') . '</p>';
+    }
+
+    /**
+     * OpenAI temperature field callback
+     */
+    public function openai_temperature_field_callback() {
+        $temperature = get_option('xelite_repost_engine_openai_temperature', 0.7);
+        ?>
+        <input type="range" id="openai_temperature" name="xelite_repost_engine_openai_temperature" 
+               min="0" max="2" step="0.1" value="<?php echo esc_attr($temperature); ?>" 
+               oninput="document.getElementById('temperature_value').textContent = this.value;" />
+        <span id="temperature_value"><?php echo esc_html($temperature); ?></span>
+        <div class="temperature-labels">
+            <span>Focused (0.0)</span>
+            <span>Balanced (1.0)</span>
+            <span>Creative (2.0)</span>
+        </div>
+        <p class="description"><?php _e('Controls creativity in content generation. Higher values = more creative, Lower values = more focused.', 'xelite-repost-engine'); ?></p>
+        <?php
+    }
+
+    /**
+     * OpenAI max tokens field callback
+     */
+    public function openai_max_tokens_field_callback() {
+        $max_tokens = get_option('xelite_repost_engine_openai_max_tokens', 280);
+        ?>
+        <input type="number" id="openai_max_tokens" name="xelite_repost_engine_openai_max_tokens" 
+               min="50" max="4000" step="10" value="<?php echo esc_attr($max_tokens); ?>" />
+        <p class="description"><?php _e('Maximum number of tokens to generate per request.', 'xelite-repost-engine'); ?></p>
+        <?php
+    }
+
+    /**
+     * OpenAI content tone field callback
+     */
+    public function openai_content_tone_field_callback() {
+        $content_tone = get_option('xelite_repost_engine_openai_content_tone', 'conversational');
+        $available_tones = array(
+            'conversational' => 'Conversational',
+            'professional' => 'Professional',
+            'casual' => 'Casual',
+            'enthusiastic' => 'Enthusiastic',
+            'informative' => 'Informative',
+            'humorous' => 'Humorous',
+            'authoritative' => 'Authoritative'
+        );
+        ?>
+        <select id="openai_content_tone" name="xelite_repost_engine_openai_content_tone">
+            <?php foreach ($available_tones as $tone => $label): ?>
+                <option value="<?php echo esc_attr($tone); ?>" <?php selected($content_tone, $tone); ?>>
+                    <?php echo esc_html($label); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <p class="description"><?php _e('Default tone for generated content.', 'xelite-repost-engine'); ?></p>
+        <?php
+    }
+
+    /**
+     * OpenAI usage section callback
+     */
+    public function openai_usage_section_callback() {
+        echo '<p>' . __('Monitor and control your OpenAI API usage and costs.', 'xelite-repost-engine') . '</p>';
+    }
+
+    /**
+     * OpenAI daily limit field callback
+     */
+    public function openai_daily_limit_field_callback() {
+        $daily_limit = get_option('xelite_repost_engine_openai_daily_limit', 0);
+        ?>
+        <input type="number" id="openai_daily_limit" name="xelite_repost_engine_openai_daily_limit" 
+               min="0" max="10000" step="1" value="<?php echo esc_attr($daily_limit); ?>" />
+        <p class="description"><?php _e('Maximum number of API calls per day (0 = unlimited).', 'xelite-repost-engine'); ?></p>
+        <?php
+    }
+
+    /**
+     * OpenAI monthly budget field callback
+     */
+    public function openai_monthly_budget_field_callback() {
+        $monthly_budget = get_option('xelite_repost_engine_openai_monthly_budget', 0);
+        ?>
+        <input type="number" id="openai_monthly_budget" name="xelite_repost_engine_openai_monthly_budget" 
+               min="0" max="1000" step="0.01" value="<?php echo esc_attr($monthly_budget); ?>" />
+        <p class="description"><?php _e('Maximum monthly spending on OpenAI API (0 = unlimited).', 'xelite-repost-engine'); ?></p>
+        <?php
+    }
+
+    /**
+     * OpenAI usage dashboard field callback
+     */
+    public function openai_usage_dashboard_field_callback() {
+        ?>
+        <div class="openai-usage-dashboard">
+            <div class="usage-stats">
+                <div class="stat-item">
+                    <h4><?php _e('Today\'s Usage', 'xelite-repost-engine'); ?></h4>
+                    <div class="stat-value" id="today-usage">Loading...</div>
+                </div>
+                <div class="stat-item">
+                    <h4><?php _e('This Month', 'xelite-repost-engine'); ?></h4>
+                    <div class="stat-value" id="month-usage">Loading...</div>
+                </div>
+                <div class="stat-item">
+                    <h4><?php _e('Total Cost', 'xelite-repost-engine'); ?></h4>
+                    <div class="stat-value" id="total-cost">Loading...</div>
+                </div>
+            </div>
+            <button type="button" class="button button-secondary refresh-usage-stats" 
+                    data-nonce="<?php echo wp_create_nonce('xelite_openai_refresh_usage'); ?>">
+                <span class="dashicons dashicons-update"></span>
+                <?php _e('Refresh Stats', 'xelite-repost-engine'); ?>
+            </button>
+        </div>
+        <?php
+    }
+
+    /**
+     * OpenAI testing section callback
+     */
+    public function openai_testing_section_callback() {
+        echo '<p>' . __('Test content generation with your current settings.', 'xelite-repost-engine') . '</p>';
+    }
+
+    /**
+     * OpenAI test generation field callback
+     */
+    public function openai_test_generation_field_callback() {
+        ?>
+        <div class="openai-test-generation">
+            <div class="test-inputs">
+                <label for="test_user_context"><?php _e('Sample User Context:', 'xelite-repost-engine'); ?></label>
+                <textarea id="test_user_context" rows="3" class="large-text" placeholder="<?php _e('Enter sample user context (writing style, audience, etc.)', 'xelite-repost-engine'); ?>"></textarea>
+                
+                <label for="test_patterns"><?php _e('Sample Patterns:', 'xelite-repost-engine'); ?></label>
+                <textarea id="test_patterns" rows="3" class="large-text" placeholder="<?php _e('Enter sample repost patterns (JSON format)', 'xelite-repost-engine'); ?>"></textarea>
+            </div>
+            
+            <button type="button" class="button button-primary test-content-generation" 
+                    data-nonce="<?php echo wp_create_nonce('xelite_openai_test_generation'); ?>">
+                <span class="dashicons dashicons-admin-generic"></span>
+                <?php _e('Generate Test Content', 'xelite-repost-engine'); ?>
+            </button>
+            
+            <div class="test-results" style="display: none;">
+                <h4><?php _e('Generated Content:', 'xelite-repost-engine'); ?></h4>
+                <div id="generated-content"></div>
+                <div class="generation-metrics">
+                    <p><strong><?php _e('Tokens Used:', 'xelite-repost-engine'); ?></strong> <span id="tokens-used">-</span></p>
+                    <p><strong><?php _e('Generation Time:', 'xelite-repost-engine'); ?></strong> <span id="generation-time">-</span></p>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * AJAX handler for testing OpenAI connection
+     */
+    public function ajax_test_openai_connection() {
+        check_ajax_referer('xelite_openai_test_connection', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        try {
+            $container = XeliteRepostEngine_Container::instance();
+            $openai = $container->get('openai');
+            
+            $result = $openai->test_connection();
+            
+            if (isset($result['connected']) && $result['connected']) {
+                wp_send_json_success($result);
+            } else {
+                wp_send_json_error($result['error'] ?? 'Connection test failed');
+            }
+        } catch (Exception $e) {
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * AJAX handler for refreshing OpenAI usage stats
+     */
+    public function ajax_refresh_openai_usage() {
+        check_ajax_referer('xelite_openai_refresh_usage', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        try {
+            $container = XeliteRepostEngine_Container::instance();
+            $openai = $container->get('openai');
+            
+            $today_usage = $openai->get_usage(date('Y-m-d'));
+            $month_usage = $openai->get_usage(date('Y-m'));
+            
+            $stats = array(
+                'today' => $today_usage,
+                'month' => $month_usage,
+                'total_cost' => $this->calculate_total_cost($today_usage, $month_usage)
+            );
+            
+            wp_send_json_success($stats);
+        } catch (Exception $e) {
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * AJAX handler for testing content generation
+     */
+    public function ajax_test_content_generation() {
+        check_ajax_referer('xelite_openai_test_generation', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        try {
+            $user_context = json_decode(stripslashes($_POST['user_context'] ?? '{}'), true);
+            $patterns = json_decode(stripslashes($_POST['patterns'] ?? '{}'), true);
+            
+            if (empty($user_context) && empty($patterns)) {
+                wp_send_json_error('User context or patterns are required');
+            }
+            
+            $container = XeliteRepostEngine_Container::instance();
+            $openai = $container->get('openai');
+            
+            $start_time = microtime(true);
+            $result = $openai->generate_content($user_context, $patterns);
+            $end_time = microtime(true);
+            
+            if (is_wp_error($result)) {
+                wp_send_json_error($result->get_error_message());
+            } else {
+                $generation_time = round(($end_time - $start_time) * 1000, 2); // Convert to milliseconds
+                
+                $response = array(
+                    'content' => $result,
+                    'generation_time' => $generation_time,
+                    'tokens_used' => $result['usage']['total_tokens'] ?? 0
+                );
+                
+                wp_send_json_success($response);
+            }
+        } catch (Exception $e) {
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Calculate total cost from usage data
+     *
+     * @param array $today_usage Today's usage data
+     * @param array $month_usage Month's usage data
+     * @return float Total cost
+     */
+    private function calculate_total_cost($today_usage, $month_usage) {
+        // Rough cost calculation (this would need to be more sophisticated in production)
+        $cost_per_1k_tokens = 0.03; // Approximate cost for GPT-4
+        
+        $total_tokens = 0;
+        if (isset($today_usage['total_usage'])) {
+            $total_tokens += $today_usage['total_usage'];
+        }
+        if (isset($month_usage['total_usage'])) {
+            $total_tokens += $month_usage['total_usage'];
+        }
+        
+        return round(($total_tokens / 1000) * $cost_per_1k_tokens, 4);
     }
 } 

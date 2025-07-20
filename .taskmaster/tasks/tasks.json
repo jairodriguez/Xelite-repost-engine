@@ -146,7 +146,7 @@
         "dependencies": [
           1
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -424,7 +424,7 @@
         "dependencies": [
           1
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -432,7 +432,7 @@
             "description": "Create a class to detect WooCommerce and WooCommerce Subscriptions plugins and handle integration activation/deactivation logic.",
             "dependencies": [],
             "details": "1. Create `class Repost_Intelligence_WooCommerce` with constructor that checks for active plugins\n2. Implement `is_woocommerce_active()` method to verify both WooCommerce and WooCommerce Subscriptions are active\n3. Add admin notice functionality for missing dependencies\n4. Register activation/deactivation hooks to handle plugin dependency changes\n5. Create file structure: `includes/integrations/class-repost-intelligence-woocommerce.php`\n6. Add proper plugin loading in main plugin file",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -725,7 +725,7 @@
     ],
     "metadata": {
       "created": "2025-07-19T00:36:39.765Z",
-      "updated": "2025-07-20T01:50:59.881Z",
+      "updated": "2025-07-20T01:56:40.509Z",
       "description": "Tasks for master context"
     }
   }

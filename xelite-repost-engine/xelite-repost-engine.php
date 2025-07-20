@@ -158,6 +158,9 @@ class XeliteRepostEngine {
         // Load cron admin class
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-cron-admin.php';
         
+        // Load integrations
+        require_once $this->plugin_dir . 'includes/integrations/class-xelite-repost-engine-woocommerce.php';
+        
         // Load admin and public classes
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';
@@ -204,6 +207,9 @@ class XeliteRepostEngine {
         
         // Initialize cron admin service
         $this->container->get('cron_admin');
+        
+        // Initialize WooCommerce service
+        $this->container->get('woocommerce');
     }
     
 

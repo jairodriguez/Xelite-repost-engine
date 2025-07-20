@@ -192,5 +192,10 @@ class XeliteRepostEngine_Container {
         $this->register('cron_admin', function($container) {
             return new XeliteRepostEngine_Cron_Admin($container->get('cron'));
         }, true);
+
+        // Register WooCommerce service
+        $this->register('woocommerce', function($container) {
+            return new XeliteRepostEngine_WooCommerce($container->get('database'), $container->get('user_meta'), $container->get('logger'));
+        }, true);
     }
 } 

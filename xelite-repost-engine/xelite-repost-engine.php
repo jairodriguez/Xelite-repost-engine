@@ -173,6 +173,9 @@ class XeliteRepostEngine {
         // Load OpenAI service
         require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-openai.php';
         
+        // Load Prompt Builder service
+        require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-prompt-builder.php';
+        
         // Load admin and public classes
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';
@@ -234,6 +237,9 @@ class XeliteRepostEngine {
         
         // Initialize OpenAI service
         $this->container->get('openai');
+        
+        // Initialize Prompt Builder service
+        $this->container->get('prompt_builder');
     }
     
 

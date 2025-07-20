@@ -1,0 +1,363 @@
+/**
+ * Cron Admin CSS Styles
+ *
+ * @package XeliteRepostEngine
+ * @since 1.0.0
+ */
+
+/* Status Overview */
+.xelite-status-overview {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.xelite-status-overview h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #23282d;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.xelite-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.xelite-status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: #f9f9f9;
+    border-radius: 3px;
+    border-left: 4px solid #0073aa;
+}
+
+.xelite-status-badge {
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Status Colors */
+.xelite-status-healthy {
+    border-left-color: #46b450;
+}
+
+.xelite-status-healthy .xelite-status-badge {
+    background: #46b450;
+    color: #fff;
+}
+
+.xelite-status-warning {
+    border-left-color: #ffb900;
+}
+
+.xelite-status-warning .xelite-status-badge {
+    background: #ffb900;
+    color: #fff;
+}
+
+.xelite-status-error {
+    border-left-color: #dc3232;
+}
+
+.xelite-status-error .xelite-status-badge {
+    background: #dc3232;
+    color: #fff;
+}
+
+.xelite-status-issues {
+    margin-top: 15px;
+    padding: 15px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 3px;
+}
+
+.xelite-status-issues h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #856404;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.xelite-status-issues ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.xelite-status-issues li {
+    color: #856404;
+    margin-bottom: 5px;
+}
+
+/* Admin Container */
+.xelite-cron-admin-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.xelite-cron-settings {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.xelite-cron-actions {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    height: fit-content;
+}
+
+.xelite-cron-actions-panel h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #23282d;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.xelite-action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.xelite-action-buttons .button {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+    height: auto;
+    line-height: 1.4;
+}
+
+#xelite-action-results {
+    margin-top: 15px;
+}
+
+#xelite-action-results .notice {
+    margin: 0;
+    padding: 10px 15px;
+}
+
+/* Statistics */
+.xelite-cron-statistics {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.xelite-cron-statistics h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #23282d;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.xelite-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.xelite-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: #f9f9f9;
+    border-radius: 3px;
+    border-left: 4px solid #0073aa;
+}
+
+.xelite-stat-item strong {
+    color: #23282d;
+    font-weight: 600;
+}
+
+.xelite-stat-item span {
+    color: #0073aa;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Form Styling */
+.xelite-cron-settings .form-table th {
+    width: 200px;
+    padding: 15px 10px 15px 0;
+}
+
+.xelite-cron-settings .form-table td {
+    padding: 15px 10px;
+}
+
+.xelite-cron-settings input[type="text"],
+.xelite-cron-settings input[type="email"],
+.xelite-cron-settings input[type="number"],
+.xelite-cron-settings select,
+.xelite-cron-settings textarea {
+    width: 100%;
+    max-width: 400px;
+}
+
+.xelite-cron-settings textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.xelite-cron-settings .description {
+    margin-top: 5px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Loading States */
+.xelite-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.xelite-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0073aa;
+    border-radius: 50%;
+    animation: xelite-spin 1s linear infinite;
+}
+
+@keyframes xelite-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .xelite-cron-admin-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .xelite-status-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .xelite-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .xelite-cron-settings .form-table th {
+        width: auto;
+        display: block;
+        padding-bottom: 5px;
+    }
+    
+    .xelite-cron-settings .form-table td {
+        display: block;
+        padding-top: 5px;
+    }
+}
+
+/* Notice Styling */
+.xelite-cron-admin .notice {
+    margin: 15px 0;
+    padding: 12px 15px;
+    border-left: 4px solid;
+    background: #fff;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.xelite-cron-admin .notice-success {
+    border-left-color: #46b450;
+}
+
+.xelite-cron-admin .notice-warning {
+    border-left-color: #ffb900;
+}
+
+.xelite-cron-admin .notice-error {
+    border-left-color: #dc3232;
+}
+
+.xelite-cron-admin .notice-info {
+    border-left-color: #0073aa;
+}
+
+/* Button States */
+.xelite-action-buttons .button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.xelite-action-buttons .button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Section Headers */
+.xelite-cron-settings h3 {
+    margin-top: 25px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+    color: #23282d;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.xelite-cron-settings h3:first-child {
+    margin-top: 0;
+}
+
+/* Checkbox Styling */
+.xelite-cron-settings input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.xelite-cron-settings label {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+/* Success/Error Indicators */
+.xelite-status-item.success {
+    border-left-color: #46b450;
+    background: #f7fcf7;
+}
+
+.xelite-status-item.error {
+    border-left-color: #dc3232;
+    background: #fdf7f7;
+}
+
+.xelite-status-item.warning {
+    border-left-color: #ffb900;
+    background: #fefcf7;
+} 

@@ -182,5 +182,15 @@ class XeliteRepostEngine_Container {
         $this->register('scraper', function($container) {
             return new XeliteRepostEngine_Scraper($container->get('x_api'), $container->get('x_processor'), $container->get('database'));
         }, true);
+
+        // Register Cron service
+        $this->register('cron', function($container) {
+            return new XeliteRepostEngine_Cron($container->get('scraper'), $container->get('database'), $container->get('logger'));
+        }, true);
+
+        // Register Cron Admin service
+        $this->register('cron_admin', function($container) {
+            return new XeliteRepostEngine_Cron_Admin($container->get('cron'));
+        }, true);
     }
 } 

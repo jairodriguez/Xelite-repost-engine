@@ -152,6 +152,12 @@ class XeliteRepostEngine {
         // Load scraper class
         require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-scraper.php';
         
+        // Load cron class
+        require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-cron.php';
+        
+        // Load cron admin class
+        require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-cron-admin.php';
+        
         // Load admin and public classes
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';
@@ -193,19 +199,14 @@ class XeliteRepostEngine {
             $this->container->get('admin_settings');
         }
         
-        // Register cron hooks
-        add_action('xelite_scraper_cron', array($this, 'run_scheduled_scraping'));
+        // Initialize cron service
+        $this->container->get('cron');
+        
+        // Initialize cron admin service
+        $this->container->get('cron_admin');
     }
     
-    /**
-     * Run scheduled scraping job
-     *
-     * @param array $accounts Array of account handles
-     */
-    public function run_scheduled_scraping($accounts) {
-        $scraper = $this->container->get('scraper');
-        $scraper->run_scheduled_scraping($accounts);
-    }
+
     
     /**
      * Load text domain

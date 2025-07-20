@@ -1,5 +1,5 @@
 /**
- * Xelite Repost Engine - Dashboard JavaScript
+ * Xelite Repost Engine Dashboard JavaScript
  *
  * @package XeliteRepostEngine
  * @since 1.0.0
@@ -8,618 +8,836 @@
 (function($) {
     'use strict';
 
-    // Dashboard plugin object
-    var XeliteDashboard = {
+    // Dashboard namespace
+    window.XeliteDashboard = {
         
-        // Initialize the dashboard
+        /**
+         * Initialize dashboard functionality
+         */
         init: function() {
             this.bindEvents();
-            this.initComponents();
-            this.loadInitialData();
-            console.log('Xelite Repost Engine Dashboard initialized');
+            this.initModals();
+            this.initTabs();
+            this.initForms();
+            this.initCharts();
         },
 
-        // Bind event handlers
+        /**
+         * Bind event handlers
+         */
         bindEvents: function() {
-            // Tab navigation
-            $(document).on('click', '.xelite-nav-tabs a', this.handleTabNavigation);
+            // Quick generate button
+            $(document).on('click', '#quick-generate', this.showQuickGenerateModal);
+            
+            // Generate content button
+            $(document).on('click', '#generate-content', this.generateContent);
+            
+            // Save content button
+            $(document).on('click', '#save-content', this.saveContent);
+            
+            // Copy content buttons
+            $(document).on('click', '.xelite-content-btn.copy', this.copyContent);
+            
+            // Save content buttons
+            $(document).on('click', '.xelite-content-btn.save', this.saveContent);
+            
+            // Edit content buttons
+            $(document).on('click', '.xelite-content-btn.edit', this.editContent);
+            
+            // Optimize content buttons
+            $(document).on('click', '.xelite-content-btn.optimize', this.optimizeContent);
+            
+            // Regenerate content buttons
+            $(document).on('click', '.xelite-content-btn.regenerate', this.regenerateContent);
+            
+            // Pattern analysis buttons
+            $(document).on('click', '.xelite-content-btn.analyze', this.analyzePattern);
+            
+            // Generate similar content buttons
+            $(document).on('click', '.xelite-content-btn.generate-similar', this.generateSimilarContent);
+            
+            // Bookmark pattern buttons
+            $(document).on('click', '.xelite-content-btn.bookmark', this.bookmarkPattern);
             
             // Settings form submission
-            $(document).on('submit', '.xelite-settings-form', this.handleSettingsSave);
+            $(document).on('submit', '#user-settings-form', this.saveSettings);
             
-            // API test buttons
-            $(document).on('click', '.xelite-test-api', this.handleApiTest);
+            // Export buttons
+            $(document).on('click', '#export-patterns', this.exportPatterns);
+            $(document).on('click', '#export-csv', this.exportCSV);
+            $(document).on('click', '#export-json', this.exportJSON);
+            $(document).on('click', '#export-pdf', this.exportPDF);
             
-            // Refresh analytics
-            $(document).on('click', '.xelite-refresh-analytics', this.handleRefreshAnalytics);
+            // Import/Export settings
+            $(document).on('click', '#export-settings', this.exportSettings);
+            $(document).on('click', '#import-settings', this.showImportModal);
+            $(document).on('click', '#confirm-import', this.importSettings);
             
-            // Export data
-            $(document).on('click', '.xelite-export-data', this.handleExportData);
+            // Reset settings
+            $(document).on('click', '#reset-settings', this.resetSettings);
             
-            // Import data
-            $(document).on('change', '.xelite-import-file', this.handleImportData);
+            // Filter controls
+            $(document).on('click', '#apply-filters', this.applyFilters);
+            $(document).on('click', '#reset-filters', this.resetFilters);
             
-            // Delete patterns
-            $(document).on('click', '.xelite-delete-patterns', this.handleDeletePatterns);
+            // Pagination
+            $(document).on('click', '#prev-page', this.previousPage);
+            $(document).on('click', '#next-page', this.nextPage);
             
-            // Bulk actions
-            $(document).on('change', '.xelite-bulk-action', this.handleBulkAction);
-        },
-
-        // Initialize components
-        initComponents: function() {
-            this.initCharts();
-            this.initDataTables();
-            this.initTooltips();
-            this.initAutoSave();
-            this.initCharacterCount();
-        },
-
-        // Load initial data
-        loadInitialData: function() {
-            this.loadAnalytics();
-            this.loadRecentPatterns();
-            this.loadSettings();
-        },
-
-        // Handle tab navigation
-        handleTabNavigation: function(e) {
-            e.preventDefault();
+            // Quick actions
+            $(document).on('click', '[data-action]', this.handleQuickAction);
             
-            var $link = $(this);
-            var target = $link.attr('href');
+            // Modal close buttons
+            $(document).on('click', '.xelite-modal-close', this.closeModal);
             
-            // Update active tab
-            $('.xelite-nav-tabs a').removeClass('active');
-            $link.addClass('active');
+            // Close modal on overlay click
+            $(document).on('click', '.xelite-modal', function(e) {
+                if (e.target === this) {
+                    XeliteDashboard.closeModal();
+                }
+            });
             
-            // Show target content
-            $('.xelite-tab-content').hide();
-            $(target).show();
-            
-            // Load tab-specific data
-            XeliteDashboard.loadTabData(target);
-        },
-
-        // Load tab-specific data
-        loadTabData: function(tabId) {
-            switch (tabId) {
-                case '#analytics':
-                    XeliteDashboard.loadAnalytics();
-                    break;
-                case '#patterns':
-                    XeliteDashboard.loadPatterns();
-                    break;
-                case '#generator':
-                    XeliteDashboard.loadGeneratorSettings();
-                    break;
-                case '#settings':
-                    XeliteDashboard.loadSettings();
-                    break;
-            }
-        },
-
-        // Load analytics data
-        loadAnalytics: function() {
-            var $container = $('#analytics-content');
-            
-            $container.html('<div class="xelite-loading">Loading analytics...</div>');
-            
-            $.ajax({
-                url: xeliteRepostEngine.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'xelite_repost_engine_get_analytics',
-                    nonce: xeliteRepostEngine.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        XeliteDashboard.displayAnalytics(response.data);
-                    } else {
-                        $container.html('<div class="xelite-error">' + (response.data.message || xeliteRepostEngine.strings.error) + '</div>');
-                    }
-                },
-                error: function() {
-                    $container.html('<div class="xelite-error">' + xeliteRepostEngine.strings.error + '</div>');
+            // Escape key to close modals
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    XeliteDashboard.closeModal();
                 }
             });
         },
 
-        // Display analytics
-        displayAnalytics: function(data) {
-            var html = '<div class="xelite-analytics-grid">';
-            
-            // Analytics cards
-            html += '<div class="xelite-analytics-card">';
-            html += '<span class="xelite-analytics-number">' + data.total_patterns + '</span>';
-            html += '<span class="xelite-analytics-label">Total Patterns</span>';
-            html += '</div>';
-            
-            html += '<div class="xelite-analytics-card secondary">';
-            html += '<span class="xelite-analytics-number">' + data.total_reposts + '</span>';
-            html += '<span class="xelite-analytics-label">Total Reposts</span>';
-            html += '</div>';
-            
-            html += '<div class="xelite-analytics-card warning">';
-            html += '<span class="xelite-analytics-number">' + data.avg_reposts + '</span>';
-            html += '<span class="xelite-analytics-label">Avg Reposts</span>';
-            html += '</div>';
-            
-            html += '<div class="xelite-analytics-card danger">';
-            html += '<span class="xelite-analytics-number">' + data.top_accounts + '</span>';
-            html += '<span class="xelite-analytics-label">Top Accounts</span>';
-            html += '</div>';
-            
-            html += '</div>';
-            
-            // Charts container
-            html += '<div class="xelite-charts-container">';
-            html += '<div class="xelite-chart-wrapper">';
-            html += '<canvas id="reposts-chart"></canvas>';
-            html += '</div>';
-            html += '<div class="xelite-chart-wrapper">';
-            html += '<canvas id="patterns-chart"></canvas>';
-            html += '</div>';
-            html += '</div>';
-            
-            $('#analytics-content').html(html);
-            
-            // Initialize charts
-            XeliteDashboard.initCharts(data);
+        /**
+         * Initialize modals
+         */
+        initModals: function() {
+            // Modal functionality is handled by event bindings
         },
 
-        // Initialize charts
-        initCharts: function(data) {
-            // Reposts over time chart
-            if (data.reposts_chart && $('#reposts-chart').length) {
-                var ctx = document.getElementById('reposts-chart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.reposts_chart.labels,
-                        datasets: [{
-                            label: 'Reposts',
-                            data: data.reposts_chart.data,
-                            borderColor: '#0073aa',
-                            backgroundColor: 'rgba(0, 115, 170, 0.1)',
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Reposts Over Time'
-                            }
-                        }
-                    }
-                });
-            }
-            
-            // Patterns by account chart
-            if (data.patterns_chart && $('#patterns-chart').length) {
-                var ctx = document.getElementById('patterns-chart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: data.patterns_chart.labels,
-                        datasets: [{
-                            data: data.patterns_chart.data,
-                            backgroundColor: [
-                                '#0073aa',
-                                '#00a32a',
-                                '#dba617',
-                                '#d63638',
-                                '#8c8f94'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Patterns by Account'
-                            }
-                        }
-                    }
-                });
+        /**
+         * Initialize tabs
+         */
+        initTabs: function() {
+            // Tab switching is handled by WordPress admin
+        },
+
+        /**
+         * Initialize forms
+         */
+        initForms: function() {
+            // Form validation and submission
+            this.validateForms();
+        },
+
+        /**
+         * Initialize charts
+         */
+        initCharts: function() {
+            // Initialize analytics charts if Chart.js is available
+            if (typeof Chart !== 'undefined') {
+                this.initAnalyticsCharts();
             }
         },
 
-        // Load patterns
-        loadPatterns: function() {
-            var $container = $('#patterns-content');
-            
-            $container.html('<div class="xelite-loading">Loading patterns...</div>');
-            
-            $.ajax({
-                url: xeliteRepostEngine.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'xelite_repost_engine_get_patterns',
-                    nonce: xeliteRepostEngine.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        XeliteDashboard.displayPatterns(response.data);
-                    } else {
-                        $container.html('<div class="xelite-error">' + (response.data.message || xeliteRepostEngine.strings.error) + '</div>');
-                    }
-                },
-                error: function() {
-                    $container.html('<div class="xelite-error">' + xeliteRepostEngine.strings.error + '</div>');
-                }
-            });
+        /**
+         * Show quick generate modal
+         */
+        showQuickGenerateModal: function() {
+            $('#quick-generate-modal').show();
         },
 
-        // Display patterns
-        displayPatterns: function(data) {
-            var html = '<div class="xelite-patterns-header">';
-            html += '<h4>Repost Patterns (' + data.total + ')</h4>';
-            html += '<div class="xelite-patterns-actions">';
-            html += '<button class="xelite-refresh-patterns button">Refresh</button>';
-            html += '<button class="xelite-export-data button">Export</button>';
-            html += '<button class="xelite-delete-patterns button button-link-delete">Delete All</button>';
-            html += '</div>';
-            html += '</div>';
+        /**
+         * Generate content
+         */
+        generateContent: function() {
+            var $button = $(this);
+            var $form = $button.closest('.xelite-generator-form');
             
-            if (data.patterns && data.patterns.length > 0) {
-                html += '<div class="xelite-patterns-list">';
-                data.patterns.forEach(function(pattern) {
-                    html += '<div class="xelite-pattern-item" data-id="' + pattern.id + '">';
-                    html += '<div class="xelite-pattern-header">';
-                    html += '<span class="xelite-pattern-source">@' + XeliteDashboard.escapeHtml(pattern.source_handle) + '</span>';
-                    html += '<span class="xelite-pattern-count">' + pattern.repost_count + ' reposts</span>';
-                    html += '</div>';
-                    html += '<div class="xelite-pattern-text">' + XeliteDashboard.escapeHtml(pattern.original_text) + '</div>';
-                    html += '<div class="xelite-pattern-meta">';
-                    html += '<span>' + XeliteDashboard.formatDate(pattern.created_at) + '</span>';
-                    html += '<input type="checkbox" class="xelite-pattern-select" value="' + pattern.id + '">';
-                    html += '</div>';
-                    html += '</div>';
-                });
-                html += '</div>';
+            // Collect form data
+            var formData = {
+                action: 'xelite_dashboard_generate_content',
+                nonce: xelite_dashboard.nonce,
+                topic: $('#content-topic').val(),
+                tone: $('#content-tone').val(),
+                length: $('#content-length').val(),
+                creativity: $('#content-creativity').val(),
+                count: $('#content-count').val(),
+                pattern_influence: $('#pattern-influence').val(),
+                include_hashtags: $('#include-hashtags').val(),
+                include_cta: $('#include-cta').val(),
+                custom_instructions: $('#custom-instructions').val(),
+                pattern_accounts: $('input[name="pattern_accounts[]"]:checked').map(function() {
+                    return this.value;
+                }).get()
+            };
+            
+            // Show loading state
+            XeliteDashboard.showLoading('#generation-loading');
+            $button.prop('disabled', true);
+            
+            // Make AJAX request
+            $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                XeliteDashboard.hideLoading('#generation-loading');
+                $button.prop('disabled', false);
                 
-                if (data.has_more) {
-                    html += '<div class="xelite-load-more-container">';
-                    html += '<button class="xelite-load-more button" data-offset="' + data.patterns.length + '">Load More</button>';
-                    html += '</div>';
+                if (response.success) {
+                    XeliteDashboard.displayGeneratedContent(response.data);
+                } else {
+                    XeliteDashboard.showError(response.data);
                 }
-            } else {
-                html += '<div class="xelite-no-data">No patterns found.</div>';
-            }
-            
-            $('#patterns-content').html(html);
+            }).fail(function() {
+                XeliteDashboard.hideLoading('#generation-loading');
+                $button.prop('disabled', false);
+                XeliteDashboard.showError('Network error occurred. Please try again.');
+            });
         },
 
-        // Handle settings save
-        handleSettingsSave: function(e) {
+        /**
+         * Display generated content
+         */
+        displayGeneratedContent: function(content) {
+            var $results = $('#generated-content-results');
+            var $variations = $('#content-variations');
+            
+            // Clear previous results
+            $variations.empty();
+            
+            // Add each variation
+            if (Array.isArray(content)) {
+                content.forEach(function(variation, index) {
+                    var template = $('#content-variation-template').html();
+                    var html = template
+                        .replace(/\{\{variation_id\}\}/g, variation.id || index)
+                        .replace(/\{\{variation_number\}\}/g, index + 1)
+                        .replace(/\{\{content_text\}\}/g, variation.text)
+                        .replace(/\{\{content_length\}\}/g, variation.text.length)
+                        .replace(/\{\{token_count\}\}/g, variation.tokens || 0)
+                        .replace(/\{\{tone\}\}/g, variation.tone || 'N/A')
+                        .replace(/\{\{repost_score\}\}/g, variation.repost_score || 0);
+                    
+                    $variations.append(html);
+                });
+            } else {
+                // Single content item
+                var template = $('#content-variation-template').html();
+                var html = template
+                    .replace(/\{\{variation_id\}\}/g, content.id || 0)
+                    .replace(/\{\{variation_number\}\}/g, 1)
+                    .replace(/\{\{content_text\}\}/g, content.text)
+                    .replace(/\{\{content_length\}\}/g, content.text.length)
+                    .replace(/\{\{token_count\}\}/g, content.tokens || 0)
+                    .replace(/\{\{tone\}\}/g, content.tone || 'N/A')
+                    .replace(/\{\{repost_score\}\}/g, content.repost_score || 0);
+                
+                $variations.append(html);
+            }
+            
+            // Show results
+            $results.show();
+            
+            // Scroll to results
+            $('html, body').animate({
+                scrollTop: $results.offset().top - 100
+            }, 500);
+        },
+
+        /**
+         * Save content
+         */
+        saveContent: function() {
+            var $button = $(this);
+            var content = $button.data('content') || $button.closest('.content-variation').find('.content-text').text();
+            var title = prompt('Enter a title for this content:', 'Generated Content');
+            
+            if (!title) return;
+            
+            var formData = {
+                action: 'xelite_dashboard_save_content',
+                nonce: xelite_dashboard.nonce,
+                content: content,
+                title: title
+            };
+            
+            $button.prop('disabled', true);
+            
+            $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                $button.prop('disabled', false);
+                
+                if (response.success) {
+                    XeliteDashboard.showSuccess('Content saved successfully!');
+                } else {
+                    XeliteDashboard.showError(response.data);
+                }
+            }).fail(function() {
+                $button.prop('disabled', false);
+                XeliteDashboard.showError('Failed to save content. Please try again.');
+            });
+        },
+
+        /**
+         * Copy content to clipboard
+         */
+        copyContent: function() {
+            var $button = $(this);
+            var content = $button.data('content') || $button.closest('.content-variation').find('.content-text').text();
+            
+            // Use modern clipboard API if available
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(content).then(function() {
+                    XeliteDashboard.showSuccess('Content copied to clipboard!');
+                }).catch(function() {
+                    XeliteDashboard.fallbackCopyTextToClipboard(content);
+                });
+            } else {
+                XeliteDashboard.fallbackCopyTextToClipboard(content);
+            }
+        },
+
+        /**
+         * Fallback copy method for older browsers
+         */
+        fallbackCopyTextToClipboard: function(text) {
+            var textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.top = '0';
+            textArea.style.left = '0';
+            textArea.style.position = 'fixed';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                XeliteDashboard.showSuccess('Content copied to clipboard!');
+            } catch (err) {
+                XeliteDashboard.showError('Failed to copy content. Please copy manually.');
+            }
+            
+            document.body.removeChild(textArea);
+        },
+
+        /**
+         * Edit content
+         */
+        editContent: function() {
+            var $button = $(this);
+            var $variation = $button.closest('.content-variation');
+            var $contentText = $variation.find('.content-text');
+            var currentText = $contentText.text();
+            
+            // Create textarea for editing
+            var $textarea = $('<textarea class="content-edit-textarea">').val(currentText);
+            $contentText.hide().after($textarea);
+            
+            // Add save/cancel buttons
+            var $editActions = $('<div class="edit-actions">')
+                .append('<button type="button" class="button button-primary save-edit">Save</button>')
+                .append('<button type="button" class="button button-secondary cancel-edit">Cancel</button>');
+            
+            $button.hide().after($editActions);
+            
+            // Handle save
+            $editActions.on('click', '.save-edit', function() {
+                var newText = $textarea.val();
+                $contentText.text(newText).show();
+                $textarea.remove();
+                $editActions.remove();
+                $button.show();
+            });
+            
+            // Handle cancel
+            $editActions.on('click', '.cancel-edit', function() {
+                $contentText.show();
+                $textarea.remove();
+                $editActions.remove();
+                $button.show();
+            });
+        },
+
+        /**
+         * Optimize content
+         */
+        optimizeContent: function() {
+            var $button = $(this);
+            var $variation = $button.closest('.content-variation');
+            var content = $variation.find('.content-text').text();
+            
+            $button.prop('disabled', true);
+            
+            var formData = {
+                action: 'xelite_dashboard_optimize_content',
+                nonce: xelite_dashboard.nonce,
+                content: content
+            };
+            
+            $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                $button.prop('disabled', false);
+                
+                if (response.success) {
+                    $variation.find('.content-text').text(response.data.optimized_content);
+                    XeliteDashboard.showSuccess('Content optimized successfully!');
+                } else {
+                    XeliteDashboard.showError(response.data);
+                }
+            }).fail(function() {
+                $button.prop('disabled', false);
+                XeliteDashboard.showError('Failed to optimize content. Please try again.');
+            });
+        },
+
+        /**
+         * Regenerate content
+         */
+        regenerateContent: function() {
+            var $button = $(this);
+            var variationId = $button.data('variation-id');
+            
+            $button.prop('disabled', true);
+            
+            var formData = {
+                action: 'xelite_dashboard_regenerate_content',
+                nonce: xelite_dashboard.nonce,
+                variation_id: variationId
+            };
+            
+            $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                $button.prop('disabled', false);
+                
+                if (response.success) {
+                    var $variation = $button.closest('.content-variation');
+                    $variation.find('.content-text').text(response.data.content);
+                    XeliteDashboard.showSuccess('Content regenerated successfully!');
+                } else {
+                    XeliteDashboard.showError(response.data);
+                }
+            }).fail(function() {
+                $button.prop('disabled', false);
+                XeliteDashboard.showError('Failed to regenerate content. Please try again.');
+            });
+        },
+
+        /**
+         * Analyze pattern
+         */
+        analyzePattern: function() {
+            var $button = $(this);
+            var patternId = $button.data('pattern-id');
+            
+            var formData = {
+                action: 'xelite_dashboard_analyze_pattern',
+                nonce: xelite_dashboard.nonce,
+                pattern_id: patternId
+            };
+            
+            $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                if (response.success) {
+                    $('#analysis-content').html(response.data.html);
+                    $('#pattern-analysis-modal').show();
+                } else {
+                    XeliteDashboard.showError(response.data);
+                }
+            }).fail(function() {
+                XeliteDashboard.showError('Failed to analyze pattern. Please try again.');
+            });
+        },
+
+        /**
+         * Generate similar content
+         */
+        generateSimilarContent: function() {
+            var $button = $(this);
+            var patternId = $button.data('pattern-id');
+            
+            // Close analysis modal if open
+            $('#pattern-analysis-modal').hide();
+            
+            // Switch to content generator tab
+            window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=content-generator&pattern_id=' + patternId;
+        },
+
+        /**
+         * Bookmark pattern
+         */
+        bookmarkPattern: function() {
+            var $button = $(this);
+            var patternId = $button.data('pattern-id');
+            
+            var formData = {
+                action: 'xelite_dashboard_bookmark_pattern',
+                nonce: xelite_dashboard.nonce,
+                pattern_id: patternId
+            };
+            
+            $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                if (response.success) {
+                    $button.addClass('bookmarked');
+                    XeliteDashboard.showSuccess('Pattern bookmarked!');
+                } else {
+                    XeliteDashboard.showError(response.data);
+                }
+            }).fail(function() {
+                XeliteDashboard.showError('Failed to bookmark pattern. Please try again.');
+            });
+        },
+
+        /**
+         * Save settings
+         */
+        saveSettings: function(e) {
             e.preventDefault();
             
             var $form = $(this);
-            var $button = $form.find('button[type="submit"]');
-            var formData = $form.serialize();
+            var $submitButton = $form.find('#save-settings');
             
-            // Disable button and show loading
-            $button.prop('disabled', true).text('Saving...');
+            // Collect form data
+            var formData = new FormData($form[0]);
+            formData.append('action', 'xelite_dashboard_update_settings');
+            formData.append('nonce', xelite_dashboard.nonce);
+            
+            $submitButton.prop('disabled', true);
+            XeliteDashboard.showLoading('#settings-loading');
             
             $.ajax({
-                url: xeliteRepostEngine.ajax_url,
+                url: xelite_dashboard.ajaxUrl,
                 type: 'POST',
-                data: formData + '&action=xelite_repost_engine_save_settings&nonce=' + xeliteRepostEngine.nonce,
+                data: formData,
+                processData: false,
+                contentType: false,
                 success: function(response) {
+                    $submitButton.prop('disabled', false);
+                    XeliteDashboard.hideLoading('#settings-loading');
+                    
                     if (response.success) {
-                        XeliteDashboard.showMessage('Settings saved successfully!', 'success');
+                        XeliteDashboard.showSuccess('Settings saved successfully!');
                     } else {
-                        XeliteDashboard.showMessage(response.data.message || xeliteRepostEngine.strings.error, 'error');
+                        XeliteDashboard.showError(response.data);
                     }
                 },
                 error: function() {
-                    XeliteDashboard.showMessage(xeliteRepostEngine.strings.error, 'error');
-                },
-                complete: function() {
-                    $button.prop('disabled', false).text('Save Settings');
+                    $submitButton.prop('disabled', false);
+                    XeliteDashboard.hideLoading('#settings-loading');
+                    XeliteDashboard.showError('Failed to save settings. Please try again.');
                 }
             });
         },
 
-        // Handle API test
-        handleApiTest: function(e) {
-            e.preventDefault();
+        /**
+         * Export patterns
+         */
+        exportPatterns: function() {
+            var filters = {
+                source: $('#pattern-source').val(),
+                min_reposts: $('#pattern-min-reposts').val(),
+                sort: $('#pattern-sort').val(),
+                search: $('#pattern-search').val()
+            };
             
-            var $button = $(this);
-            var apiType = $button.data('api');
+            var formData = {
+                action: 'xelite_dashboard_export_patterns',
+                nonce: xelite_dashboard.nonce,
+                filters: filters
+            };
             
-            // Disable button and show loading
-            $button.prop('disabled', true).text('Testing...');
-            
-            $.ajax({
-                url: xeliteRepostEngine.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'xelite_repost_engine_test_api',
-                    api_type: apiType,
-                    nonce: xeliteRepostEngine.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        XeliteDashboard.showMessage(apiType + ' API connection successful!', 'success');
-                    } else {
-                        XeliteDashboard.showMessage(response.data.message || 'API test failed.', 'error');
-                    }
-                },
-                error: function() {
-                    XeliteDashboard.showMessage('API test failed.', 'error');
-                },
-                complete: function() {
-                    $button.prop('disabled', false).text('Test ' + apiType + ' API');
+            $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                if (response.success) {
+                    // Create download link
+                    var blob = new Blob([response.data.csv], { type: 'text/csv' });
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'repost-patterns.csv';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    XeliteDashboard.showError(response.data);
                 }
+            }).fail(function() {
+                XeliteDashboard.showError('Failed to export patterns. Please try again.');
             });
         },
 
-        // Handle refresh analytics
-        handleRefreshAnalytics: function(e) {
-            e.preventDefault();
-            XeliteDashboard.loadAnalytics();
-        },
-
-        // Handle export data
-        handleExportData: function(e) {
-            e.preventDefault();
+        /**
+         * Export settings
+         */
+        exportSettings: function() {
+            var formData = {
+                action: 'xelite_dashboard_export_settings',
+                nonce: xelite_dashboard.nonce
+            };
             
-            var $button = $(this);
-            
-            // Disable button and show loading
-            $button.prop('disabled', true).text('Exporting...');
-            
-            $.ajax({
-                url: xeliteRepostEngine.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'xelite_repost_engine_export_data',
-                    nonce: xeliteRepostEngine.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        // Create download link
-                        var link = document.createElement('a');
-                        link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(response.data.csv);
-                        link.download = 'xelite-repost-patterns-' + new Date().toISOString().split('T')[0] + '.csv';
-                        link.click();
-                        
-                        XeliteDashboard.showMessage('Data exported successfully!', 'success');
-                    } else {
-                        XeliteDashboard.showMessage(response.data.message || 'Export failed.', 'error');
-                    }
-                },
-                error: function() {
-                    XeliteDashboard.showMessage('Export failed.', 'error');
-                },
-                complete: function() {
-                    $button.prop('disabled', false).text('Export');
+            $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                if (response.success) {
+                    var blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'xelite-settings.json';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    XeliteDashboard.showError(response.data);
                 }
+            }).fail(function() {
+                XeliteDashboard.showError('Failed to export settings. Please try again.');
             });
         },
 
-        // Handle import data
-        handleImportData: function(e) {
-            var file = e.target.files[0];
-            if (!file) return;
+        /**
+         * Show import modal
+         */
+        showImportModal: function() {
+            $('#settings-import-modal').show();
+        },
+
+        /**
+         * Import settings
+         */
+        importSettings: function() {
+            var fileInput = document.getElementById('settings-file');
+            var file = fileInput.files[0];
+            
+            if (!file) {
+                XeliteDashboard.showError('Please select a file to import.');
+                return;
+            }
             
             var reader = new FileReader();
             reader.onload = function(e) {
-                var csv = e.target.result;
-                
-                $.ajax({
-                    url: xeliteRepostEngine.ajax_url,
-                    type: 'POST',
-                    data: {
-                        action: 'xelite_repost_engine_import_data',
-                        csv: csv,
-                        nonce: xeliteRepostEngine.nonce
-                    },
-                    success: function(response) {
+                try {
+                    var settings = JSON.parse(e.target.result);
+                    
+                    var formData = {
+                        action: 'xelite_dashboard_import_settings',
+                        nonce: xelite_dashboard.nonce,
+                        settings: settings
+                    };
+                    
+                    $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
                         if (response.success) {
-                            XeliteDashboard.showMessage('Data imported successfully!', 'success');
-                            XeliteDashboard.loadPatterns();
+                            XeliteDashboard.showSuccess('Settings imported successfully!');
+                            $('#settings-import-modal').hide();
+                            location.reload();
                         } else {
-                            XeliteDashboard.showMessage(response.data.message || 'Import failed.', 'error');
+                            XeliteDashboard.showError(response.data);
                         }
-                    },
-                    error: function() {
-                        XeliteDashboard.showMessage('Import failed.', 'error');
-                    }
-                });
+                    }).fail(function() {
+                        XeliteDashboard.showError('Failed to import settings. Please try again.');
+                    });
+                } catch (error) {
+                    XeliteDashboard.showError('Invalid settings file format.');
+                }
             };
             reader.readAsText(file);
         },
 
-        // Handle delete patterns
-        handleDeletePatterns: function(e) {
-            e.preventDefault();
-            
-            if (!confirm('Are you sure you want to delete all patterns? This action cannot be undone.')) {
-                return;
-            }
-            
-            var $button = $(this);
-            
-            // Disable button and show loading
-            $button.prop('disabled', true).text('Deleting...');
-            
-            $.ajax({
-                url: xeliteRepostEngine.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'xelite_repost_engine_delete_patterns',
-                    nonce: xeliteRepostEngine.nonce
-                },
-                success: function(response) {
+        /**
+         * Reset settings
+         */
+        resetSettings: function() {
+            if (confirm('Are you sure you want to reset all settings to defaults? This action cannot be undone.')) {
+                var formData = {
+                    action: 'xelite_dashboard_reset_settings',
+                    nonce: xelite_dashboard.nonce
+                };
+                
+                $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
                     if (response.success) {
-                        XeliteDashboard.showMessage('Patterns deleted successfully!', 'success');
-                        XeliteDashboard.loadPatterns();
+                        XeliteDashboard.showSuccess('Settings reset to defaults!');
+                        location.reload();
                     } else {
-                        XeliteDashboard.showMessage(response.data.message || 'Delete failed.', 'error');
+                        XeliteDashboard.showError(response.data);
                     }
-                },
-                error: function() {
-                    XeliteDashboard.showMessage('Delete failed.', 'error');
-                },
-                complete: function() {
-                    $button.prop('disabled', false).text('Delete All');
-                }
-            });
-        },
-
-        // Handle bulk action
-        handleBulkAction: function(e) {
-            var action = $(this).val();
-            var selectedPatterns = $('.xelite-pattern-select:checked').map(function() {
-                return $(this).val();
-            }).get();
-            
-            if (selectedPatterns.length === 0) {
-                XeliteDashboard.showMessage('Please select patterns to perform bulk action.', 'warning');
-                return;
-            }
-            
-            if (action === 'delete') {
-                if (!confirm('Are you sure you want to delete the selected patterns?')) {
-                    return;
-                }
-            }
-            
-            $.ajax({
-                url: xeliteRepostEngine.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'xelite_repost_engine_bulk_action',
-                    bulk_action: action,
-                    pattern_ids: selectedPatterns,
-                    nonce: xeliteRepostEngine.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        XeliteDashboard.showMessage('Bulk action completed successfully!', 'success');
-                        XeliteDashboard.loadPatterns();
-                    } else {
-                        XeliteDashboard.showMessage(response.data.message || 'Bulk action failed.', 'error');
-                    }
-                },
-                error: function() {
-                    XeliteDashboard.showMessage('Bulk action failed.', 'error');
-                }
-            });
-        },
-
-        // Initialize data tables
-        initDataTables: function() {
-            if ($.fn.DataTable) {
-                $('.xelite-data-table').DataTable({
-                    responsive: true,
-                    pageLength: 25,
-                    order: [[0, 'desc']]
+                }).fail(function() {
+                    XeliteDashboard.showError('Failed to reset settings. Please try again.');
                 });
             }
         },
 
-        // Initialize tooltips
-        initTooltips: function() {
-            $('[data-tooltip]').each(function() {
-                var $element = $(this);
-                var tooltip = $element.data('tooltip');
-                
-                $element.attr('title', tooltip);
-            });
-        },
-
-        // Initialize auto save
-        initAutoSave: function() {
-            var autoSaveTimer;
-            
-            $('.xelite-auto-save').each(function() {
-                var $input = $(this);
-                
-                $input.on('input', function() {
-                    clearTimeout(autoSaveTimer);
-                    
-                    autoSaveTimer = setTimeout(function() {
-                        XeliteDashboard.autoSave($input);
-                    }, 2000);
-                });
-            });
-        },
-
-        // Auto save functionality
-        autoSave: function($input) {
-            var data = {
-                action: 'xelite_repost_engine_auto_save',
-                field: $input.attr('name'),
-                value: $input.val(),
-                nonce: xeliteRepostEngine.nonce
+        /**
+         * Apply filters
+         */
+        applyFilters: function() {
+            var filters = {
+                source: $('#pattern-source').val(),
+                min_reposts: $('#pattern-min-reposts').val(),
+                sort: $('#pattern-sort').val(),
+                search: $('#pattern-search').val()
             };
             
-            $.post(xeliteRepostEngine.ajax_url, data, function(response) {
-                if (response.success) {
-                    console.log('Auto-saved successfully');
-                }
-            });
-        },
-
-        // Initialize character count
-        initCharacterCount: function() {
-            $('.xelite-character-count').each(function() {
-                var $input = $(this);
-                var $counter = $input.siblings('.xelite-char-counter');
-                var maxLength = parseInt($input.attr('maxlength') || 280);
+            var formData = {
+                action: 'xelite_dashboard_filter_patterns',
+                nonce: xelite_dashboard.nonce,
+                filters: filters
+            };
+            
+            XeliteDashboard.showLoading('#patterns-loading');
+            
+            $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                XeliteDashboard.hideLoading('#patterns-loading');
                 
-                $input.on('input', function() {
-                    var length = $input.val().length;
-                    var remaining = maxLength - length;
-                    
-                    $counter.text(remaining + ' characters remaining');
-                    
-                    if (remaining < 0) {
-                        $counter.addClass('over-limit');
-                    } else {
-                        $counter.removeClass('over-limit');
-                    }
-                });
+                if (response.success) {
+                    $('#patterns-list').html(response.data.html);
+                    XeliteDashboard.updatePagination(response.data.pagination);
+                } else {
+                    XeliteDashboard.showError(response.data);
+                }
+            }).fail(function() {
+                XeliteDashboard.hideLoading('#patterns-loading');
+                XeliteDashboard.showError('Failed to apply filters. Please try again.');
             });
         },
 
-        // Show message
+        /**
+         * Reset filters
+         */
+        resetFilters: function() {
+            $('#pattern-source').val('');
+            $('#pattern-min-reposts').val('5');
+            $('#pattern-sort').val('repost_count');
+            $('#pattern-search').val('');
+            
+            XeliteDashboard.applyFilters();
+        },
+
+        /**
+         * Handle quick actions
+         */
+        handleQuickAction: function() {
+            var action = $(this).data('action');
+            
+            switch (action) {
+                case 'generate-content':
+                    window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=content-generator';
+                    break;
+                case 'view-patterns':
+                    window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=patterns';
+                    break;
+                case 'update-settings':
+                    window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=settings';
+                    break;
+                case 'view-analytics':
+                    window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=analytics';
+                    break;
+                case 'add-target-accounts':
+                    window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=settings';
+                    break;
+                case 'run-analysis':
+                    XeliteDashboard.runPatternAnalysis();
+                    break;
+                case 'setup-profile':
+                    window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=settings';
+                    break;
+                case 'update-context':
+                    window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=settings';
+                    break;
+            }
+        },
+
+        /**
+         * Close modal
+         */
+        closeModal: function() {
+            $('.xelite-modal').hide();
+        },
+
+        /**
+         * Show loading state
+         */
+        showLoading: function(selector) {
+            $(selector).show();
+        },
+
+        /**
+         * Hide loading state
+         */
+        hideLoading: function(selector) {
+            $(selector).hide();
+        },
+
+        /**
+         * Show success message
+         */
+        showSuccess: function(message) {
+            this.showMessage(message, 'success');
+        },
+
+        /**
+         * Show error message
+         */
+        showError: function(message) {
+            this.showMessage(message, 'error');
+        },
+
+        /**
+         * Show message
+         */
         showMessage: function(message, type) {
-            var $message = $('<div class="xelite-message ' + type + '">' + message + '</div>');
+            var $messages = $('#xelite-messages');
+            var $message = $('<div class="xelite-message ' + type + '">')
+                .text(message)
+                .append('<button type="button" class="message-close">&times;</button>');
             
-            $('.xelite-dashboard').prepend($message);
+            $messages.append($message);
             
-            // Auto remove after 5 seconds
+            // Auto-remove after 5 seconds
             setTimeout(function() {
                 $message.fadeOut(function() {
                     $(this).remove();
                 });
             }, 5000);
+            
+            // Manual close
+            $message.on('click', '.message-close', function() {
+                $message.fadeOut(function() {
+                    $(this).remove();
+                });
+            });
         },
 
-        // Escape HTML
-        escapeHtml: function(text) {
-            var map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
+        /**
+         * Validate forms
+         */
+        validateForms: function() {
+            // Add form validation logic here
+        },
+
+        /**
+         * Initialize analytics charts
+         */
+        initAnalyticsCharts: function() {
+            // Initialize Chart.js charts for analytics
+            // This would be implemented based on the analytics data structure
+        },
+
+        /**
+         * Update pagination
+         */
+        updatePagination: function(pagination) {
+            // Update pagination controls based on response
+        },
+
+        /**
+         * Run pattern analysis
+         */
+        runPatternAnalysis: function() {
+            var formData = {
+                action: 'xelite_dashboard_run_analysis',
+                nonce: xelite_dashboard.nonce
             };
-            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-        },
-
-        // Format date
-        formatDate: function(dateString) {
-            var date = new Date(dateString);
-            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+            
+            XeliteDashboard.showLoading('#patterns-loading');
+            
+            $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                XeliteDashboard.hideLoading('#patterns-loading');
+                
+                if (response.success) {
+                    XeliteDashboard.showSuccess('Pattern analysis completed!');
+                    location.reload();
+                } else {
+                    XeliteDashboard.showError(response.data);
+                }
+            }).fail(function() {
+                XeliteDashboard.hideLoading('#patterns-loading');
+                XeliteDashboard.showError('Failed to run pattern analysis. Please try again.');
+            });
         }
     };
 
@@ -627,8 +845,5 @@
     $(document).ready(function() {
         XeliteDashboard.init();
     });
-
-    // Expose to global scope for debugging
-    window.XeliteDashboard = XeliteDashboard;
 
 })(jQuery); 

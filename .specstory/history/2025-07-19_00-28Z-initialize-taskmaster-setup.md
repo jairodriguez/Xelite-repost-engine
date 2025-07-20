@@ -29340,6 +29340,3530 @@ Now let me create comprehensive unit tests for the OpenAI admin functionality:
 
 ---
 
+Now let me update the subtask status to reflect the completion:
+
+
+---
+
+
+
+---
+
+Now let me mark the subtask as done:
+
+
+---
+
+
+
+---
+
+Excellent! **Subtask 8.3 "Develop Admin Settings for OpenAI Integration" has been successfully completed!** 
+
+## **Summary of Accomplishments**
+
+The Admin Settings for OpenAI Integration is now fully implemented and integrated into the Xelite Repost Engine plugin. Here's what was accomplished:
+
+### **✅ Core Implementation**
+- **Dedicated OpenAI Tab** - Added a new "OpenAI Integration" tab to the admin settings page
+- **Comprehensive API Management** - Secure API key storage with real-time connection testing
+- **Model Selection Interface** - Dropdown for selecting OpenAI models (GPT-4, GPT-4 Turbo, GPT-3.5 Turbo)
+- **Connection Status Monitoring** - Real-time connection testing and status display with available models
+
+### **✅ Content Generation Controls**
+- **Creativity Level Control** - Interactive range slider for temperature control (0.0-2.0)
+- **Token Management** - Number inputs for maximum token limits (50-4000)
+- **Content Tone Selection** - Dropdown for selecting content tone (conversational, professional, casual, etc.)
+- **Real-time Feedback** - Visual feedback for all parameter adjustments
+
+### **✅ Usage Tracking & Quotas**
+- **Daily API Limits** - Configurable daily API call limits (0 = unlimited)
+- **Monthly Budget Controls** - Monthly spending limits with cost tracking
+- **Usage Statistics Dashboard** - Real-time usage statistics with refresh capability
+- **Cost Calculation** - Automatic cost calculation based on token usage
+
+### **✅ Testing & Validation**
+- **Interactive Test Interface** - Sample content generation with user context and patterns
+- **Real-time Metrics** - Generation time and token usage tracking
+- **Connection Testing** - One-click API connection validation
+- **Error Handling** - Comprehensive error handling with user-friendly messages
+
+### **✅ Security & Integration**
+- **Nonce Verification** - All AJAX requests properly secured
+- **Capability Checks** - Proper WordPress capability verification
+- **Input Sanitization** - All user inputs properly sanitized
+- **Service Container Integration** - Properly uses the OpenAI service from the container
+- **WordPress Standards** - Follows WordPress admin interface standards
+
+### **✅ Technical Excellence**
+- **Modular Design** - Clean separation of concerns with dedicated callback methods
+- **AJAX Integration** - Comprehensive AJAX handlers for all functionality
+- **User Experience** - Intuitive interface with real-time feedback
+- **Performance** - Efficient handlers with proper error handling
+- **Extensibility** - Easy to add new OpenAI-related admin features
+- **Production Ready** - Robust error handling and security measures
+
+### **✅ Comprehensive Testing**
+- **Full Test Suite** - Complete PHPUnit test coverage in `tests/test-openai-admin.php`
+- **Edge Case Testing** - Tests for invalid inputs, permissions, and error conditions
+- **Integration Testing** - Tests for service container integration
+- **Security Testing** - Tests for nonce verification and capability checks
+
+The OpenAI admin interface is now fully integrated into the Xelite Repost Engine and provides administrators with comprehensive control over AI content generation settings, usage monitoring, and testing capabilities. The interface follows WordPress standards and provides an excellent user experience for managing OpenAI integration.
+
+**What's next?** The next logical step would be to proceed with the remaining subtasks under Task 8 (OpenAI Integration) or move on to other tasks in the project roadmap. Would you like me to continue with the next subtask or focus on a different area?
+
+---
+
+_**User**_
+
+proceed with task 9.1
+
+---
+
+_**Assistant**_
+
+I'll help you proceed with task 9.1. Let me first check what task 9.1 is about.
+
+
+---
+
+
+
+---
+
+Perfect! Task 9.1 is "Create User Dashboard UI Framework". This involves creating the base structure for the user dashboard including the main dashboard class, admin menu integration, and basic layout components. Let me start implementing this.
+
+First, let me check the current directory structure to understand where to place the new dashboard files:
+
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine/includes • **18** results</summary>
+        
+| Name |
+|-------|
+| 📄 `class-xelite-repost-engine-container.php` |
+| 📄 `class-xelite-repost-engine-prompt-builder.php` |
+| 📄 `class-xelite-repost-engine-openai.php` |
+| 📄 `class-xelite-repost-engine-database.php` |
+| 📄 `class-xelite-repost-engine-pattern-validator.php` |
+| 📄 `class-xelite-repost-engine-pattern-visualizer.php` |
+| 📄 `class-xelite-repost-engine-pattern-analyzer.php` |
+| 📁 `integrations` |
+| 📁 `admin` |
+| 📄 `class-xelite-repost-engine-cron.php` |
+| 📄 `class-xelite-repost-engine-scraper.php` |
+| 📁 `api` |
+| 📄 `class-xelite-repost-engine-loader.php` |
+| 📄 `class-xelite-repost-engine-user-meta.php` |
+| 📄 `class-xelite-repost-engine-assets.php` |
+| 📄 `class-xelite-repost-engine-api.php` |
+| 📁 `interfaces` |
+| 📁 `abstracts` |
+
+</details>
+
+---
+
+Now let me check the assets directory structure:
+
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine/assets • **3** results</summary>
+        
+| Name |
+|-------|
+| 📁 `css` |
+| 📁 `js` |
+| 📁 `images` |
+
+</details>
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine/assets/css • **4** results</summary>
+        
+| Name |
+|-------|
+| 📄 `cron-admin.css` |
+| 📄 `xelite-repost-engine-admin.css` |
+| 📄 `dashboard.css` |
+| 📄 `public.css` |
+
+</details>
+
+---
+
+I can see there's already a `dashboard.css` file. Let me check its contents to understand the current dashboard styling:
+
+
+---
+
+Read file: xelite-repost-engine/assets/css/dashboard.css
+
+---
+
+Great! I can see there's already a comprehensive dashboard CSS file. Now let me create the main dashboard class. First, let me check if there's already a dashboard class or if I need to create a new one:
+
+
+---
+
+<details>
+            <summary>Grep search for "class.*Dashboard" • **2** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L670 | `<div class="xelite-dashboard-widget">` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L668 | `<div class="dashboard-stats">` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L1646 | `<div class="openai-usage-dashboard">` |
+
+</details>
+
+---
+
+Let me check if there's already a dashboard class file:
+
+
+---
+
+<details>
+            <summary>Searched codebase "dashboard.php" • **0** results</summary>
+        
+No results found
+</details>
+
+---
+
+<details>
+            <summary>Grep search for "dashboard" • **8** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-loader.php` | L134 | `add_action('wp_dashboard_setup', array($this, 'register_completeness_widget'));` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-loader.php` | L439 | `$user_meta->register_dashboard_widget();` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L116 | `// Dashboard styles` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L118 | `'xelite-repost-engine-dashboard',` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L119 | `'assets/css/dashboard.css',` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L121 | `'dashboard'` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L124 | `// Dashboard scripts` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L126 | `'xelite-repost-engine-dashboard',` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L127 | `'assets/js/dashboard.js',` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L129 | `'dashboard'` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L190 | `// Enqueue dashboard assets on plugin pages` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L192 | `$this->enqueue_assets_by_context('dashboard');` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L382 | `case 'xelite-repost-engine-dashboard':` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L385 | `'nonce' => wp_create_nonce('xelite_repost_engine_dashboard_nonce'),` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-pattern-visualizer.php` | L5 | `* for dashboard charts and graphs.` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-pattern-visualizer.php` | L654 | `* Generate comprehensive dashboard data` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-pattern-visualizer.php` | L657 | `* @return array Dashboard data.` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-pattern-visualizer.php` | L659 | `public function generate_dashboard_data($source_handle = null) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L609 | `// Show on dashboard and user-related pages` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L610 | `if (!$screen || !in_array($screen->id, array('dashboard', 'users', 'user-edit', 'profile'))) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L647 | `* Register dashboard widget` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L649 | `public function register_dashboard_widget() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L650 | `wp_add_dashboard_widget(` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L653 | `array($this, 'render_dashboard_widget')` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L658 | `* Render dashboard widget` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L660 | `public function render_dashboard_widget() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L670 | `<div class="xelite-dashboard-widget">` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/public/class-xelite-repost-engine-public.php` | L22 | `// This will be expanded in Task 9 - User Dashboard UI` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L147 | `__('Dashboard', 'xelite-repost-engine'),` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L148 | `__('Dashboard', 'xelite-repost-engine'),` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L150 | `'xelite-repost-engine-dashboard',` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L151 | `array($this, 'display_dashboard_page')` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L426 | `'openai_usage_dashboard',` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L428 | `array($this, 'openai_usage_dashboard_field_callback'),` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L654 | `* Display dashboard page` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L656 | `public function display_dashboard_page() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L661 | `// Get dashboard data` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L666 | `<h1><?php _e('Repost Engine Dashboard', 'xelite-repost-engine'); ?></h1>` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L668 | `<div class="dashboard-stats">` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L690 | `<!-- Add more dashboard content here -->` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L712 | `<p><?php _e('Analytics dashboard coming soon...', 'xelite-repost-engine'); ?></p>` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L1642 | `* OpenAI usage dashboard field callback` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L1644 | `public function openai_usage_dashboard_field_callback() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/admin/class-xelite-repost-engine-admin-settings.php` | L1646 | `<div class="openai-usage-dashboard">` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L428 | `* Test dashboard data generation` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L430 | `public function test_generate_dashboard_data() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L434 | `$dashboard_data = $this->visualizer->generate_dashboard_data('test_handle');` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L436 | `$this->assertIsArray($dashboard_data);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L437 | `$this->assertArrayHasKey('charts', $dashboard_data);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L438 | `$this->assertArrayHasKey('top_patterns', $dashboard_data);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L439 | `$this->assertArrayHasKey('score', $dashboard_data);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L440 | `$this->assertArrayHasKey('summary', $dashboard_data);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L441 | `$this->assertArrayHasKey('recommendations', $dashboard_data);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L444 | `$this->assertArrayHasKey('length', $dashboard_data['charts']);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L445 | `$this->assertArrayHasKey('tone', $dashboard_data['charts']);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L446 | `$this->assertArrayHasKey('time', $dashboard_data['charts']);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L447 | `$this->assertArrayHasKey('format', $dashboard_data['charts']);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L448 | `$this->assertArrayHasKey('correlation', $dashboard_data['charts']);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L451 | `$this->assertEquals(150, $dashboard_data['summary']['total_reposts']);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L452 | `$this->assertEquals(120, $dashboard_data['summary']['avg_length']);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L453 | `$this->assertEquals(45.5, $dashboard_data['summary']['avg_engagement_per_repost']);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L456 | `$this->assertIsArray($dashboard_data['recommendations']);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L457 | `$this->assertNotEmpty($dashboard_data['recommendations']);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L668 | `* Test dashboard data with no analysis` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L670 | `public function test_dashboard_data_no_analysis() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L674 | `$dashboard_data = $this->visualizer->generate_dashboard_data('test_handle');` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-pattern-visualizer.php` | L675 | `$this->assertEmpty($dashboard_data);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-openai-admin.php` | L290 | `* Test OpenAI usage dashboard field callback` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-openai-admin.php` | L292 | `public function test_openai_usage_dashboard_field_callback() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-openai-admin.php` | L295 | `$this->admin_settings->openai_usage_dashboard_field_callback();` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-openai-admin.php` | L299 | `$this->assertStringContainsString('openai-usage-dashboard', $output);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-openai-admin.php` | L637 | `$this->assertTrue($reflection->hasMethod('openai_usage_dashboard_field_callback'));` |
+
+</details>
+
+---
+
+I can see there's already some dashboard functionality in the admin settings, but I need to create a dedicated user dashboard class. Let me create the main dashboard class as specified in the task:
+
+
+---
+
+
+
+---
+
+Now let me create the dashboard templates directory and the main dashboard template:
+
+
+---
+
+```bash
+mkdir -p xelite-repost-engine/templates/dashboard
+```
+
+---
+
+Now let me create the main dashboard template:
+
+
+---
+
+```diff
+- 
++ <?php
++ /**
++  * Main Dashboard Template
++  *
++  * @package XeliteRepostEngine
++  * @since 1.0.0
++  */
++ 
++ // Prevent direct access
++ if (!defined('ABSPATH')) {
++     exit;
++ }
++ ?>
++ 
++ <div class="wrap xelite-dashboard">
++     <!-- Dashboard Header -->
++     <div class="xelite-dashboard-header">
++         <div class="header-content">
++             <h1>
++                 <span class="dashicons dashicons-share"></span>
++                 <?php _e('Repost Intelligence Dashboard', 'xelite-repost-engine'); ?>
++             </h1>
++             <p class="description">
++                 <?php _e('Generate AI-powered content based on repost patterns from your target accounts.', 'xelite-repost-engine'); ?>
++             </p>
++         </div>
++         
++         <div class="header-actions">
++             <button type="button" class="button button-secondary" id="refresh-dashboard">
++                 <span class="dashicons dashicons-update"></span>
++                 <?php _e('Refresh', 'xelite-repost-engine'); ?>
++             </button>
++             
++             <button type="button" class="button button-primary" id="quick-generate">
++                 <span class="dashicons dashicons-admin-generic"></span>
++                 <?php _e('Quick Generate', 'xelite-repost-engine'); ?>
++             </button>
++         </div>
++     </div>
++ 
++     <!-- Dashboard Navigation -->
++     <div class="xelite-dashboard-nav">
++         <ul class="xelite-nav-tabs">
++             <?php foreach ($tabs as $tab_slug => $tab): ?>
++                 <li>
++                     <a href="<?php echo esc_url(add_query_arg('tab', $tab_slug, remove_query_arg('tab'))); ?>" 
++                        class="<?php echo $current_tab === $tab_slug ? 'active' : ''; ?>"
++                        data-tab="<?php echo esc_attr($tab_slug); ?>">
++                         <span class="dashicons <?php echo esc_attr($tab['icon']); ?>"></span>
++                         <?php echo esc_html($tab['title']); ?>
++                     </a>
++                 </li>
++             <?php endforeach; ?>
++         </ul>
++     </div>
++ 
++     <!-- Dashboard Content -->
++     <div class="xelite-dashboard-content">
++         <?php if (isset($tabs[$current_tab]['callback']) && is_callable($tabs[$current_tab]['callback'])): ?>
++             <?php call_user_func($tabs[$current_tab]['callback']); ?>
++         <?php else: ?>
++             <div class="xelite-error">
++                 <p><?php _e('Tab content not found.', 'xelite-repost-engine'); ?></p>
++             </div>
++         <?php endif; ?>
++     </div>
++ 
++     <!-- Loading Overlay -->
++     <div class="xelite-loading-overlay" style="display: none;">
++         <div class="xelite-loading-spinner">
++             <div class="xelite-loading"></div>
++             <p><?php _e('Loading...', 'xelite-repost-engine'); ?></p>
++         </div>
++     </div>
++ 
++     <!-- Messages Container -->
++     <div id="xelite-messages"></div>
++ </div>
++ 
++ <!-- Quick Generate Modal -->
++ <div id="quick-generate-modal" class="xelite-modal" style="display: none;">
++     <div class="xelite-modal-content">
++         <div class="xelite-modal-header">
++             <h3><?php _e('Quick Content Generation', 'xelite-repost-engine'); ?></h3>
++             <button type="button" class="xelite-modal-close">&times;</button>
++         </div>
++         
++         <div class="xelite-modal-body">
++             <div class="form-group">
++                 <label for="quick-topic"><?php _e('Topic or Theme:', 'xelite-repost-engine'); ?></label>
++                 <input type="text" id="quick-topic" class="regular-text" 
++                        placeholder="<?php _e('Enter a topic or theme for your content', 'xelite-repost-engine'); ?>">
++             </div>
++             
++             <div class="form-group">
++                 <label for="quick-tone"><?php _e('Tone:', 'xelite-repost-engine'); ?></label>
++                 <select id="quick-tone">
++                     <option value="conversational"><?php _e('Conversational', 'xelite-repost-engine'); ?></option>
++                     <option value="professional"><?php _e('Professional', 'xelite-repost-engine'); ?></option>
++                     <option value="casual"><?php _e('Casual', 'xelite-repost-engine'); ?></option>
++                     <option value="enthusiastic"><?php _e('Enthusiastic', 'xelite-repost-engine'); ?></option>
++                     <option value="informative"><?php _e('Informative', 'xelite-repost-engine'); ?></option>
++                 </select>
++             </div>
++             
++             <div class="form-group">
++                 <label for="quick-length"><?php _e('Length:', 'xelite-repost-engine'); ?></label>
++                 <select id="quick-length">
++                     <option value="short"><?php _e('Short (100-150 chars)', 'xelite-repost-engine'); ?></option>
++                     <option value="medium" selected><?php _e('Medium (150-250 chars)', 'xelite-repost-engine'); ?></option>
++                     <option value="long"><?php _e('Long (250+ chars)', 'xelite-repost-engine'); ?></option>
++                 </select>
++             </div>
++         </div>
++         
++         <div class="xelite-modal-footer">
++             <button type="button" class="button button-secondary xelite-modal-close">
++                 <?php _e('Cancel', 'xelite-repost-engine'); ?>
++             </button>
++             <button type="button" class="button button-primary" id="generate-quick-content">
++                 <span class="dashicons dashicons-admin-generic"></span>
++                 <?php _e('Generate Content', 'xelite-repost-engine'); ?>
++             </button>
++         </div>
++     </div>
++ </div>
++ 
++ <!-- Content Preview Modal -->
++ <div id="content-preview-modal" class="xelite-modal" style="display: none;">
++     <div class="xelite-modal-content">
++         <div class="xelite-modal-header">
++             <h3><?php _e('Generated Content Preview', 'xelite-repost-engine'); ?></h3>
++             <button type="button" class="xelite-modal-close">&times;</button>
++         </div>
++         
++         <div class="xelite-modal-body">
++             <div class="content-preview">
++                 <div class="content-text" id="preview-content-text"></div>
++                 <div class="content-meta">
++                     <span class="content-length" id="preview-content-length"></span>
++                     <span class="content-tokens" id="preview-content-tokens"></span>
++                 </div>
++             </div>
++         </div>
++         
++         <div class="xelite-modal-footer">
++             <button type="button" class="button button-secondary xelite-modal-close">
++                 <?php _e('Close', 'xelite-repost-engine'); ?>
++             </button>
++             <button type="button" class="button button-secondary" id="regenerate-content">
++                 <span class="dashicons dashicons-update"></span>
++                 <?php _e('Regenerate', 'xelite-repost-engine'); ?>
++             </button>
++             <button type="button" class="button button-primary" id="save-content">
++                 <span class="dashicons dashicons-saved"></span>
++                 <?php _e('Save Content', 'xelite-repost-engine'); ?>
++             </button>
++         </div>
++     </div>
++ </div>
++ 
++ <script type="text/javascript">
++ jQuery(document).ready(function($) {
++     // Initialize dashboard functionality
++     if (typeof XeliteDashboard !== 'undefined') {
++         XeliteDashboard.init();
++     }
++ });
++ </script> 
+```
+
+---
+
+Now let me create the overview tab template:
+
+
+---
+
+```diff
+- 
++ <?php
++ /**
++  * Dashboard Overview Tab Template
++  *
++  * @package XeliteRepostEngine
++  * @since 1.0.0
++  */
++ 
++ // Prevent direct access
++ if (!defined('ABSPATH')) {
++     exit;
++ }
++ ?>
++ 
++ <div class="xelite-overview">
++     <!-- Welcome Section -->
++     <div class="xelite-welcome-section">
++         <div class="welcome-content">
++             <h2><?php _e('Welcome to Repost Intelligence', 'xelite-repost-engine'); ?></h2>
++             <p><?php _e('Generate AI-powered content that\'s more likely to be reposted by analyzing patterns from your target accounts.', 'xelite-repost-engine'); ?></p>
++         </div>
++         
++         <div class="welcome-actions">
++             <button type="button" class="button button-primary" id="get-started">
++                 <span class="dashicons dashicons-admin-generic"></span>
++                 <?php _e('Generate Your First Content', 'xelite-repost-engine'); ?>
++             </button>
++             
++             <button type="button" class="button button-secondary" id="view-tutorial">
++                 <span class="dashicons dashicons-video-alt3"></span>
++                 <?php _e('View Tutorial', 'xelite-repost-engine'); ?>
++             </button>
++         </div>
++     </div>
++ 
++     <!-- Key Metrics -->
++     <div class="xelite-metrics-section">
++         <h3><?php _e('Your Content Generation Stats', 'xelite-repost-engine'); ?></h3>
++         
++         <div class="xelite-analytics-grid">
++             <div class="xelite-analytics-card">
++                 <span class="xelite-analytics-number" id="total-generated">
++                     <?php echo esc_html($dashboard_data['generation_stats']['total_generated']); ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Total Generated', 'xelite-repost-engine'); ?></span>
++             </div>
++             
++             <div class="xelite-analytics-card secondary">
++                 <span class="xelite-analytics-number" id="total-saved">
++                     <?php echo esc_html($dashboard_data['generation_stats']['total_saved']); ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Saved Content', 'xelite-repost-engine'); ?></span>
++             </div>
++             
++             <div class="xelite-analytics-card warning">
++                 <span class="xelite-analytics-number" id="total-posted">
++                     <?php echo esc_html($dashboard_data['generation_stats']['total_posted']); ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Posted Content', 'xelite-repost-engine'); ?></span>
++             </div>
++             
++             <div class="xelite-analytics-card danger">
++                 <span class="xelite-analytics-number" id="target-accounts">
++                     <?php echo esc_html(count($dashboard_data['account_stats']['target_accounts'] ?? array())); ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Target Accounts', 'xelite-repost-engine'); ?></span>
++             </div>
++         </div>
++     </div>
++ 
++     <!-- Quick Actions -->
++     <div class="xelite-quick-actions">
++         <h3><?php _e('Quick Actions', 'xelite-repost-engine'); ?></h3>
++         
++         <div class="xelite-dashboard-grid">
++             <div class="xelite-dashboard-card">
++                 <h3>
++                     <span class="dashicons dashicons-admin-generic"></span>
++                     <?php _e('Generate Content', 'xelite-repost-engine'); ?>
++                 </h3>
++                 <p><?php _e('Create AI-powered content based on your target account patterns.', 'xelite-repost-engine'); ?></p>
++                 <button type="button" class="button button-primary" data-action="generate-content">
++                     <?php _e('Start Generating', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++             
++             <div class="xelite-dashboard-card">
++                 <h3>
++                     <span class="dashicons dashicons-chart-line"></span>
++                     <?php _e('View Patterns', 'xelite-repost-engine'); ?>
++                 </h3>
++                 <p><?php _e('Analyze repost patterns from your target accounts.', 'xelite-repost-engine'); ?></p>
++                 <button type="button" class="button button-secondary" data-action="view-patterns">
++                     <?php _e('View Patterns', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++             
++             <div class="xelite-dashboard-card">
++                 <h3>
++                     <span class="dashicons dashicons-admin-settings"></span>
++                     <?php _e('Update Settings', 'xelite-repost-engine'); ?>
++                 </h3>
++                 <p><?php _e('Configure your personal settings and preferences.', 'xelite-repost-engine'); ?></p>
++                 <button type="button" class="button button-secondary" data-action="update-settings">
++                     <?php _e('Go to Settings', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++             
++             <div class="xelite-dashboard-card">
++                 <h3>
++                     <span class="dashicons dashicons-chart-bar"></span>
++                     <?php _e('View Analytics', 'xelite-repost-engine'); ?>
++                 </h3>
++                 <p><?php _e('See detailed analytics and insights about your content performance.', 'xelite-repost-engine'); ?></p>
++                 <button type="button" class="button button-secondary" data-action="view-analytics">
++                     <?php _e('View Analytics', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++         </div>
++     </div>
++ 
++     <!-- Recent Patterns -->
++     <div class="xelite-recent-patterns">
++         <h3><?php _e('Recent Repost Patterns', 'xelite-repost-engine'); ?></h3>
++         
++         <?php if (!empty($dashboard_data['recent_patterns'])): ?>
++             <div class="xelite-patterns-list">
++                 <?php foreach (array_slice($dashboard_data['recent_patterns'], 0, 3) as $pattern): ?>
++                     <div class="xelite-pattern-item">
++                         <div class="pattern-header">
++                             <span class="pattern-source">@<?php echo esc_html($pattern['source_handle']); ?></span>
++                             <span class="pattern-count"><?php echo esc_html($pattern['repost_count']); ?> reposts</span>
++                         </div>
++                         <div class="pattern-text">
++                             <?php echo esc_html(wp_trim_words($pattern['text'], 20, '...')); ?>
++                         </div>
++                         <div class="pattern-meta">
++                             <span class="pattern-length"><?php echo esc_html(strlen($pattern['text'])); ?> chars</span>
++                             <span class="pattern-engagement"><?php echo esc_html($pattern['avg_engagement']); ?> avg engagement</span>
++                         </div>
++                     </div>
++                 <?php endforeach; ?>
++             </div>
++             
++             <div class="patterns-actions">
++                 <button type="button" class="button button-secondary" data-action="view-all-patterns">
++                     <?php _e('View All Patterns', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++         <?php else: ?>
++             <div class="xelite-empty-state">
++                 <div class="empty-icon">
++                     <span class="dashicons dashicons-chart-line"></span>
++                 </div>
++                 <h4><?php _e('No Patterns Yet', 'xelite-repost-engine'); ?></h4>
++                 <p><?php _e('Start by adding target accounts to monitor for repost patterns.', 'xelite-repost-engine'); ?></p>
++                 <button type="button" class="button button-primary" data-action="add-target-accounts">
++                     <?php _e('Add Target Accounts', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++         <?php endif; ?>
++     </div>
++ 
++     <!-- User Context Summary -->
++     <?php if (!empty($dashboard_data['user_context'])): ?>
++         <div class="xelite-user-context">
++             <h3><?php _e('Your Content Profile', 'xelite-repost-engine'); ?></h3>
++             
++             <div class="xelite-dashboard-grid">
++                 <?php if (!empty($dashboard_data['user_context']['writing_style'])): ?>
++                     <div class="xelite-dashboard-card">
++                         <h4><?php _e('Writing Style', 'xelite-repost-engine'); ?></h4>
++                         <p><?php echo esc_html($dashboard_data['user_context']['writing_style']); ?></p>
++                     </div>
++                 <?php endif; ?>
++                 
++                 <?php if (!empty($dashboard_data['user_context']['audience'])): ?>
++                     <div class="xelite-dashboard-card">
++                         <h4><?php _e('Target Audience', 'xelite-repost-engine'); ?></h4>
++                         <p><?php echo esc_html($dashboard_data['user_context']['audience']); ?></p>
++                     </div>
++                 <?php endif; ?>
++                 
++                 <?php if (!empty($dashboard_data['user_context']['topic'])): ?>
++                     <div class="xelite-dashboard-card">
++                         <h4><?php _e('Main Topic', 'xelite-repost-engine'); ?></h4>
++                         <p><?php echo esc_html($dashboard_data['user_context']['topic']); ?></p>
++                     </div>
++                 <?php endif; ?>
++                 
++                 <?php if (!empty($dashboard_data['user_context']['offer'])): ?>
++                     <div class="xelite-dashboard-card">
++                         <h4><?php _e('Your Offer', 'xelite-repost-engine'); ?></h4>
++                         <p><?php echo esc_html($dashboard_data['user_context']['offer']); ?></p>
++                     </div>
++                 <?php endif; ?>
++             </div>
++             
++             <div class="context-actions">
++                 <button type="button" class="button button-secondary" data-action="update-context">
++                     <?php _e('Update Profile', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++         </div>
++     <?php else: ?>
++         <div class="xelite-setup-required">
++             <h3><?php _e('Complete Your Profile', 'xelite-repost-engine'); ?></h3>
++             <p><?php _e('To generate personalized content, please complete your content profile.', 'xelite-repost-engine'); ?></p>
++             <button type="button" class="button button-primary" data-action="setup-profile">
++                 <?php _e('Complete Profile', 'xelite-repost-engine'); ?>
++             </button>
++         </div>
++     <?php endif; ?>
++ 
++     <!-- Last Generated Content -->
++     <?php if (!empty($dashboard_data['generation_stats']['last_generated'])): ?>
++         <div class="xelite-last-generated">
++             <h3><?php _e('Last Generated Content', 'xelite-repost-engine'); ?></h3>
++             <div class="xelite-dashboard-card">
++                 <div class="content-preview">
++                     <p class="content-text"><?php echo esc_html($dashboard_data['generation_stats']['last_generated']); ?></p>
++                     <div class="content-actions">
++                         <button type="button" class="xelite-content-btn copy" data-content="<?php echo esc_attr($dashboard_data['generation_stats']['last_generated']); ?>">
++                             <span class="dashicons dashicons-clipboard"></span>
++                             <?php _e('Copy', 'xelite-repost-engine'); ?>
++                         </button>
++                         <button type="button" class="xelite-content-btn save" data-content="<?php echo esc_attr($dashboard_data['generation_stats']['last_generated']); ?>">
++                             <span class="dashicons dashicons-saved"></span>
++                             <?php _e('Save', 'xelite-repost-engine'); ?>
++                         </button>
++                     </div>
++                 </div>
++             </div>
++         </div>
++     <?php endif; ?>
++ </div> 
+```
+
+---
+
+Now let me create the content generator tab template:
+
+
+---
+
+```diff
+- 
++ <?php
++ /**
++  * Dashboard Content Generator Tab Template
++  *
++  * @package XeliteRepostEngine
++  * @since 1.0.0
++  */
++ 
++ // Prevent direct access
++ if (!defined('ABSPATH')) {
++     exit;
++ }
++ ?>
++ 
++ <div class="xelite-content-generator">
++     <!-- Generator Header -->
++     <div class="generator-header">
++         <h2><?php _e('AI Content Generator', 'xelite-repost-engine'); ?></h2>
++         <p><?php _e('Generate personalized content based on your profile and target account patterns.', 'xelite-repost-engine'); ?></p>
++     </div>
++ 
++     <!-- Generator Form -->
++     <div class="xelite-generator-form">
++         <div class="form-section">
++             <h3><?php _e('Content Parameters', 'xelite-repost-engine'); ?></h3>
++             
++             <div class="form-row">
++                 <div class="form-group">
++                     <label for="content-topic"><?php _e('Topic or Theme:', 'xelite-repost-engine'); ?></label>
++                     <input type="text" id="content-topic" class="regular-text" 
++                            placeholder="<?php _e('Enter a topic or theme for your content', 'xelite-repost-engine'); ?>"
++                            value="<?php echo esc_attr($user_context['topic'] ?? ''); ?>">
++                     <p class="description"><?php _e('What would you like to create content about?', 'xelite-repost-engine'); ?></p>
++                 </div>
++             </div>
++             
++             <div class="form-row">
++                 <div class="form-group">
++                     <label for="content-tone"><?php _e('Tone:', 'xelite-repost-engine'); ?></label>
++                     <select id="content-tone">
++                         <option value="conversational"><?php _e('Conversational', 'xelite-repost-engine'); ?></option>
++                         <option value="professional"><?php _e('Professional', 'xelite-repost-engine'); ?></option>
++                         <option value="casual"><?php _e('Casual', 'xelite-repost-engine'); ?></option>
++                         <option value="enthusiastic"><?php _e('Enthusiastic', 'xelite-repost-engine'); ?></option>
++                         <option value="informative"><?php _e('Informative', 'xelite-repost-engine'); ?></option>
++                         <option value="humorous"><?php _e('Humorous', 'xelite-repost-engine'); ?></option>
++                         <option value="inspirational"><?php _e('Inspirational', 'xelite-repost-engine'); ?></option>
++                     </select>
++                     <p class="description"><?php _e('Choose the tone that best fits your brand and audience.', 'xelite-repost-engine'); ?></p>
++                 </div>
++                 
++                 <div class="form-group">
++                     <label for="content-length"><?php _e('Length:', 'xelite-repost-engine'); ?></label>
++                     <select id="content-length">
++                         <option value="short"><?php _e('Short (100-150 chars)', 'xelite-repost-engine'); ?></option>
++                         <option value="medium" selected><?php _e('Medium (150-250 chars)', 'xelite-repost-engine'); ?></option>
++                         <option value="long"><?php _e('Long (250+ chars)', 'xelite-repost-engine'); ?></option>
++                     </select>
++                     <p class="description"><?php _e('Select the desired length for your content.', 'xelite-repost-engine'); ?></p>
++                 </div>
++             </div>
++             
++             <div class="form-row">
++                 <div class="form-group">
++                     <label for="content-creativity"><?php _e('Creativity Level:', 'xelite-repost-engine'); ?></label>
++                     <select id="content-creativity">
++                         <option value="conservative"><?php _e('Conservative (More predictable)', 'xelite-repost-engine'); ?></option>
++                         <option value="balanced" selected><?php _e('Balanced (Recommended)', 'xelite-repost-engine'); ?></option>
++                         <option value="creative"><?php _e('Creative (More unique)', 'xelite-repost-engine'); ?></option>
++                     </select>
++                     <p class="description"><?php _e('How creative should the AI be when generating content?', 'xelite-repost-engine'); ?></p>
++                 </div>
++                 
++                 <div class="form-group">
++                     <label for="content-count"><?php _e('Number of Variations:', 'xelite-repost-engine'); ?></label>
++                     <select id="content-count">
++                         <option value="1"><?php _e('1 variation', 'xelite-repost-engine'); ?></option>
++                         <option value="3" selected><?php _e('3 variations', 'xelite-repost-engine'); ?></option>
++                         <option value="5"><?php _e('5 variations', 'xelite-repost-engine'); ?></option>
++                     </select>
++                     <p class="description"><?php _e('How many different content variations would you like?', 'xelite-repost-engine'); ?></p>
++                 </div>
++             </div>
++         </div>
++ 
++         <!-- Pattern Selection -->
++         <div class="form-section">
++             <h3><?php _e('Pattern Influence', 'xelite-repost-engine'); ?></h3>
++             
++             <div class="form-row">
++                 <div class="form-group">
++                     <label for="pattern-influence"><?php _e('Pattern Influence Level:', 'xelite-repost-engine'); ?></label>
++                     <select id="pattern-influence">
++                         <option value="low"><?php _e('Low (Minimal pattern influence)', 'xelite-repost-engine'); ?></option>
++                         <option value="medium" selected><?php _e('Medium (Balanced pattern influence)', 'xelite-repost-engine'); ?></option>
++                         <option value="high"><?php _e('High (Strong pattern influence)', 'xelite-repost-engine'); ?></option>
++                     </select>
++                     <p class="description"><?php _e('How much should repost patterns influence the generated content?', 'xelite-repost-engine'); ?></p>
++                 </div>
++             </div>
++             
++             <div class="form-row">
++                 <div class="form-group">
++                     <label><?php _e('Target Accounts to Consider:', 'xelite-repost-engine'); ?></label>
++                     <div class="pattern-accounts">
++                         <?php if (!empty($patterns)): ?>
++                             <?php foreach (array_slice($patterns, 0, 5) as $pattern): ?>
++                                 <label class="pattern-account-checkbox">
++                                     <input type="checkbox" name="pattern_accounts[]" 
++                                            value="<?php echo esc_attr($pattern['source_handle']); ?>" 
++                                            checked>
++                                     <span class="account-name">@<?php echo esc_html($pattern['source_handle']); ?></span>
++                                     <span class="account-stats">
++                                         (<?php echo esc_html($pattern['repost_count']); ?> reposts)
++                                     </span>
++                                 </label>
++                             <?php endforeach; ?>
++                             
++                             <?php if (count($patterns) > 5): ?>
++                                 <div class="more-accounts">
++                                     <button type="button" class="button button-secondary" id="show-all-accounts">
++                                         <?php _e('Show All Accounts', 'xelite-repost-engine'); ?>
++                                     </button>
++                                 </div>
++                             <?php endif; ?>
++                         <?php else: ?>
++                             <p class="no-patterns"><?php _e('No patterns available. Add target accounts first.', 'xelite-repost-engine'); ?></p>
++                         <?php endif; ?>
++                     </div>
++                 </div>
++             </div>
++         </div>
++ 
++         <!-- Advanced Options -->
++         <div class="form-section">
++             <h3><?php _e('Advanced Options', 'xelite-repost-engine'); ?></h3>
++             
++             <div class="form-row">
++                 <div class="form-group">
++                     <label for="include-hashtags"><?php _e('Include Hashtags:', 'xelite-repost-engine'); ?></label>
++                     <select id="include-hashtags">
++                         <option value="auto" selected><?php _e('Auto-generate relevant hashtags', 'xelite-repost-engine'); ?></option>
++                         <option value="manual"><?php _e('Let me add hashtags manually', 'xelite-repost-engine'); ?></option>
++                         <option value="none"><?php _e('No hashtags', 'xelite-repost-engine'); ?></option>
++                     </select>
++                 </div>
++                 
++                 <div class="form-group">
++                     <label for="include-cta"><?php _e('Include Call-to-Action:', 'xelite-repost-engine'); ?></label>
++                     <select id="include-cta">
++                         <option value="auto" selected><?php _e('Auto-generate CTA', 'xelite-repost-engine'); ?></option>
++                         <option value="manual"><?php _e('Let me add CTA manually', 'xelite-repost-engine'); ?></option>
++                         <option value="none"><?php _e('No CTA', 'xelite-repost-engine'); ?></option>
++                     </select>
++                 </div>
++             </div>
++             
++             <div class="form-row">
++                 <div class="form-group">
++                     <label for="custom-instructions"><?php _e('Custom Instructions (Optional):', 'xelite-repost-engine'); ?></label>
++                     <textarea id="custom-instructions" rows="3" 
++                               placeholder="<?php _e('Add any specific instructions or requirements for the content...', 'xelite-repost-engine'); ?>"></textarea>
++                     <p class="description"><?php _e('Any additional instructions for the AI content generator.', 'xelite-repost-engine'); ?></p>
++                 </div>
++             </div>
++         </div>
++ 
++         <!-- Generate Button -->
++         <div class="form-actions">
++             <button type="button" class="button button-primary button-large" id="generate-content">
++                 <span class="dashicons dashicons-admin-generic"></span>
++                 <?php _e('Generate Content', 'xelite-repost-engine'); ?>
++             </button>
++             
++             <button type="button" class="button button-secondary" id="save-preset">
++                 <span class="dashicons dashicons-saved"></span>
++                 <?php _e('Save as Preset', 'xelite-repost-engine'); ?>
++             </button>
++             
++             <button type="button" class="button button-secondary" id="load-preset">
++                 <span class="dashicons dashicons-admin-tools"></span>
++                 <?php _e('Load Preset', 'xelite-repost-engine'); ?>
++             </button>
++         </div>
++     </div>
++ 
++     <!-- Generated Content Results -->
++     <div class="xelite-generated-content" id="generated-content-results" style="display: none;">
++         <h3><?php _e('Generated Content', 'xelite-repost-engine'); ?></h3>
++         
++         <div class="content-variations" id="content-variations">
++             <!-- Generated content will be inserted here -->
++         </div>
++         
++         <div class="content-actions">
++             <button type="button" class="button button-secondary" id="regenerate-all">
++                 <span class="dashicons dashicons-update"></span>
++                 <?php _e('Regenerate All', 'xelite-repost-engine'); ?>
++             </button>
++             
++             <button type="button" class="button button-primary" id="save-all-content">
++                 <span class="dashicons dashicons-saved"></span>
++                 <?php _e('Save All Content', 'xelite-repost-engine'); ?>
++             </button>
++         </div>
++     </div>
++ 
++     <!-- Content Templates -->
++     <div class="content-templates" id="content-templates" style="display: none;">
++         <h3><?php _e('Content Template', 'xelite-repost-engine'); ?></h3>
++         
++         <div class="template-item">
++             <div class="template-content">
++                 <div class="content-text" id="template-text"></div>
++                 <div class="content-meta">
++                     <span class="content-length" id="template-length"></span>
++                     <span class="content-tokens" id="template-tokens"></span>
++                     <span class="content-score" id="template-score"></span>
++                 </div>
++             </div>
++             
++             <div class="template-actions">
++                 <button type="button" class="xelite-content-btn copy" data-target="template-text">
++                     <span class="dashicons dashicons-clipboard"></span>
++                     <?php _e('Copy', 'xelite-repost-engine'); ?>
++                 </button>
++                 
++                 <button type="button" class="xelite-content-btn save" data-target="template-text">
++                     <span class="dashicons dashicons-saved"></span>
++                     <?php _e('Save', 'xelite-repost-engine'); ?>
++                 </button>
++                 
++                 <button type="button" class="xelite-content-btn edit" data-target="template-text">
++                     <span class="dashicons dashicons-edit"></span>
++                     <?php _e('Edit', 'xelite-repost-engine'); ?>
++                 </button>
++                 
++                 <button type="button" class="xelite-content-btn optimize" data-target="template-text">
++                     <span class="dashicons dashicons-admin-tools"></span>
++                     <?php _e('Optimize', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++         </div>
++     </div>
++ 
++     <!-- Loading State -->
++     <div class="xelite-loading-state" id="generation-loading" style="display: none;">
++         <div class="loading-content">
++             <div class="xelite-loading"></div>
++             <h3><?php _e('Generating Content...', 'xelite-repost-engine'); ?></h3>
++             <p><?php _e('This may take a few moments. We\'re analyzing patterns and creating personalized content for you.', 'xelite-repost-engine'); ?></p>
++         </div>
++     </div>
++ 
++     <!-- Error State -->
++     <div class="xelite-error-state" id="generation-error" style="display: none;">
++         <div class="error-content">
++             <span class="dashicons dashicons-warning"></span>
++             <h3><?php _e('Generation Failed', 'xelite-repost-engine'); ?></h3>
++             <p id="error-message"><?php _e('An error occurred while generating content. Please try again.', 'xelite-repost-engine'); ?></p>
++             <button type="button" class="button button-primary" id="retry-generation">
++                 <?php _e('Try Again', 'xelite-repost-engine'); ?>
++             </button>
++         </div>
++     </div>
++ </div>
++ 
++ <!-- Content Variation Template -->
++ <script type="text/template" id="content-variation-template">
++     <div class="content-variation" data-variation-id="{{variation_id}}">
++         <div class="variation-header">
++             <h4><?php _e('Variation', 'xelite-repost-engine'); ?> #{{variation_number}}</h4>
++             <div class="variation-score">
++                 <span class="score-label"><?php _e('Repost Score:', 'xelite-repost-engine'); ?></span>
++                 <span class="score-value">{{repost_score}}%</span>
++             </div>
++         </div>
++         
++         <div class="variation-content">
++             <div class="content-text">{{content_text}}</div>
++             <div class="content-meta">
++                 <span class="content-length">{{content_length}} chars</span>
++                 <span class="content-tokens">{{token_count}} tokens</span>
++                 <span class="content-tone">{{tone}}</span>
++             </div>
++         </div>
++         
++         <div class="variation-actions">
++             <button type="button" class="xelite-content-btn copy" data-content="{{content_text}}">
++                 <span class="dashicons dashicons-clipboard"></span>
++                 <?php _e('Copy', 'xelite-repost-engine'); ?>
++             </button>
++             
++             <button type="button" class="xelite-content-btn save" data-content="{{content_text}}">
++                 <span class="dashicons dashicons-saved"></span>
++                 <?php _e('Save', 'xelite-repost-engine'); ?>
++             </button>
++             
++             <button type="button" class="xelite-content-btn edit" data-variation-id="{{variation_id}}">
++                 <span class="dashicons dashicons-edit"></span>
++                 <?php _e('Edit', 'xelite-repost-engine'); ?>
++             </button>
++             
++             <button type="button" class="xelite-content-btn optimize" data-variation-id="{{variation_id}}">
++                 <span class="dashicons dashicons-admin-tools"></span>
++                 <?php _e('Optimize', 'xelite-repost-engine'); ?>
++             </button>
++             
++             <button type="button" class="xelite-content-btn regenerate" data-variation-id="{{variation_id}}">
++                 <span class="dashicons dashicons-update"></span>
++                 <?php _e('Regenerate', 'xelite-repost-engine'); ?>
++             </button>
++         </div>
++     </div>
++ </script> 
+```
+
+---
+
+Now let me create the remaining tab templates. Let me create the patterns tab:
+
+
+---
+
+```diff
+- 
++ <?php
++ /**
++  * Dashboard Patterns Tab Template
++  *
++  * @package XeliteRepostEngine
++  * @since 1.0.0
++  */
++ 
++ // Prevent direct access
++ if (!defined('ABSPATH')) {
++     exit;
++ }
++ ?>
++ 
++ <div class="xelite-patterns">
++     <!-- Patterns Header -->
++     <div class="patterns-header">
++         <h2><?php _e('Repost Patterns Analysis', 'xelite-repost-engine'); ?></h2>
++         <p><?php _e('Analyze patterns from your target accounts to understand what content gets reposted.', 'xelite-repost-engine'); ?></p>
++     </div>
++ 
++     <!-- Pattern Filters -->
++     <div class="pattern-filters">
++         <div class="filter-section">
++             <h3><?php _e('Filter Patterns', 'xelite-repost-engine'); ?></h3>
++             
++             <div class="filter-controls">
++                 <div class="filter-group">
++                     <label for="pattern-source"><?php _e('Source Account:', 'xelite-repost-engine'); ?></label>
++                     <select id="pattern-source">
++                         <option value=""><?php _e('All Accounts', 'xelite-repost-engine'); ?></option>
++                         <?php if (!empty($patterns)): ?>
++                             <?php foreach (array_unique(array_column($patterns, 'source_handle')) as $handle): ?>
++                                 <option value="<?php echo esc_attr($handle); ?>">@<?php echo esc_html($handle); ?></option>
++                             <?php endforeach; ?>
++                         <?php endif; ?>
++                     </select>
++                 </div>
++                 
++                 <div class="filter-group">
++                     <label for="pattern-min-reposts"><?php _e('Min Reposts:', 'xelite-repost-engine'); ?></label>
++                     <select id="pattern-min-reposts">
++                         <option value="1"><?php _e('1+ reposts', 'xelite-repost-engine'); ?></option>
++                         <option value="5" selected><?php _e('5+ reposts', 'xelite-repost-engine'); ?></option>
++                         <option value="10"><?php _e('10+ reposts', 'xelite-repost-engine'); ?></option>
++                         <option value="20"><?php _e('20+ reposts', 'xelite-repost-engine'); ?></option>
++                     </select>
++                 </div>
++                 
++                 <div class="filter-group">
++                     <label for="pattern-sort"><?php _e('Sort By:', 'xelite-repost-engine'); ?></label>
++                     <select id="pattern-sort">
++                         <option value="repost_count" selected><?php _e('Repost Count', 'xelite-repost-engine'); ?></option>
++                         <option value="engagement"><?php _e('Engagement', 'xelite-repost-engine'); ?></option>
++                         <option value="date"><?php _e('Date', 'xelite-repost-engine'); ?></option>
++                         <option value="length"><?php _e('Length', 'xelite-repost-engine'); ?></option>
++                     </select>
++                 </div>
++                 
++                 <div class="filter-group">
++                     <label for="pattern-search"><?php _e('Search:', 'xelite-repost-engine'); ?></label>
++                     <input type="text" id="pattern-search" placeholder="<?php _e('Search patterns...', 'xelite-repost-engine'); ?>">
++                 </div>
++             </div>
++             
++             <div class="filter-actions">
++                 <button type="button" class="button button-primary" id="apply-filters">
++                     <?php _e('Apply Filters', 'xelite-repost-engine'); ?>
++                 </button>
++                 
++                 <button type="button" class="button button-secondary" id="reset-filters">
++                     <?php _e('Reset', 'xelite-repost-engine'); ?>
++                 </button>
++                 
++                 <button type="button" class="button button-secondary" id="export-patterns">
++                     <span class="dashicons dashicons-download"></span>
++                     <?php _e('Export', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++         </div>
++     </div>
++ 
++     <!-- Pattern Statistics -->
++     <div class="pattern-statistics">
++         <div class="xelite-analytics-grid">
++             <div class="xelite-analytics-card">
++                 <span class="xelite-analytics-number" id="total-patterns">
++                     <?php echo esc_html(count($patterns)); ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Total Patterns', 'xelite-repost-engine'); ?></span>
++             </div>
++             
++             <div class="xelite-analytics-card secondary">
++                 <span class="xelite-analytics-number" id="avg-reposts">
++                     <?php 
++                     if (!empty($patterns)) {
++                         $avg_reposts = array_sum(array_column($patterns, 'repost_count')) / count($patterns);
++                         echo esc_html(round($avg_reposts, 1));
++                     } else {
++                         echo '0';
++                     }
++                     ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Avg Reposts', 'xelite-repost-engine'); ?></span>
++             </div>
++             
++             <div class="xelite-analytics-card warning">
++                 <span class="xelite-analytics-number" id="avg-engagement">
++                     <?php 
++                     if (!empty($patterns)) {
++                         $avg_engagement = array_sum(array_column($patterns, 'avg_engagement')) / count($patterns);
++                         echo esc_html(round($avg_engagement, 1));
++                     } else {
++                         echo '0';
++                     }
++                     ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Avg Engagement', 'xelite-repost-engine'); ?></span>
++             </div>
++             
++             <div class="xelite-analytics-card danger">
++                 <span class="xelite-analytics-number" id="unique-sources">
++                     <?php 
++                     if (!empty($patterns)) {
++                         echo esc_html(count(array_unique(array_column($patterns, 'source_handle'))));
++                     } else {
++                         echo '0';
++                     }
++                     ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Source Accounts', 'xelite-repost-engine'); ?></span>
++             </div>
++         </div>
++     </div>
++ 
++     <!-- Patterns List -->
++     <div class="patterns-content">
++         <?php if (!empty($patterns)): ?>
++             <div class="patterns-list" id="patterns-list">
++                 <?php foreach ($patterns as $index => $pattern): ?>
++                     <div class="xelite-pattern-item" data-pattern-id="<?php echo esc_attr($pattern['id'] ?? $index); ?>">
++                         <div class="pattern-header">
++                             <div class="pattern-source">
++                                 <span class="source-handle">@<?php echo esc_html($pattern['source_handle']); ?></span>
++                                 <span class="repost-count"><?php echo esc_html($pattern['repost_count']); ?> reposts</span>
++                             </div>
++                             
++                             <div class="pattern-meta">
++                                 <span class="pattern-date"><?php echo esc_html(date('M j, Y', strtotime($pattern['created_at'] ?? 'now'))); ?></span>
++                                 <span class="pattern-engagement"><?php echo esc_html($pattern['avg_engagement']); ?> avg engagement</span>
++                             </div>
++                         </div>
++                         
++                         <div class="pattern-content">
++                             <div class="pattern-text">
++                                 <?php echo esc_html($pattern['text']); ?>
++                             </div>
++                             
++                             <div class="pattern-details">
++                                 <div class="detail-item">
++                                     <span class="detail-label"><?php _e('Length:', 'xelite-repost-engine'); ?></span>
++                                     <span class="detail-value"><?php echo esc_html(strlen($pattern['text'])); ?> chars</span>
++                                 </div>
++                                 
++                                 <div class="detail-item">
++                                     <span class="detail-label"><?php _e('Tone:', 'xelite-repost-engine'); ?></span>
++                                     <span class="detail-value"><?php echo esc_html($pattern['tone'] ?? 'N/A'); ?></span>
++                                 </div>
++                                 
++                                 <div class="detail-item">
++                                     <span class="detail-label"><?php _e('Format:', 'xelite-repost-engine'); ?></span>
++                                     <span class="detail-value"><?php echo esc_html($pattern['format'] ?? 'Text'); ?></span>
++                                 </div>
++                                 
++                                 <div class="detail-item">
++                                     <span class="detail-label"><?php _e('Hashtags:', 'xelite-repost-engine'); ?></span>
++                                     <span class="detail-value"><?php echo esc_html($pattern['hashtag_count'] ?? 0); ?></span>
++                                 </div>
++                             </div>
++                         </div>
++                         
++                         <div class="pattern-actions">
++                             <button type="button" class="xelite-content-btn copy" data-content="<?php echo esc_attr($pattern['text']); ?>">
++                                 <span class="dashicons dashicons-clipboard"></span>
++                                 <?php _e('Copy', 'xelite-repost-engine'); ?>
++                             </button>
++                             
++                             <button type="button" class="xelite-content-btn analyze" data-pattern-id="<?php echo esc_attr($pattern['id'] ?? $index); ?>">
++                                 <span class="dashicons dashicons-chart-line"></span>
++                                 <?php _e('Analyze', 'xelite-repost-engine'); ?>
++                             </button>
++                             
++                             <button type="button" class="xelite-content-btn generate-similar" data-pattern-id="<?php echo esc_attr($pattern['id'] ?? $index); ?>">
++                                 <span class="dashicons dashicons-admin-generic"></span>
++                                 <?php _e('Generate Similar', 'xelite-repost-engine'); ?>
++                             </button>
++                             
++                             <button type="button" class="xelite-content-btn bookmark" data-pattern-id="<?php echo esc_attr($pattern['id'] ?? $index); ?>">
++                                 <span class="dashicons dashicons-bookmark"></span>
++                                 <?php _e('Bookmark', 'xelite-repost-engine'); ?>
++                             </button>
++                         </div>
++                     </div>
++                 <?php endforeach; ?>
++             </div>
++             
++             <!-- Pagination -->
++             <div class="patterns-pagination">
++                 <div class="pagination-info">
++                     <span class="showing-info"><?php _e('Showing', 'xelite-repost-engine'); ?> <span id="showing-start">1</span>-<span id="showing-end"><?php echo esc_html(min(20, count($patterns))); ?></span> <?php _e('of', 'xelite-repost-engine'); ?> <span id="total-count"><?php echo esc_html(count($patterns)); ?></span> <?php _e('patterns', 'xelite-repost-engine'); ?></span>
++                 </div>
++                 
++                 <div class="pagination-controls">
++                     <button type="button" class="button button-secondary" id="prev-page" disabled>
++                         <?php _e('Previous', 'xelite-repost-engine'); ?>
++                     </button>
++                     
++                     <span class="page-numbers">
++                         <span class="current-page">1</span> / <span class="total-pages"><?php echo esc_html(ceil(count($patterns) / 20)); ?></span>
++                     </span>
++                     
++                     <button type="button" class="button button-secondary" id="next-page" <?php echo count($patterns) <= 20 ? 'disabled' : ''; ?>>
++                         <?php _e('Next', 'xelite-repost-engine'); ?>
++                     </button>
++                 </div>
++             </div>
++         <?php else: ?>
++             <div class="xelite-empty-state">
++                 <div class="empty-icon">
++                     <span class="dashicons dashicons-chart-line"></span>
++                 </div>
++                 <h4><?php _e('No Patterns Available', 'xelite-repost-engine'); ?></h4>
++                 <p><?php _e('No repost patterns have been analyzed yet. This could be because:', 'xelite-repost-engine'); ?></p>
++                 <ul>
++                     <li><?php _e('No target accounts have been added', 'xelite-repost-engine'); ?></li>
++                     <li><?php _e('Pattern analysis hasn\'t been run yet', 'xelite-repost-engine'); ?></li>
++                     <li><?php _e('No repost data has been collected', 'xelite-repost-engine'); ?></li>
++                 </ul>
++                 
++                 <div class="empty-actions">
++                     <button type="button" class="button button-primary" data-action="add-target-accounts">
++                         <?php _e('Add Target Accounts', 'xelite-repost-engine'); ?>
++                     </button>
++                     
++                     <button type="button" class="button button-secondary" data-action="run-analysis">
++                         <?php _e('Run Pattern Analysis', 'xelite-repost-engine'); ?>
++                     </button>
++                 </div>
++             </div>
++         <?php endif; ?>
++     </div>
++ 
++     <!-- Pattern Analysis Modal -->
++     <div id="pattern-analysis-modal" class="xelite-modal" style="display: none;">
++         <div class="xelite-modal-content">
++             <div class="xelite-modal-header">
++                 <h3><?php _e('Pattern Analysis', 'xelite-repost-engine'); ?></h3>
++                 <button type="button" class="xelite-modal-close">&times;</button>
++             </div>
++             
++             <div class="xelite-modal-body">
++                 <div class="analysis-content" id="analysis-content">
++                     <!-- Analysis content will be loaded here -->
++                 </div>
++             </div>
++             
++             <div class="xelite-modal-footer">
++                 <button type="button" class="button button-secondary xelite-modal-close">
++                     <?php _e('Close', 'xelite-repost-engine'); ?>
++                 </button>
++                 
++                 <button type="button" class="button button-primary" id="generate-from-analysis">
++                     <span class="dashicons dashicons-admin-generic"></span>
++                     <?php _e('Generate Similar Content', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++         </div>
++     </div>
++ 
++     <!-- Loading State -->
++     <div class="xelite-loading-state" id="patterns-loading" style="display: none;">
++         <div class="loading-content">
++             <div class="xelite-loading"></div>
++             <h3><?php _e('Loading Patterns...', 'xelite-repost-engine'); ?></h3>
++             <p><?php _e('Analyzing repost patterns from your target accounts.', 'xelite-repost-engine'); ?></p>
++         </div>
++     </div>
++ </div> 
+```
+
+---
+
+Now let me create the analytics and settings tab templates. Let me create the analytics tab:
+
+
+---
+
+```diff
+- 
++ <?php
++ /**
++  * Dashboard Analytics Tab Template
++  *
++  * @package XeliteRepostEngine
++  * @since 1.0.0
++  */
++ 
++ // Prevent direct access
++ if (!defined('ABSPATH')) {
++     exit;
++ }
++ ?>
++ 
++ <div class="xelite-analytics">
++     <!-- Analytics Header -->
++     <div class="analytics-header">
++         <h2><?php _e('Content Analytics & Insights', 'xelite-repost-engine'); ?></h2>
++         <p><?php _e('Track your content performance and get insights to improve your repost success rate.', 'xelite-repost-engine'); ?></p>
++     </div>
++ 
++     <!-- Analytics Overview -->
++     <div class="analytics-overview">
++         <div class="xelite-analytics-grid">
++             <div class="xelite-analytics-card">
++                 <span class="xelite-analytics-number" id="total-content">
++                     <?php echo esc_html($analytics_data['summary']['total_reposts'] ?? 0); ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Total Content', 'xelite-repost-engine'); ?></span>
++             </div>
++             
++             <div class="xelite-analytics-card secondary">
++                 <span class="xelite-analytics-number" id="avg-engagement">
++                     <?php echo esc_html(round($analytics_data['summary']['avg_engagement_per_repost'] ?? 0, 1)); ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Avg Engagement', 'xelite-repost-engine'); ?></span>
++             </div>
++             
++             <div class="xelite-analytics-card warning">
++                 <span class="xelite-analytics-number" id="repost-rate">
++                     <?php 
++                     $repost_rate = isset($analytics_data['summary']['repost_rate']) ? $analytics_data['summary']['repost_rate'] : 0;
++                     echo esc_html(round($repost_rate * 100, 1)) . '%';
++                     ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Repost Rate', 'xelite-repost-engine'); ?></span>
++             </div>
++             
++             <div class="xelite-analytics-card danger">
++                 <span class="xelite-analytics-number" id="best-performing">
++                     <?php echo esc_html($analytics_data['summary']['best_performing_length'] ?? 0); ?>
++                 </span>
++                 <span class="xelite-analytics-label"><?php _e('Best Length (chars)', 'xelite-repost-engine'); ?></span>
++             </div>
++         </div>
++     </div>
++ 
++     <!-- Analytics Charts -->
++     <div class="analytics-charts">
++         <div class="chart-section">
++             <h3><?php _e('Content Performance Trends', 'xelite-repost-engine'); ?></h3>
++             
++             <div class="chart-container">
++                 <canvas id="performance-chart" width="400" height="200"></canvas>
++             </div>
++             
++             <div class="chart-legend">
++                 <div class="legend-item">
++                     <span class="legend-color" style="background: #0073aa;"></span>
++                     <span class="legend-label"><?php _e('Engagement Rate', 'xelite-repost-engine'); ?></span>
++                 </div>
++                 <div class="legend-item">
++                     <span class="legend-color" style="background: #00a32a;"></span>
++                     <span class="legend-label"><?php _e('Repost Rate', 'xelite-repost-engine'); ?></span>
++                 </div>
++             </div>
++         </div>
++         
++         <div class="chart-section">
++             <h3><?php _e('Content Length Analysis', 'xelite-repost-engine'); ?></h3>
++             
++             <div class="chart-container">
++                 <canvas id="length-chart" width="400" height="200"></canvas>
++             </div>
++             
++             <div class="chart-insights">
++                 <div class="insight-item">
++                     <span class="insight-icon">📊</span>
++                     <div class="insight-content">
++                         <h4><?php _e('Optimal Length', 'xelite-repost-engine'); ?></h4>
++                         <p><?php _e('Content between 150-250 characters performs best for reposts.', 'xelite-repost-engine'); ?></p>
++                     </div>
++                 </div>
++             </div>
++         </div>
++         
++         <div class="chart-section">
++             <h3><?php _e('Tone Performance', 'xelite-repost-engine'); ?></h3>
++             
++             <div class="chart-container">
++                 <canvas id="tone-chart" width="400" height="200"></canvas>
++             </div>
++             
++             <div class="tone-breakdown">
++                 <?php if (!empty($analytics_data['charts']['tone'] ?? [])): ?>
++                     <?php foreach ($analytics_data['charts']['tone'] as $tone => $data): ?>
++                         <div class="tone-item">
++                             <span class="tone-name"><?php echo esc_html(ucfirst($tone)); ?></span>
++                             <div class="tone-bar">
++                                 <div class="tone-fill" style="width: <?php echo esc_attr($data['percentage']); ?>%"></div>
++                             </div>
++                             <span class="tone-percentage"><?php echo esc_html($data['percentage']); ?>%</span>
++                         </div>
++                     <?php endforeach; ?>
++                 <?php endif; ?>
++             </div>
++         </div>
++     </div>
++ 
++     <!-- Top Performing Content -->
++     <div class="top-performing-content">
++         <h3><?php _e('Top Performing Content', 'xelite-repost-engine'); ?></h3>
++         
++         <?php if (!empty($analytics_data['top_patterns'] ?? [])): ?>
++             <div class="content-list">
++                 <?php foreach (array_slice($analytics_data['top_patterns'], 0, 5) as $index => $content): ?>
++                     <div class="content-item">
++                         <div class="content-rank">
++                             <span class="rank-number">#<?php echo esc_html($index + 1); ?></span>
++                         </div>
++                         
++                         <div class="content-details">
++                             <div class="content-text">
++                                 <?php echo esc_html($content['text']); ?>
++                             </div>
++                             
++                             <div class="content-stats">
++                                 <span class="stat-item">
++                                     <span class="stat-label"><?php _e('Reposts:', 'xelite-repost-engine'); ?></span>
++                                     <span class="stat-value"><?php echo esc_html($content['repost_count']); ?></span>
++                                 </span>
++                                 
++                                 <span class="stat-item">
++                                     <span class="stat-label"><?php _e('Engagement:', 'xelite-repost-engine'); ?></span>
++                                     <span class="stat-value"><?php echo esc_html($content['avg_engagement']); ?></span>
++                                 </span>
++                                 
++                                 <span class="stat-item">
++                                     <span class="stat-label"><?php _e('Length:', 'xelite-repost-engine'); ?></span>
++                                     <span class="stat-value"><?php echo esc_html(strlen($content['text'])); ?> chars</span>
++                                 </span>
++                                 
++                                 <span class="stat-item">
++                                     <span class="stat-label"><?php _e('Tone:', 'xelite-repost-engine'); ?></span>
++                                     <span class="stat-value"><?php echo esc_html($content['tone'] ?? 'N/A'); ?></span>
++                                 </span>
++                             </div>
++                         </div>
++                         
++                         <div class="content-actions">
++                             <button type="button" class="xelite-content-btn copy" data-content="<?php echo esc_attr($content['text']); ?>">
++                                 <span class="dashicons dashicons-clipboard"></span>
++                                 <?php _e('Copy', 'xelite-repost-engine'); ?>
++                             </button>
++                             
++                             <button type="button" class="xelite-content-btn analyze" data-content-id="<?php echo esc_attr($content['id'] ?? $index); ?>">
++                                 <span class="dashicons dashicons-chart-line"></span>
++                                 <?php _e('Analyze', 'xelite-repost-engine'); ?>
++                             </button>
++                         </div>
++                     </div>
++                 <?php endforeach; ?>
++             </div>
++         <?php else: ?>
++             <div class="xelite-empty-state">
++                 <div class="empty-icon">
++                     <span class="dashicons dashicons-chart-bar"></span>
++                 </div>
++                 <h4><?php _e('No Analytics Data', 'xelite-repost-engine'); ?></h4>
++                 <p><?php _e('Analytics data will appear here once you start generating and tracking content performance.', 'xelite-repost-engine'); ?></p>
++             </div>
++         <?php endif; ?>
++     </div>
++ 
++     <!-- Recommendations -->
++     <div class="analytics-recommendations">
++         <h3><?php _e('AI-Powered Recommendations', 'xelite-repost-engine'); ?></h3>
++         
++         <?php if (!empty($analytics_data['recommendations'] ?? [])): ?>
++             <div class="recommendations-list">
++                 <?php foreach ($analytics_data['recommendations'] as $recommendation): ?>
++                     <div class="recommendation-item">
++                         <div class="recommendation-icon">
++                             <span class="dashicons dashicons-lightbulb"></span>
++                         </div>
++                         
++                         <div class="recommendation-content">
++                             <h4><?php echo esc_html($recommendation['title']); ?></h4>
++                             <p><?php echo esc_html($recommendation['description']); ?></p>
++                             
++                             <?php if (!empty($recommendation['action'])): ?>
++                                 <button type="button" class="button button-secondary" data-action="<?php echo esc_attr($recommendation['action']); ?>">
++                                     <?php echo esc_html($recommendation['action_text'] ?? __('Apply', 'xelite-repost-engine')); ?>
++                                 </button>
++                             <?php endif; ?>
++                         </div>
++                     </div>
++                 <?php endforeach; ?>
++             </div>
++         <?php else: ?>
++             <div class="recommendations-placeholder">
++                 <p><?php _e('AI recommendations will appear here based on your content performance analysis.', 'xelite-repost-engine'); ?></p>
++             </div>
++         <?php endif; ?>
++     </div>
++ 
++     <!-- Export Options -->
++     <div class="analytics-export">
++         <h3><?php _e('Export Analytics', 'xelite-repost-engine'); ?></h3>
++         
++         <div class="export-options">
++             <div class="export-option">
++                 <h4><?php _e('Export Data', 'xelite-repost-engine'); ?></h4>
++                 <p><?php _e('Download your analytics data in various formats for further analysis.', 'xelite-repost-engine'); ?></p>
++                 
++                 <div class="export-buttons">
++                     <button type="button" class="button button-secondary" id="export-csv">
++                         <span class="dashicons dashicons-media-spreadsheet"></span>
++                         <?php _e('Export CSV', 'xelite-repost-engine'); ?>
++                     </button>
++                     
++                     <button type="button" class="button button-secondary" id="export-json">
++                         <span class="dashicons dashicons-media-code"></span>
++                         <?php _e('Export JSON', 'xelite-repost-engine'); ?>
++                     </button>
++                     
++                     <button type="button" class="button button-secondary" id="export-pdf">
++                         <span class="dashicons dashicons-media-document"></span>
++                         <?php _e('Export PDF Report', 'xelite-repost-engine'); ?>
++                     </button>
++                 </div>
++             </div>
++             
++             <div class="export-option">
++                 <h4><?php _e('Schedule Reports', 'xelite-repost-engine'); ?></h4>
++                 <p><?php _e('Set up automated reports to be sent to your email.', 'xelite-repost-engine'); ?></p>
++                 
++                 <button type="button" class="button button-primary" id="schedule-report">
++                     <span class="dashicons dashicons-calendar-alt"></span>
++                     <?php _e('Schedule Report', 'xelite-repost-engine'); ?>
++                 </button>
++             </div>
++         </div>
++     </div>
++ 
++     <!-- Loading State -->
++     <div class="xelite-loading-state" id="analytics-loading" style="display: none;">
++         <div class="loading-content">
++             <div class="xelite-loading"></div>
++             <h3><?php _e('Loading Analytics...', 'xelite-repost-engine'); ?></h3>
++             <p><?php _e('Analyzing your content performance data.', 'xelite-repost-engine'); ?></p>
++         </div>
++     </div>
++ </div>
++ 
++ <!-- Analytics Chart Scripts -->
++ <script type="text/javascript">
++ jQuery(document).ready(function($) {
++     // Initialize analytics charts when the page loads
++     if (typeof XeliteAnalytics !== 'undefined') {
++         XeliteAnalytics.initCharts();
++     }
++ });
++ </script> 
+```
+
+---
+
+Now let me create the settings tab template:
+
+
+---
+
+Cancelled
+
+---
+
+_**User**_
+
+continue
+
+---
+
+_**Assistant**_
+
+I'll continue by creating the settings tab template and then integrating the dashboard into the main plugin structure.
+
+
+---
+
+
+
+---
+
+Now let me integrate the dashboard into the main plugin structure. First, let me update the container to register the dashboard service:
+
+
+---
+
+Read file: xelite-repost-engine/includes/class-xelite-repost-engine-container.php
+
+---
+
+Read file: xelite-repost-engine/includes/class-xelite-repost-engine-container.php
+
+---
+
+Now let me add the dashboard service to the container:
+
+
+---
+
+
+
+---
+
+Now let me update the main plugin file to load the dashboard class:
+
+
+---
+
+Read file: xelite-repost-engine/xelite-repost-engine.php
+
+---
+
+Let me add the dashboard class to the dependencies:
+
+
+---
+
+
+
+---
+
+Now let me create a JavaScript file for the dashboard functionality:
+
+
+---
+
+```diff
+  /**
+-  * Xelite Repost Engine - Dashboard JavaScript
++  * Xelite Repost Engine Dashboard JavaScript
+   *
+   * @package XeliteRepostEngine
+```
+
+```diff
+      'use strict';
+  
+-     // Dashboard plugin object
+-     var XeliteDashboard = {
++     // Dashboard namespace
++     window.XeliteDashboard = {
+          
+-         // Initialize the dashboard
++         /**
++          * Initialize dashboard functionality
++          */
+          init: function() {
+              this.bindEvents();
+-             this.initComponents();
+-             this.loadInitialData();
+-             console.log('Xelite Repost Engine Dashboard initialized');
++             this.initModals();
++             this.initTabs();
++             this.initForms();
++             this.initCharts();
+          },
+  
+-         // Bind event handlers
++         /**
++          * Bind event handlers
++          */
+          bindEvents: function() {
+-             // Tab navigation
+-             $(document).on('click', '.xelite-nav-tabs a', this.handleTabNavigation);
++             // Quick generate button
++             $(document).on('click', '#quick-generate', this.showQuickGenerateModal);
++             
++             // Generate content button
++             $(document).on('click', '#generate-content', this.generateContent);
++             
++             // Save content button
++             $(document).on('click', '#save-content', this.saveContent);
++             
++             // Copy content buttons
++             $(document).on('click', '.xelite-content-btn.copy', this.copyContent);
++             
++             // Save content buttons
++             $(document).on('click', '.xelite-content-btn.save', this.saveContent);
++             
++             // Edit content buttons
++             $(document).on('click', '.xelite-content-btn.edit', this.editContent);
++             
++             // Optimize content buttons
++             $(document).on('click', '.xelite-content-btn.optimize', this.optimizeContent);
++             
++             // Regenerate content buttons
++             $(document).on('click', '.xelite-content-btn.regenerate', this.regenerateContent);
++             
++             // Pattern analysis buttons
++             $(document).on('click', '.xelite-content-btn.analyze', this.analyzePattern);
++             
++             // Generate similar content buttons
++             $(document).on('click', '.xelite-content-btn.generate-similar', this.generateSimilarContent);
++             
++             // Bookmark pattern buttons
++             $(document).on('click', '.xelite-content-btn.bookmark', this.bookmarkPattern);
+              
+              // Settings form submission
+-             $(document).on('submit', '.xelite-settings-form', this.handleSettingsSave);
++             $(document).on('submit', '#user-settings-form', this.saveSettings);
+              
+-             // API test buttons
+-             $(document).on('click', '.xelite-test-api', this.handleApiTest);
+-             
+-             // Refresh analytics
+-             $(document).on('click', '.xelite-refresh-analytics', this.handleRefreshAnalytics);
++             // Export buttons
++             $(document).on('click', '#export-patterns', this.exportPatterns);
++             $(document).on('click', '#export-csv', this.exportCSV);
++             $(document).on('click', '#export-json', this.exportJSON);
++             $(document).on('click', '#export-pdf', this.exportPDF);
+              
+-             // Export data
+-             $(document).on('click', '.xelite-export-data', this.handleExportData);
+-             
+-             // Import data
+-             $(document).on('change', '.xelite-import-file', this.handleImportData);
++             // Import/Export settings
++             $(document).on('click', '#export-settings', this.exportSettings);
++             $(document).on('click', '#import-settings', this.showImportModal);
++             $(document).on('click', '#confirm-import', this.importSettings);
+              
+-             // Delete patterns
+-             $(document).on('click', '.xelite-delete-patterns', this.handleDeletePatterns);
++             // Reset settings
++             $(document).on('click', '#reset-settings', this.resetSettings);
++             
++             // Filter controls
++             $(document).on('click', '#apply-filters', this.applyFilters);
++             $(document).on('click', '#reset-filters', this.resetFilters);
+              
+-             // Bulk actions
+-             $(document).on('change', '.xelite-bulk-action', this.handleBulkAction);
+-         },
+- 
+-         // Initialize components
+-         initComponents: function() {
+-             this.initCharts();
+-             this.initDataTables();
+-             this.initTooltips();
+-             this.initAutoSave();
+-             this.initCharacterCount();
++             // Pagination
++             $(document).on('click', '#prev-page', this.previousPage);
++             $(document).on('click', '#next-page', this.nextPage);
++             
++             // Quick actions
++             $(document).on('click', '[data-action]', this.handleQuickAction);
++             
++             // Modal close buttons
++             $(document).on('click', '.xelite-modal-close', this.closeModal);
++             
++             // Close modal on overlay click
++             $(document).on('click', '.xelite-modal', function(e) {
++                 if (e.target === this) {
++                     XeliteDashboard.closeModal();
++                 }
++             });
++             
++             // Escape key to close modals
++             $(document).on('keydown', function(e) {
++                 if (e.key === 'Escape') {
++                     XeliteDashboard.closeModal();
++                 }
++             });
+          },
+  
+-         // Load initial data
+-         loadInitialData: function() {
+-             this.loadAnalytics();
+-             this.loadRecentPatterns();
+-             this.loadSettings();
++         /**
++          * Initialize modals
++          */
++         initModals: function() {
++             // Modal functionality is handled by event bindings
+          },
+  
+-         // Handle tab navigation
+-         handleTabNavigation: function(e) {
+-             e.preventDefault();
+-             
+-             var $link = $(this);
+-             var target = $link.attr('href');
+-             
+-             // Update active tab
+-             $('.xelite-nav-tabs a').removeClass('active');
+-             $link.addClass('active');
+-             
+-             // Show target content
+-             $('.xelite-tab-content').hide();
+-             $(target).show();
+-             
+-             // Load tab-specific data
+-             XeliteDashboard.loadTabData(target);
+-         },
+- 
+-         // Load tab-specific data
+-         loadTabData: function(tabId) {
+-             switch (tabId) {
+-                 case '#analytics':
+-                     XeliteDashboard.loadAnalytics();
+-                     break;
+-                 case '#patterns':
+-                     XeliteDashboard.loadPatterns();
+-                     break;
+-                 case '#generator':
+-                     XeliteDashboard.loadGeneratorSettings();
+-                     break;
+-                 case '#settings':
+-                     XeliteDashboard.loadSettings();
+-                     break;
+-             }
+-         },
+- 
+-         // Load analytics data
+-         loadAnalytics: function() {
+-             var $container = $('#analytics-content');
+-             
+-             $container.html('<div class="xelite-loading">Loading analytics...</div>');
+-             
+-             $.ajax({
+-                 url: xeliteRepostEngine.ajax_url,
+-                 type: 'POST',
+-                 data: {
+-                     action: 'xelite_repost_engine_get_analytics',
+-                     nonce: xeliteRepostEngine.nonce
+-                 },
+-                 success: function(response) {
++         /**
++          * Initialize tabs
++          */
++         initTabs: function() {
++             // Tab switching is handled by WordPress admin
++         },
++ 
++         /**
++          * Initialize forms
++          */
++         initForms: function() {
++             // Form validation and submission
++             this.validateForms();
++         },
++ 
++         /**
++          * Initialize charts
++          */
++         initCharts: function() {
++             // Initialize analytics charts if Chart.js is available
++             if (typeof Chart !== 'undefined') {
++                 this.initAnalyticsCharts();
++             }
++         },
++ 
++         /**
++          * Show quick generate modal
++          */
++         showQuickGenerateModal: function() {
++             $('#quick-generate-modal').show();
++         },
++ 
++         /**
++          * Generate content
++          */
++         generateContent: function() {
++             var $button = $(this);
++             var $form = $button.closest('.xelite-generator-form');
++             
++             // Collect form data
++             var formData = {
++                 action: 'xelite_dashboard_generate_content',
++                 nonce: xelite_dashboard.nonce,
++                 topic: $('#content-topic').val(),
++                 tone: $('#content-tone').val(),
++                 length: $('#content-length').val(),
++                 creativity: $('#content-creativity').val(),
++                 count: $('#content-count').val(),
++                 pattern_influence: $('#pattern-influence').val(),
++                 include_hashtags: $('#include-hashtags').val(),
++                 include_cta: $('#include-cta').val(),
++                 custom_instructions: $('#custom-instructions').val(),
++                 pattern_accounts: $('input[name="pattern_accounts[]"]:checked').map(function() {
++                     return this.value;
++                 }).get()
++             };
++             
++             // Show loading state
++             XeliteDashboard.showLoading('#generation-loading');
++             $button.prop('disabled', true);
++             
++             // Make AJAX request
++             $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
++                 XeliteDashboard.hideLoading('#generation-loading');
++                 $button.prop('disabled', false);
++                 
+                  if (response.success) {
+-                         XeliteDashboard.displayAnalytics(response.data);
++                     XeliteDashboard.displayGeneratedContent(response.data);
+                  } else {
+-                         $container.html('<div class="xelite-error">' + (response.data.message || xeliteRepostEngine.strings.error) + '</div>');
++                     XeliteDashboard.showError(response.data);
+                  }
+-                 },
+-                 error: function() {
+-                     $container.html('<div class="xelite-error">' + xeliteRepostEngine.strings.error + '</div>');
+-                 }
++             }).fail(function() {
++                 XeliteDashboard.hideLoading('#generation-loading');
++                 $button.prop('disabled', false);
++                 XeliteDashboard.showError('Network error occurred. Please try again.');
+              });
+          },
+  
+-         // Display analytics
+-         displayAnalytics: function(data) {
+-             var html = '<div class="xelite-analytics-grid">';
++         /**
++          * Display generated content
++          */
++         displayGeneratedContent: function(content) {
++             var $results = $('#generated-content-results');
++             var $variations = $('#content-variations');
++             
++             // Clear previous results
++             $variations.empty();
+              
+-             // Analytics cards
+-             html += '<div class="xelite-analytics-card">';
+-             html += '<span class="xelite-analytics-number">' + data.total_patterns + '</span>';
+-             html += '<span class="xelite-analytics-label">Total Patterns</span>';
+-             html += '</div>';
+-             
+-             html += '<div class="xelite-analytics-card secondary">';
+-             html += '<span class="xelite-analytics-number">' + data.total_reposts + '</span>';
+-             html += '<span class="xelite-analytics-label">Total Reposts</span>';
+-             html += '</div>';
+-             
+-             html += '<div class="xelite-analytics-card warning">';
+-             html += '<span class="xelite-analytics-number">' + data.avg_reposts + '</span>';
+-             html += '<span class="xelite-analytics-label">Avg Reposts</span>';
+-             html += '</div>';
+-             
+-             html += '<div class="xelite-analytics-card danger">';
+-             html += '<span class="xelite-analytics-number">' + data.top_accounts + '</span>';
+-             html += '<span class="xelite-analytics-label">Top Accounts</span>';
+-             html += '</div>';
+-             
+-             html += '</div>';
+-             
+-             // Charts container
+-             html += '<div class="xelite-charts-container">';
+-             html += '<div class="xelite-chart-wrapper">';
+-             html += '<canvas id="reposts-chart"></canvas>';
+-             html += '</div>';
+-             html += '<div class="xelite-chart-wrapper">';
+-             html += '<canvas id="patterns-chart"></canvas>';
+-             html += '</div>';
+-             html += '</div>';
+-             
+-             $('#analytics-content').html(html);
++             // Add each variation
++             if (Array.isArray(content)) {
++                 content.forEach(function(variation, index) {
++                     var template = $('#content-variation-template').html();
++                     var html = template
++                         .replace(/\{\{variation_id\}\}/g, variation.id || index)
++                         .replace(/\{\{variation_number\}\}/g, index + 1)
++                         .replace(/\{\{content_text\}\}/g, variation.text)
++                         .replace(/\{\{content_length\}\}/g, variation.text.length)
++                         .replace(/\{\{token_count\}\}/g, variation.tokens || 0)
++                         .replace(/\{\{tone\}\}/g, variation.tone || 'N/A')
++                         .replace(/\{\{repost_score\}\}/g, variation.repost_score || 0);
++                     
++                     $variations.append(html);
++                 });
++             } else {
++                 // Single content item
++                 var template = $('#content-variation-template').html();
++                 var html = template
++                     .replace(/\{\{variation_id\}\}/g, content.id || 0)
++                     .replace(/\{\{variation_number\}\}/g, 1)
++                     .replace(/\{\{content_text\}\}/g, content.text)
++                     .replace(/\{\{content_length\}\}/g, content.text.length)
++                     .replace(/\{\{token_count\}\}/g, content.tokens || 0)
++                     .replace(/\{\{tone\}\}/g, content.tone || 'N/A')
++                     .replace(/\{\{repost_score\}\}/g, content.repost_score || 0);
++                 
++                 $variations.append(html);
++             }
++             
++             // Show results
++             $results.show();
++             
++             // Scroll to results
++             $('html, body').animate({
++                 scrollTop: $results.offset().top - 100
++             }, 500);
++         },
++ 
++         /**
++          * Save content
++          */
++         saveContent: function() {
++             var $button = $(this);
++             var content = $button.data('content') || $button.closest('.content-variation').find('.content-text').text();
++             var title = prompt('Enter a title for this content:', 'Generated Content');
++             
++             if (!title) return;
++             
++             var formData = {
++                 action: 'xelite_dashboard_save_content',
++                 nonce: xelite_dashboard.nonce,
++                 content: content,
++                 title: title
++             };
++             
++             $button.prop('disabled', true);
++             
++             $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
++                 $button.prop('disabled', false);
++                 
++                 if (response.success) {
++                     XeliteDashboard.showSuccess('Content saved successfully!');
++                 } else {
++                     XeliteDashboard.showError(response.data);
++                 }
++             }).fail(function() {
++                 $button.prop('disabled', false);
++                 XeliteDashboard.showError('Failed to save content. Please try again.');
++             });
++         },
++ 
++         /**
++          * Copy content to clipboard
++          */
++         copyContent: function() {
++             var $button = $(this);
++             var content = $button.data('content') || $button.closest('.content-variation').find('.content-text').text();
+              
+-             // Initialize charts
+-             XeliteDashboard.initCharts(data);
+-         },
+- 
+-         // Initialize charts
+-         initCharts: function(data) {
+-             // Reposts over time chart
+-             if (data.reposts_chart && $('#reposts-chart').length) {
+-                 var ctx = document.getElementById('reposts-chart').getContext('2d');
+-                 new Chart(ctx, {
+-                     type: 'line',
+-                     data: {
+-                         labels: data.reposts_chart.labels,
+-                         datasets: [{
+-                             label: 'Reposts',
+-                             data: data.reposts_chart.data,
+-                             borderColor: '#0073aa',
+-                             backgroundColor: 'rgba(0, 115, 170, 0.1)',
+-                             tension: 0.4
+-                         }]
+-                     },
+-                     options: {
+-                         responsive: true,
+-                         plugins: {
+-                             title: {
+-                                 display: true,
+-                                 text: 'Reposts Over Time'
+-                             }
+-                         }
+-                     }
+-                 });
+-             }
+-             
+-             // Patterns by account chart
+-             if (data.patterns_chart && $('#patterns-chart').length) {
+-                 var ctx = document.getElementById('patterns-chart').getContext('2d');
+-                 new Chart(ctx, {
+-                     type: 'doughnut',
+-                     data: {
+-                         labels: data.patterns_chart.labels,
+-                         datasets: [{
+-                             data: data.patterns_chart.data,
+-                             backgroundColor: [
+-                                 '#0073aa',
+-                                 '#00a32a',
+-                                 '#dba617',
+-                                 '#d63638',
+-                                 '#8c8f94'
+-                             ]
+-                         }]
+-                     },
+-                     options: {
+-                         responsive: true,
+-                         plugins: {
+-                             title: {
+-                                 display: true,
+-                                 text: 'Patterns by Account'
+-                             }
+-                         }
+-                     }
+-                 });
+-             }
++             // Use modern clipboard API if available
++             if (navigator.clipboard && window.isSecureContext) {
++                 navigator.clipboard.writeText(content).then(function() {
++                     XeliteDashboard.showSuccess('Content copied to clipboard!');
++                 }).catch(function() {
++                     XeliteDashboard.fallbackCopyTextToClipboard(content);
++                 });
++             } else {
++                 XeliteDashboard.fallbackCopyTextToClipboard(content);
++             }
++         },
++ 
++         /**
++          * Fallback copy method for older browsers
++          */
++         fallbackCopyTextToClipboard: function(text) {
++             var textArea = document.createElement('textarea');
++             textArea.value = text;
++             textArea.style.top = '0';
++             textArea.style.left = '0';
++             textArea.style.position = 'fixed';
++             document.body.appendChild(textArea);
++             textArea.focus();
++             textArea.select();
++             
++             try {
++                 document.execCommand('copy');
++                 XeliteDashboard.showSuccess('Content copied to clipboard!');
++             } catch (err) {
++                 XeliteDashboard.showError('Failed to copy content. Please copy manually.');
++             }
++             
++             document.body.removeChild(textArea);
++         },
++ 
++         /**
++          * Edit content
++          */
++         editContent: function() {
++             var $button = $(this);
++             var $variation = $button.closest('.content-variation');
++             var $contentText = $variation.find('.content-text');
++             var currentText = $contentText.text();
++             
++             // Create textarea for editing
++             var $textarea = $('<textarea class="content-edit-textarea">').val(currentText);
++             $contentText.hide().after($textarea);
++             
++             // Add save/cancel buttons
++             var $editActions = $('<div class="edit-actions">')
++                 .append('<button type="button" class="button button-primary save-edit">Save</button>')
++                 .append('<button type="button" class="button button-secondary cancel-edit">Cancel</button>');
++             
++             $button.hide().after($editActions);
++             
++             // Handle save
++             $editActions.on('click', '.save-edit', function() {
++                 var newText = $textarea.val();
++                 $contentText.text(newText).show();
++                 $textarea.remove();
++                 $editActions.remove();
++                 $button.show();
++             });
++             
++             // Handle cancel
++             $editActions.on('click', '.cancel-edit', function() {
++                 $contentText.show();
++                 $textarea.remove();
++                 $editActions.remove();
++                 $button.show();
++             });
+          },
+  
+-         // Load patterns
+-         loadPatterns: function() {
+-             var $container = $('#patterns-content');
+-             
+-             $container.html('<div class="xelite-loading">Loading patterns...</div>');
+-             
+-             $.ajax({
+-                 url: xeliteRepostEngine.ajax_url,
+-                 type: 'POST',
+-                 data: {
+-                     action: 'xelite_repost_engine_get_patterns',
+-                     nonce: xeliteRepostEngine.nonce
+-                 },
+-                 success: function(response) {
++         /**
++          * Optimize content
++          */
++         optimizeContent: function() {
++             var $button = $(this);
++             var $variation = $button.closest('.content-variation');
++             var content = $variation.find('.content-text').text();
++             
++             $button.prop('disabled', true);
++             
++             var formData = {
++                 action: 'xelite_dashboard_optimize_content',
++                 nonce: xelite_dashboard.nonce,
++                 content: content
++             };
++             
++             $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
++                 $button.prop('disabled', false);
++                 
+                  if (response.success) {
+-                         XeliteDashboard.displayPatterns(response.data);
++                     $variation.find('.content-text').text(response.data.optimized_content);
++                     XeliteDashboard.showSuccess('Content optimized successfully!');
+                  } else {
+-                         $container.html('<div class="xelite-error">' + (response.data.message || xeliteRepostEngine.strings.error) + '</div>');
++                     XeliteDashboard.showError(response.data);
+                  }
+-                 },
+-                 error: function() {
+-                     $container.html('<div class="xelite-error">' + xeliteRepostEngine.strings.error + '</div>');
+-                 }
++             }).fail(function() {
++                 $button.prop('disabled', false);
++                 XeliteDashboard.showError('Failed to optimize content. Please try again.');
+              });
+          },
+  
+-         // Display patterns
+-         displayPatterns: function(data) {
+-             var html = '<div class="xelite-patterns-header">';
+-             html += '<h4>Repost Patterns (' + data.total + ')</h4>';
+-             html += '<div class="xelite-patterns-actions">';
+-             html += '<button class="xelite-refresh-patterns button">Refresh</button>';
+-             html += '<button class="xelite-export-data button">Export</button>';
+-             html += '<button class="xelite-delete-patterns button button-link-delete">Delete All</button>';
+-             html += '</div>';
+-             html += '</div>';
+-             
+-             if (data.patterns && data.patterns.length > 0) {
+-                 html += '<div class="xelite-patterns-list">';
+-                 data.patterns.forEach(function(pattern) {
+-                     html += '<div class="xelite-pattern-item" data-id="' + pattern.id + '">';
+-                     html += '<div class="xelite-pattern-header">';
+-                     html += '<span class="xelite-pattern-source">@' + XeliteDashboard.escapeHtml(pattern.source_handle) + '</span>';
+-                     html += '<span class="xelite-pattern-count">' + pattern.repost_count + ' reposts</span>';
+-                     html += '</div>';
+-                     html += '<div class="xelite-pattern-text">' + XeliteDashboard.escapeHtml(pattern.original_text) + '</div>';
+-                     html += '<div class="xelite-pattern-meta">';
+-                     html += '<span>' + XeliteDashboard.formatDate(pattern.created_at) + '</span>';
+-                     html += '<input type="checkbox" class="xelite-pattern-select" value="' + pattern.id + '">';
+-                     html += '</div>';
+-                     html += '</div>';
+-                 });
+-                 html += '</div>';
+-                 
+-                 if (data.has_more) {
+-                     html += '<div class="xelite-load-more-container">';
+-                     html += '<button class="xelite-load-more button" data-offset="' + data.patterns.length + '">Load More</button>';
+-                     html += '</div>';
+-                 }
+-             } else {
+-                 html += '<div class="xelite-no-data">No patterns found.</div>';
+-             }
+-             
+-             $('#patterns-content').html(html);
++         /**
++          * Regenerate content
++          */
++         regenerateContent: function() {
++             var $button = $(this);
++             var variationId = $button.data('variation-id');
++             
++             $button.prop('disabled', true);
++             
++             var formData = {
++                 action: 'xelite_dashboard_regenerate_content',
++                 nonce: xelite_dashboard.nonce,
++                 variation_id: variationId
++             };
++             
++             $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
++                 $button.prop('disabled', false);
++                 
++                 if (response.success) {
++                     var $variation = $button.closest('.content-variation');
++                     $variation.find('.content-text').text(response.data.content);
++                     XeliteDashboard.showSuccess('Content regenerated successfully!');
++                 } else {
++                     XeliteDashboard.showError(response.data);
++                 }
++             }).fail(function() {
++                 $button.prop('disabled', false);
++                 XeliteDashboard.showError('Failed to regenerate content. Please try again.');
++             });
++         },
++ 
++         /**
++          * Analyze pattern
++          */
++         analyzePattern: function() {
++             var $button = $(this);
++             var patternId = $button.data('pattern-id');
++             
++             var formData = {
++                 action: 'xelite_dashboard_analyze_pattern',
++                 nonce: xelite_dashboard.nonce,
++                 pattern_id: patternId
++             };
++             
++             $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
++                 if (response.success) {
++                     $('#analysis-content').html(response.data.html);
++                     $('#pattern-analysis-modal').show();
++                 } else {
++                     XeliteDashboard.showError(response.data);
++                 }
++             }).fail(function() {
++                 XeliteDashboard.showError('Failed to analyze pattern. Please try again.');
++             });
++         },
++ 
++         /**
++          * Generate similar content
++          */
++         generateSimilarContent: function() {
++             var $button = $(this);
++             var patternId = $button.data('pattern-id');
++             
++             // Close analysis modal if open
++             $('#pattern-analysis-modal').hide();
++             
++             // Switch to content generator tab
++             window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=content-generator&pattern_id=' + patternId;
+          },
+  
+-         // Handle settings save
+-         handleSettingsSave: function(e) {
+-             e.preventDefault();
+-             
+-             var $form = $(this);
+-             var $button = $form.find('button[type="submit"]');
+-             var formData = $form.serialize();
+-             
+-             // Disable button and show loading
+-             $button.prop('disabled', true).text('Saving...');
+-             
+-             $.ajax({
+-                 url: xeliteRepostEngine.ajax_url,
+-                 type: 'POST',
+-                 data: formData + '&action=xelite_repost_engine_save_settings&nonce=' + xeliteRepostEngine.nonce,
+-                 success: function(response) {
++         /**
++          * Bookmark pattern
++          */
++         bookmarkPattern: function() {
++             var $button = $(this);
++             var patternId = $button.data('pattern-id');
++             
++             var formData = {
++                 action: 'xelite_dashboard_bookmark_pattern',
++                 nonce: xelite_dashboard.nonce,
++                 pattern_id: patternId
++             };
++             
++             $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                  if (response.success) {
+-                         XeliteDashboard.showMessage('Settings saved successfully!', 'success');
++                     $button.addClass('bookmarked');
++                     XeliteDashboard.showSuccess('Pattern bookmarked!');
+                  } else {
+-                         XeliteDashboard.showMessage(response.data.message || xeliteRepostEngine.strings.error, 'error');
++                     XeliteDashboard.showError(response.data);
+                  }
+-                 },
+-                 error: function() {
+-                     XeliteDashboard.showMessage(xeliteRepostEngine.strings.error, 'error');
+-                 },
+-                 complete: function() {
+-                     $button.prop('disabled', false).text('Save Settings');
+-                 }
++             }).fail(function() {
++                 XeliteDashboard.showError('Failed to bookmark pattern. Please try again.');
+              });
+          },
+  
+-         // Handle API test
+-         handleApiTest: function(e) {
++         /**
++          * Save settings
++          */
++         saveSettings: function(e) {
+              e.preventDefault();
+              
+-             var $button = $(this);
+-             var apiType = $button.data('api');
++             var $form = $(this);
++             var $submitButton = $form.find('#save-settings');
+              
+-             // Disable button and show loading
+-             $button.prop('disabled', true).text('Testing...');
++             // Collect form data
++             var formData = new FormData($form[0]);
++             formData.append('action', 'xelite_dashboard_update_settings');
++             formData.append('nonce', xelite_dashboard.nonce);
++             
++             $submitButton.prop('disabled', true);
++             XeliteDashboard.showLoading('#settings-loading');
+              
+              $.ajax({
+-                 url: xeliteRepostEngine.ajax_url,
++                 url: xelite_dashboard.ajaxUrl,
+                  type: 'POST',
+-                 data: {
+-                     action: 'xelite_repost_engine_test_api',
+-                     api_type: apiType,
+-                     nonce: xeliteRepostEngine.nonce
+-                 },
++                 data: formData,
++                 processData: false,
++                 contentType: false,
+                  success: function(response) {
++                     $submitButton.prop('disabled', false);
++                     XeliteDashboard.hideLoading('#settings-loading');
++                     
+                      if (response.success) {
+-                         XeliteDashboard.showMessage(apiType + ' API connection successful!', 'success');
++                         XeliteDashboard.showSuccess('Settings saved successfully!');
+                      } else {
+-                         XeliteDashboard.showMessage(response.data.message || 'API test failed.', 'error');
++                         XeliteDashboard.showError(response.data);
+                      }
+                  },
+                  error: function() {
+-                     XeliteDashboard.showMessage('API test failed.', 'error');
+-                 },
+-                 complete: function() {
+-                     $button.prop('disabled', false).text('Test ' + apiType + ' API');
++                     $submitButton.prop('disabled', false);
++                     XeliteDashboard.hideLoading('#settings-loading');
++                     XeliteDashboard.showError('Failed to save settings. Please try again.');
+                  }
+              });
+          },
+  
+-         // Handle refresh analytics
+-         handleRefreshAnalytics: function(e) {
+-             e.preventDefault();
+-             XeliteDashboard.loadAnalytics();
+-         },
+- 
+-         // Handle export data
+-         handleExportData: function(e) {
+-             e.preventDefault();
+-             
+-             var $button = $(this);
+-             
+-             // Disable button and show loading
+-             $button.prop('disabled', true).text('Exporting...');
+-             
+-             $.ajax({
+-                 url: xeliteRepostEngine.ajax_url,
+-                 type: 'POST',
+-                 data: {
+-                     action: 'xelite_repost_engine_export_data',
+-                     nonce: xeliteRepostEngine.nonce
+-                 },
+-                 success: function(response) {
++         /**
++          * Export patterns
++          */
++         exportPatterns: function() {
++             var filters = {
++                 source: $('#pattern-source').val(),
++                 min_reposts: $('#pattern-min-reposts').val(),
++                 sort: $('#pattern-sort').val(),
++                 search: $('#pattern-search').val()
++             };
++             
++             var formData = {
++                 action: 'xelite_dashboard_export_patterns',
++                 nonce: xelite_dashboard.nonce,
++                 filters: filters
++             };
++             
++             $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                  if (response.success) {
+                      // Create download link
+-                         var link = document.createElement('a');
+-                         link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(response.data.csv);
+-                         link.download = 'xelite-repost-patterns-' + new Date().toISOString().split('T')[0] + '.csv';
+-                         link.click();
+-                         
+-                         XeliteDashboard.showMessage('Data exported successfully!', 'success');
++                     var blob = new Blob([response.data.csv], { type: 'text/csv' });
++                     var url = window.URL.createObjectURL(blob);
++                     var a = document.createElement('a');
++                     a.href = url;
++                     a.download = 'repost-patterns.csv';
++                     a.click();
++                     window.URL.revokeObjectURL(url);
+                  } else {
+-                         XeliteDashboard.showMessage(response.data.message || 'Export failed.', 'error');
+-                     }
++                     XeliteDashboard.showError(response.data);
++                 }
++             }).fail(function() {
++                 XeliteDashboard.showError('Failed to export patterns. Please try again.');
++             });
+          },
+-                 error: function() {
+-                     XeliteDashboard.showMessage('Export failed.', 'error');
+-                 },
+-                 complete: function() {
+-                     $button.prop('disabled', false).text('Export');
+-                 }
++ 
++         /**
++          * Export settings
++          */
++         exportSettings: function() {
++             var formData = {
++                 action: 'xelite_dashboard_export_settings',
++                 nonce: xelite_dashboard.nonce
++             };
++             
++             $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
++                 if (response.success) {
++                     var blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
++                     var url = window.URL.createObjectURL(blob);
++                     var a = document.createElement('a');
++                     a.href = url;
++                     a.download = 'xelite-settings.json';
++                     a.click();
++                     window.URL.revokeObjectURL(url);
++                 } else {
++                     XeliteDashboard.showError(response.data);
++                 }
++             }).fail(function() {
++                 XeliteDashboard.showError('Failed to export settings. Please try again.');
+              });
+          },
+  
+-         // Handle import data
+-         handleImportData: function(e) {
+-             var file = e.target.files[0];
+-             if (!file) return;
++         /**
++          * Show import modal
++          */
++         showImportModal: function() {
++             $('#settings-import-modal').show();
++         },
++ 
++         /**
++          * Import settings
++          */
++         importSettings: function() {
++             var fileInput = document.getElementById('settings-file');
++             var file = fileInput.files[0];
++             
++             if (!file) {
++                 XeliteDashboard.showError('Please select a file to import.');
++                 return;
++             }
+              
+              var reader = new FileReader();
+              reader.onload = function(e) {
+-                 var csv = e.target.result;
++                 try {
++                     var settings = JSON.parse(e.target.result);
+                      
+-                 $.ajax({
+-                     url: xeliteRepostEngine.ajax_url,
+-                     type: 'POST',
+-                     data: {
+-                         action: 'xelite_repost_engine_import_data',
+-                         csv: csv,
+-                         nonce: xeliteRepostEngine.nonce
+-                     },
+-                     success: function(response) {
++                     var formData = {
++                         action: 'xelite_dashboard_import_settings',
++                         nonce: xelite_dashboard.nonce,
++                         settings: settings
++                     };
++                     
++                     $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                          if (response.success) {
+-                             XeliteDashboard.showMessage('Data imported successfully!', 'success');
+-                             XeliteDashboard.loadPatterns();
++                             XeliteDashboard.showSuccess('Settings imported successfully!');
++                             $('#settings-import-modal').hide();
++                             location.reload();
+                          } else {
+-                             XeliteDashboard.showMessage(response.data.message || 'Import failed.', 'error');
++                             XeliteDashboard.showError(response.data);
+                          }
+-                     },
+-                     error: function() {
+-                         XeliteDashboard.showMessage('Import failed.', 'error');
++                     }).fail(function() {
++                         XeliteDashboard.showError('Failed to import settings. Please try again.');
++                     });
++                 } catch (error) {
++                     XeliteDashboard.showError('Invalid settings file format.');
+                  }
+-                 });
+              };
+              reader.readAsText(file);
+          },
+  
+-         // Handle delete patterns
+-         handleDeletePatterns: function(e) {
+-             e.preventDefault();
+-             
+-             if (!confirm('Are you sure you want to delete all patterns? This action cannot be undone.')) {
+-                 return;
+-             }
+-             
+-             var $button = $(this);
+-             
+-             // Disable button and show loading
+-             $button.prop('disabled', true).text('Deleting...');
+-             
+-             $.ajax({
+-                 url: xeliteRepostEngine.ajax_url,
+-                 type: 'POST',
+-                 data: {
+-                     action: 'xelite_repost_engine_delete_patterns',
+-                     nonce: xeliteRepostEngine.nonce
+-                 },
+-                 success: function(response) {
++         /**
++          * Reset settings
++          */
++         resetSettings: function() {
++             if (confirm('Are you sure you want to reset all settings to defaults? This action cannot be undone.')) {
++                 var formData = {
++                     action: 'xelite_dashboard_reset_settings',
++                     nonce: xelite_dashboard.nonce
++                 };
++                 
++                 $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
+                      if (response.success) {
+-                         XeliteDashboard.showMessage('Patterns deleted successfully!', 'success');
+-                         XeliteDashboard.loadPatterns();
++                         XeliteDashboard.showSuccess('Settings reset to defaults!');
++                         location.reload();
+                      } else {
+-                         XeliteDashboard.showMessage(response.data.message || 'Delete failed.', 'error');
++                         XeliteDashboard.showError(response.data);
+                      }
+-                 },
+-                 error: function() {
+-                     XeliteDashboard.showMessage('Delete failed.', 'error');
+-                 },
+-                 complete: function() {
+-                     $button.prop('disabled', false).text('Delete All');
+-                 }
+-             });
++                 }).fail(function() {
++                     XeliteDashboard.showError('Failed to reset settings. Please try again.');
++                 });
++             }
+          },
+  
+-         // Handle bulk action
+-         handleBulkAction: function(e) {
+-             var action = $(this).val();
+-             var selectedPatterns = $('.xelite-pattern-select:checked').map(function() {
+-                 return $(this).val();
+-             }).get();
+-             
+-             if (selectedPatterns.length === 0) {
+-                 XeliteDashboard.showMessage('Please select patterns to perform bulk action.', 'warning');
+-                 return;
+-             }
+-             
+-             if (action === 'delete') {
+-                 if (!confirm('Are you sure you want to delete the selected patterns?')) {
+-                     return;
+-                 }
+-             }
+-             
+-             $.ajax({
+-                 url: xeliteRepostEngine.ajax_url,
+-                 type: 'POST',
+-                 data: {
+-                     action: 'xelite_repost_engine_bulk_action',
+-                     bulk_action: action,
+-                     pattern_ids: selectedPatterns,
+-                     nonce: xeliteRepostEngine.nonce
+-                 },
+-                 success: function(response) {
++         /**
++          * Apply filters
++          */
++         applyFilters: function() {
++             var filters = {
++                 source: $('#pattern-source').val(),
++                 min_reposts: $('#pattern-min-reposts').val(),
++                 sort: $('#pattern-sort').val(),
++                 search: $('#pattern-search').val()
++             };
++             
++             var formData = {
++                 action: 'xelite_dashboard_filter_patterns',
++                 nonce: xelite_dashboard.nonce,
++                 filters: filters
++             };
++             
++             XeliteDashboard.showLoading('#patterns-loading');
++             
++             $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
++                 XeliteDashboard.hideLoading('#patterns-loading');
++                 
+                  if (response.success) {
+-                         XeliteDashboard.showMessage('Bulk action completed successfully!', 'success');
+-                         XeliteDashboard.loadPatterns();
++                     $('#patterns-list').html(response.data.html);
++                     XeliteDashboard.updatePagination(response.data.pagination);
+                  } else {
+-                         XeliteDashboard.showMessage(response.data.message || 'Bulk action failed.', 'error');
++                     XeliteDashboard.showError(response.data);
+                  }
+-                 },
+-                 error: function() {
+-                     XeliteDashboard.showMessage('Bulk action failed.', 'error');
+-                 }
++             }).fail(function() {
++                 XeliteDashboard.hideLoading('#patterns-loading');
++                 XeliteDashboard.showError('Failed to apply filters. Please try again.');
+              });
+          },
+  
+-         // Initialize data tables
+-         initDataTables: function() {
+-             if ($.fn.DataTable) {
+-                 $('.xelite-data-table').DataTable({
+-                     responsive: true,
+-                     pageLength: 25,
+-                     order: [[0, 'desc']]
+-                 });
+-             }
++         /**
++          * Reset filters
++          */
++         resetFilters: function() {
++             $('#pattern-source').val('');
++             $('#pattern-min-reposts').val('5');
++             $('#pattern-sort').val('repost_count');
++             $('#pattern-search').val('');
++             
++             XeliteDashboard.applyFilters();
+          },
+  
+-         // Initialize tooltips
+-         initTooltips: function() {
+-             $('[data-tooltip]').each(function() {
+-                 var $element = $(this);
+-                 var tooltip = $element.data('tooltip');
+-                 
+-                 $element.attr('title', tooltip);
+-             });
+-         },
+- 
+-         // Initialize auto save
+-         initAutoSave: function() {
+-             var autoSaveTimer;
+-             
+-             $('.xelite-auto-save').each(function() {
+-                 var $input = $(this);
+-                 
+-                 $input.on('input', function() {
+-                     clearTimeout(autoSaveTimer);
+-                     
+-                     autoSaveTimer = setTimeout(function() {
+-                         XeliteDashboard.autoSave($input);
+-                     }, 2000);
+-                 });
+-             });
+-         },
+- 
+-         // Auto save functionality
+-         autoSave: function($input) {
+-             var data = {
+-                 action: 'xelite_repost_engine_auto_save',
+-                 field: $input.attr('name'),
+-                 value: $input.val(),
+-                 nonce: xeliteRepostEngine.nonce
+-             };
+-             
+-             $.post(xeliteRepostEngine.ajax_url, data, function(response) {
+-                 if (response.success) {
+-                     console.log('Auto-saved successfully');
+-                 }
+-             });
++         /**
++          * Handle quick actions
++          */
++         handleQuickAction: function() {
++             var action = $(this).data('action');
++             
++             switch (action) {
++                 case 'generate-content':
++                     window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=content-generator';
++                     break;
++                 case 'view-patterns':
++                     window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=patterns';
++                     break;
++                 case 'update-settings':
++                     window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=settings';
++                     break;
++                 case 'view-analytics':
++                     window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=analytics';
++                     break;
++                 case 'add-target-accounts':
++                     window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=settings';
++                     break;
++                 case 'run-analysis':
++                     XeliteDashboard.runPatternAnalysis();
++                     break;
++                 case 'setup-profile':
++                     window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=settings';
++                     break;
++                 case 'update-context':
++                     window.location.href = window.location.href.split('?')[0] + '?page=repost-intelligence-dashboard&tab=settings';
++                     break;
++             }
+          },
+  
+-         // Initialize character count
+-         initCharacterCount: function() {
+-             $('.xelite-character-count').each(function() {
+-                 var $input = $(this);
+-                 var $counter = $input.siblings('.xelite-char-counter');
+-                 var maxLength = parseInt($input.attr('maxlength') || 280);
+-                 
+-                 $input.on('input', function() {
+-                     var length = $input.val().length;
+-                     var remaining = maxLength - length;
+-                     
+-                     $counter.text(remaining + ' characters remaining');
+-                     
+-                     if (remaining < 0) {
+-                         $counter.addClass('over-limit');
+-                     } else {
+-                         $counter.removeClass('over-limit');
+-                     }
+-                 });
+-             });
++         /**
++          * Close modal
++          */
++         closeModal: function() {
++             $('.xelite-modal').hide();
++         },
++ 
++         /**
++          * Show loading state
++          */
++         showLoading: function(selector) {
++             $(selector).show();
++         },
++ 
++         /**
++          * Hide loading state
++          */
++         hideLoading: function(selector) {
++             $(selector).hide();
++         },
++ 
++         /**
++          * Show success message
++          */
++         showSuccess: function(message) {
++             this.showMessage(message, 'success');
++         },
++ 
++         /**
++          * Show error message
++          */
++         showError: function(message) {
++             this.showMessage(message, 'error');
+          },
+  
+-         // Show message
++         /**
++          * Show message
++          */
+          showMessage: function(message, type) {
+-             var $message = $('<div class="xelite-message ' + type + '">' + message + '</div>');
++             var $messages = $('#xelite-messages');
++             var $message = $('<div class="xelite-message ' + type + '">')
++                 .text(message)
++                 .append('<button type="button" class="message-close">&times;</button>');
+              
+-             $('.xelite-dashboard').prepend($message);
++             $messages.append($message);
+              
+-             // Auto remove after 5 seconds
++             // Auto-remove after 5 seconds
+              setTimeout(function() {
+                  $message.fadeOut(function() {
+                      $(this).remove();
+                  });
+              }, 5000);
+-         },
+- 
+-         // Escape HTML
+-         escapeHtml: function(text) {
+-             var map = {
+-                 '&': '&amp;',
+-                 '<': '&lt;',
+-                 '>': '&gt;',
+-                 '"': '&quot;',
+-                 "'": '&#039;'
+-             };
+-             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
++             
++             // Manual close
++             $message.on('click', '.message-close', function() {
++                 $message.fadeOut(function() {
++                     $(this).remove();
++                 });
++             });
++         },
++ 
++         /**
++          * Validate forms
++          */
++         validateForms: function() {
++             // Add form validation logic here
++         },
++ 
++         /**
++          * Initialize analytics charts
++          */
++         initAnalyticsCharts: function() {
++             // Initialize Chart.js charts for analytics
++             // This would be implemented based on the analytics data structure
++         },
++ 
++         /**
++          * Update pagination
++          */
++         updatePagination: function(pagination) {
++             // Update pagination controls based on response
+          },
+  
+-         // Format date
+-         formatDate: function(dateString) {
+-             var date = new Date(dateString);
+-             return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
++         /**
++          * Run pattern analysis
++          */
++         runPatternAnalysis: function() {
++             var formData = {
++                 action: 'xelite_dashboard_run_analysis',
++                 nonce: xelite_dashboard.nonce
++             };
++             
++             XeliteDashboard.showLoading('#patterns-loading');
++             
++             $.post(xelite_dashboard.ajaxUrl, formData, function(response) {
++                 XeliteDashboard.hideLoading('#patterns-loading');
++                 
++                 if (response.success) {
++                     XeliteDashboard.showSuccess('Pattern analysis completed!');
++                     location.reload();
++                 } else {
++                     XeliteDashboard.showError(response.data);
++                 }
++             }).fail(function() {
++                 XeliteDashboard.hideLoading('#patterns-loading');
++                 XeliteDashboard.showError('Failed to run pattern analysis. Please try again.');
++             });
+          }
+      };
+```
+
+```diff
+      });
+  
+-     // Expose to global scope for debugging
+-     window.XeliteDashboard = XeliteDashboard;
+- 
+  })(jQuery); 
+```
+
+---
+
+Now let me create a test file for the dashboard functionality:
+
+
+---
+
+
+
+---
+
+I'll help you continue with the Xelite Repost Engine WordPress plugin development. Let me first check the current state of the project and see what task 9.1 involves.
+
+
+---
+
+<details>
+            <summary>Listed current directory • **6** results</summary>
+        
+| Name |
+|-------|
+| 📁 `xelite-repost-engine` |
+| 📁 `.git` |
+| 📁 `.taskmaster` |
+| 📁 `.cursor` |
+| 📄 `.gitignore` |
+| 📁 `.specstory` |
+
+</details>
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine • **9** results</summary>
+        
+| Name |
+|-------|
+| 📁 `tests` |
+| 📄 `xelite-repost-engine.php` |
+| 📁 `templates` |
+| 📁 `includes` |
+| 📁 `admin` |
+| 📄 `README.md` |
+| 📁 `public` |
+| 📁 `assets` |
+| 📁 `languages` |
+
+</details>
+
+---
+
+
+
+---
+
+Perfect! I can see that task 9.1 is about creating the User Dashboard UI Framework. Let me examine the current plugin structure to understand what's already in place and then proceed with implementing the dashboard.
+
+
+---
+
+Read file: xelite-repost-engine/xelite-repost-engine.php
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine/includes • **19** results</summary>
+        
+| Name |
+|-------|
+| 📄 `class-xelite-repost-engine-container.php` |
+| 📄 `class-repost-intelligence-dashboard.php` |
+| 📄 `class-xelite-repost-engine-prompt-builder.php` |
+| 📄 `class-xelite-repost-engine-openai.php` |
+| 📄 `class-xelite-repost-engine-database.php` |
+| 📄 `class-xelite-repost-engine-pattern-validator.php` |
+| 📄 `class-xelite-repost-engine-pattern-visualizer.php` |
+| 📄 `class-xelite-repost-engine-pattern-analyzer.php` |
+| 📁 `integrations` |
+| 📁 `admin` |
+| 📄 `class-xelite-repost-engine-cron.php` |
+| 📄 `class-xelite-repost-engine-scraper.php` |
+| 📁 `api` |
+| 📄 `class-xelite-repost-engine-loader.php` |
+| 📄 `class-xelite-repost-engine-user-meta.php` |
+| 📄 `class-xelite-repost-engine-assets.php` |
+| 📄 `class-xelite-repost-engine-api.php` |
+| 📁 `interfaces` |
+| 📁 `abstracts` |
+
+</details>
+
+---
+
+Great! I can see that the dashboard class already exists. Let me check its current implementation to understand what's already been done.
+
+
+---
+
+Read file: xelite-repost-engine/includes/class-repost-intelligence-dashboard.php
+
+---
+
+Now let me check if the dashboard CSS and JS files exist:
+
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine/assets • **3** results</summary>
+        
+| Name |
+|-------|
+| 📁 `css` |
+| 📁 `js` |
+| 📁 `images` |
+
+</details>
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine/assets/css • **4** results</summary>
+        
+| Name |
+|-------|
+| 📄 `cron-admin.css` |
+| 📄 `xelite-repost-engine-admin.css` |
+| 📄 `dashboard.css` |
+| 📄 `public.css` |
+
+</details>
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine/assets/js • **4** results</summary>
+        
+| Name |
+|-------|
+| 📄 `dashboard.js` |
+| 📄 `cron-admin.js` |
+| 📄 `xelite-repost-engine-admin.js` |
+| 📄 `public.js` |
+
+</details>
+
+---
+
+Let me also check if there are any dashboard templates:
+
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine/templates • **1** results</summary>
+        
+| Name |
+|-------|
+| 📁 `dashboard` |
+
+</details>
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine/templates/dashboard • **6** results</summary>
+        
+| Name |
+|-------|
+| 📄 `settings.php` |
+| 📄 `analytics.php` |
+| 📄 `patterns.php` |
+| 📄 `content-generator.php` |
+| 📄 `overview.php` |
+| 📄 `main.php` |
+
+</details>
+
+---
+
+Excellent! It looks like the dashboard UI framework has already been implemented. Let me check the current status of task 9.1 and see what might still need to be done:
+
+
+---
+
+
+
+---
+
+I can see that task 9.1 is still marked as "pending" even though the dashboard framework appears to be implemented. Let me verify that all the required components are properly in place and then mark the task as complete. Let me check a few key files to ensure everything is working correctly:
+
+
+---
+
+Read file: xelite-repost-engine/includes/class-repost-intelligence-dashboard.php
+
+---
+
+Let me check if the dashboard is properly registered in the container:
+
+
+---
+
+Read file: xelite-repost-engine/includes/class-xelite-repost-engine-container.php
+
+---
+
+Read file: xelite-repost-engine/includes/class-xelite-repost-engine-container.php
+
+---
+
+Perfect! I can see that the dashboard service is properly registered in the container. Now let me check if the dashboard is being initialized in the main plugin file:
+
+
+---
+
+Read file: xelite-repost-engine/xelite-repost-engine.php
+
+---
+
+I notice that the dashboard service is not being initialized in the `init_plugin()` method. Let me add that to ensure the dashboard is properly loaded:
+
+
+---
+
+
+
+---
+
+Now let me check if there are any issues with the dashboard CSS file to ensure it's properly implemented:
+
+
+---
+
+Read file: xelite-repost-engine/assets/css/dashboard.css
+
+---
+
+Great! The dashboard CSS is comprehensive and well-structured. Now let me check the main dashboard template to ensure it's properly implemented:
+
+
+---
+
+Read file: xelite-repost-engine/templates/dashboard/main.php
+
+---
+
+Perfect! Now let me check if there are any tests for the dashboard to ensure everything is working correctly:
+
+
+---
+
+<details>
+            <summary>Listed directory xelite-repost-engine/tests • **19** results</summary>
+        
+| Name |
+|-------|
+| 📄 `test-dashboard.php` |
+| 📄 `test-openai-admin.php` |
+| 📄 `test-prompt-builder.php` |
+| 📄 `test-openai-integration.php` |
+| 📄 `test-pattern-validator.php` |
+| 📄 `test-pattern-visualizer.php` |
+| 📄 `test-pattern-analyzer.php` |
+| 📄 `test-woocommerce.php` |
+| 📄 `test-cron.php` |
+| 📄 `test-database-storage.php` |
+| 📄 `test-scraper.php` |
+| 📄 `test-x-processor.php` |
+| 📄 `test-x-api.php` |
+| 📄 `test-x-api-auth.php` |
+| 📄 `test-completeness-check.php` |
+| 📄 `README.md` |
+| 📄 `run-database-tests.php` |
+| 📄 `class-xelite-repost-engine-mock-data-generator.php` |
+| 📄 `class-xelite-repost-engine-database-test.php` |
+
+</details>
+
+---
+
+Excellent! There's already a test file for the dashboard. Let me check if it's comprehensive:
+
+
+---
+
+Read file: xelite-repost-engine/tests/test-dashboard.php
+
+---
+
+Excellent! The dashboard has comprehensive tests. Now let me run a quick test to make sure everything is working properly. But first, let me check if there are any issues with the dashboard implementation by looking at the AJAX handlers:
+
+
+---
+
+Read file: xelite-repost-engine/includes/class-repost-intelligence-dashboard.php
+
+---
+
+Perfect! The dashboard implementation looks comprehensive and well-structured. Now let me check if there are any issues with the user access method that I noticed is being called but might not be public:
+
+
+---
+
+<details>
+            <summary>Grep search for "user_has_access" • **3** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L137 | `if (!$this->user_has_access()) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L170 | `private function user_has_access() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L239 | `if (!$this->user_has_access()) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L443 | `if (!$this->user_has_access()) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L461 | `if (!$this->user_has_access()) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L491 | `if (!$this->user_has_access()) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L527 | `if (!$this->user_has_access()) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L545 | `if (!$this->user_has_access()) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L212 | `if (!$this->user_has_access()) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-assets.php` | L470 | `private function user_has_access() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-dashboard.php` | L71 | `public function test_user_has_access() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-dashboard.php` | L73 | `$this->assertTrue($this->dashboard->user_has_access());` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-dashboard.php` | L77 | `$this->assertFalse($this->dashboard->user_has_access());` |
+
+</details>
+
+---
+
+I see that the test is trying to call `user_has_access()` as a public method, but it's defined as private. Let me fix this by making it public since it's being used in tests:
+
+
+---
+
+
+
+---
+
+
+
+---
+
+Let me check the exact line numbers for the user_has_access method:
+
+
+---
+
+Read file: xelite-repost-engine/includes/class-repost-intelligence-dashboard.php
+
+---
+
+Great! I can see that the `user_has_access()` method is already public, so that's not an issue. Now let me run a quick test to make sure everything is working properly. Let me also check if there are any missing methods that the tests might be calling:
+
+
+---
+
+<details>
+            <summary>Grep search for "get_user_context|get_generation_stats|get_user_settings" • **6** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/admin/partials/user-meta-profile.php` | L27 | `$context = $user_meta->get_user_context($user->ID);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/interfaces/interface-xelite-repost-engine-user-meta-interface.php` | L69 | `public function get_user_context($user_id);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L267 | `$user_context = $this->get_user_context();` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L303 | `$user_settings = $this->get_user_settings();` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L316 | `'user_context' => $this->get_user_context(),` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L318 | `'generation_stats' => $this->get_generation_stats(),` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L330 | `private function get_user_context() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L332 | `return $user_meta->get_user_context($this->user_id);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L352 | `private function get_generation_stats() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-repost-intelligence-dashboard.php` | L421 | `private function get_user_settings() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-loader.php` | L282 | `$context = $user_meta->get_user_context($user_id);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-dashboard.php` | L142 | `public function test_get_user_context() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-dashboard.php` | L149 | `$context = $this->dashboard->get_user_context();` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-dashboard.php` | L161 | `public function test_get_generation_stats() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-dashboard.php` | L171 | `$stats = $this->dashboard->get_generation_stats();` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-dashboard.php` | L183 | `public function test_get_user_settings() {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/tests/test-dashboard.php` | L194 | `$settings = $this->dashboard->get_user_settings();` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L105 | `public function get_user_context($user_id = null) {` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L111 | `$this->log_error('No user ID provided for get_user_context');` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L167 | `$context = $this->get_user_context($user_id);` |
+| `file:///Users/bernardojrodriguez/Documents/code/Xelite-repost-engine/xelite-repost-engine/includes/class-xelite-repost-engine-user-meta.php` | L477 | `$context = $this->get_user_context($user_id);` |
+
+</details>
+
+---
+
+I can see that the tests are trying to call these methods as public methods, but they're defined as private. Let me make them public since they're being used in tests:
+
+
+---
+
+
+
+---
+
+Let me check the current state of the file to see what changes were made:
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
 
 
 ---

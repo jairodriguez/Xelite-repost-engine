@@ -176,6 +176,9 @@ class XeliteRepostEngine {
         // Load Prompt Builder service
         require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-prompt-builder.php';
         
+        // Load Dashboard service
+        require_once $this->plugin_dir . 'includes/class-repost-intelligence-dashboard.php';
+        
         // Load admin and public classes
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';
@@ -240,6 +243,9 @@ class XeliteRepostEngine {
         
         // Initialize Prompt Builder service
         $this->container->get('prompt_builder');
+        
+        // Initialize Dashboard service
+        $this->container->get('dashboard');
     }
     
 

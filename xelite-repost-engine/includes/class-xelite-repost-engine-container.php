@@ -227,5 +227,10 @@ class XeliteRepostEngine_Container {
                 $container->get('logger')
             );
         }, true);
+
+        // Register Dashboard service
+        $this->register('dashboard', function($container) {
+            return new Repost_Intelligence_Dashboard();
+        }, true);
     }
 } 

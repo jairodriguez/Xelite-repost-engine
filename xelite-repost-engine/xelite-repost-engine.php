@@ -170,6 +170,9 @@ class XeliteRepostEngine {
         // Load pattern validator
         require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-pattern-validator.php';
         
+        // Load OpenAI service
+        require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-openai.php';
+        
         // Load admin and public classes
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';
@@ -228,6 +231,9 @@ class XeliteRepostEngine {
         
         // Initialize Pattern Validator service
         $this->container->get('pattern_validator');
+        
+        // Initialize OpenAI service
+        $this->container->get('openai');
     }
     
 

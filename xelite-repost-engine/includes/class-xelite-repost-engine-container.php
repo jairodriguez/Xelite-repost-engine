@@ -212,5 +212,10 @@ class XeliteRepostEngine_Container {
         $this->register('pattern_validator', function($container) {
             return new XeliteRepostEngine_Pattern_Validator($container->get('pattern_analyzer'), $container->get('database'), $container->get('logger'));
         }, true);
+
+        // Register OpenAI service
+        $this->register('openai', function($container) {
+            return new XeliteRepostEngine_OpenAI($container->get('logger'));
+        }, true);
     }
 } 

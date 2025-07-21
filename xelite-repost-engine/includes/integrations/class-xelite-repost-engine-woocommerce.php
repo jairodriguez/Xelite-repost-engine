@@ -84,9 +84,15 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
      * Initialize WordPress hooks
      */
     private function init_hooks() {
-        // Subscription status change hooks
+        // Subscription lifecycle event hooks
         add_action('woocommerce_subscription_status_updated', array($this, 'subscription_status_changed'), 10, 3);
         add_action('woocommerce_subscription_status_changed', array($this, 'subscription_status_changed'), 10, 3);
+        add_action('woocommerce_subscription_created', array($this, 'subscription_created'), 10, 2);
+        add_action('woocommerce_subscription_cancelled', array($this, 'subscription_cancelled'), 10, 1);
+        add_action('woocommerce_subscription_expired', array($this, 'subscription_expired'), 10, 1);
+        add_action('woocommerce_subscription_renewed', array($this, 'subscription_renewed'), 10, 2);
+        add_action('woocommerce_subscription_payment_complete', array($this, 'subscription_payment_complete'), 10, 1);
+        add_action('woocommerce_subscription_payment_failed', array($this, 'subscription_payment_failed'), 10, 1);
         
         // User registration and login hooks
         add_action('user_register', array($this, 'user_registered'));
@@ -97,6 +103,8 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
         add_action('wp_ajax_xelite_check_subscription', array($this, 'ajax_check_subscription'));
         add_action('wp_ajax_xelite_refresh_all_subscriptions', array($this, 'ajax_refresh_all_subscriptions'));
         add_action('wp_ajax_xelite_clear_all_caches', array($this, 'ajax_clear_all_caches'));
+        add_action('wp_ajax_xelite_get_subscription_history', array($this, 'ajax_get_subscription_history'));
+        add_action('wp_ajax_xelite_send_subscription_email', array($this, 'ajax_send_subscription_email'));
         
         // Feature access hooks
         add_action('xelite_before_feature_access', array($this, 'check_feature_access'));
@@ -104,6 +112,15 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
         // Settings hooks
         add_action('admin_init', array($this, 'register_settings'));
         add_action('admin_menu', array($this, 'add_settings_page'));
+        
+        // Webhook endpoints
+        add_action('rest_api_init', array($this, 'register_webhook_endpoints'));
+        
+        // Email hooks
+        add_action('xelite_subscription_status_changed', array($this, 'send_subscription_status_email'), 10, 4);
+        
+        // Database table creation
+        add_action('init', array($this, 'create_subscription_log_table'));
     }
 
     /**
@@ -846,6 +863,165 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
     }
 
     /**
+     * AJAX get subscription history
+     */
+    public function ajax_get_subscription_history() {
+        check_ajax_referer('xelite_woocommerce_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+        $limit = isset($_POST['limit']) ? intval($_POST['limit']) : 50;
+        $offset = isset($_POST['offset']) ? intval($_POST['offset']) : 0;
+        
+        $history = $this->get_subscription_history($user_id, $limit, $offset);
+        
+        wp_send_json_success($history);
+    }
+
+    /**
+     * AJAX send subscription email
+     */
+    public function ajax_send_subscription_email() {
+        check_ajax_referer('xelite_woocommerce_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+        $email_type = isset($_POST['email_type']) ? sanitize_text_field($_POST['email_type']) : '';
+        
+        if (!$user_id || !$email_type) {
+            wp_send_json_error('Invalid parameters');
+        }
+        
+        $result = $this->send_manual_subscription_email($user_id, $email_type);
+        
+        if ($result) {
+            wp_send_json_success('Email sent successfully');
+        } else {
+            wp_send_json_error('Failed to send email');
+        }
+    }
+
+    /**
+     * Register webhook endpoints
+     */
+    public function register_webhook_endpoints() {
+        register_rest_route('xelite/v1', '/subscription-webhook', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'handle_webhook'),
+            'permission_callback' => array($this, 'verify_webhook_signature'),
+            'args' => array(
+                'event_type' => array(
+                    'required' => true,
+                    'type' => 'string',
+                    'sanitize_callback' => 'sanitize_text_field'
+                ),
+                'subscription_id' => array(
+                    'required' => true,
+                    'type' => 'integer',
+                    'sanitize_callback' => 'absint'
+                ),
+                'user_id' => array(
+                    'required' => true,
+                    'type' => 'integer',
+                    'sanitize_callback' => 'absint'
+                ),
+                'status' => array(
+                    'required' => false,
+                    'type' => 'string',
+                    'sanitize_callback' => 'sanitize_text_field'
+                ),
+                'data' => array(
+                    'required' => false,
+                    'type' => 'object'
+                )
+            )
+        ));
+    }
+
+    /**
+     * Handle webhook requests
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response Response object.
+     */
+    public function handle_webhook($request) {
+        $event_type = $request->get_param('event_type');
+        $subscription_id = $request->get_param('subscription_id');
+        $user_id = $request->get_param('user_id');
+        $status = $request->get_param('status');
+        $data = $request->get_param('data');
+        
+        $this->log('info', "Webhook received: {$event_type} for subscription {$subscription_id}");
+        
+        // Get subscription object
+        $subscription = wcs_get_subscription($subscription_id);
+        if (!$subscription) {
+            return new WP_REST_Response(array('error' => 'Subscription not found'), 404);
+        }
+        
+        // Handle different event types
+        switch ($event_type) {
+            case 'subscription_created':
+                $this->subscription_created($subscription, $data ?: array());
+                break;
+            case 'subscription_cancelled':
+                $this->subscription_cancelled($subscription);
+                break;
+            case 'subscription_expired':
+                $this->subscription_expired($subscription);
+                break;
+            case 'subscription_renewed':
+                $renewal_order = isset($data['renewal_order_id']) ? wc_get_order($data['renewal_order_id']) : null;
+                $this->subscription_renewed($subscription, $renewal_order);
+                break;
+            case 'subscription_payment_complete':
+                $this->subscription_payment_complete($subscription);
+                break;
+            case 'subscription_payment_failed':
+                $this->subscription_payment_failed($subscription);
+                break;
+            case 'subscription_status_changed':
+                $old_status = isset($data['old_status']) ? $data['old_status'] : null;
+                $this->subscription_status_changed($subscription, $status, $old_status);
+                break;
+            default:
+                return new WP_REST_Response(array('error' => 'Unknown event type'), 400);
+        }
+        
+        return new WP_REST_Response(array('success' => true), 200);
+    }
+
+    /**
+     * Verify webhook signature
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return bool True if signature is valid.
+     */
+    public function verify_webhook_signature($request) {
+        $webhook_secret = get_option('xelite_webhook_secret', '');
+        
+        if (empty($webhook_secret)) {
+            return true; // Allow if no secret is set
+        }
+        
+        $signature = $request->get_header('X-Xelite-Signature');
+        if (empty($signature)) {
+            return false;
+        }
+        
+        $payload = $request->get_body();
+        $expected_signature = hash_hmac('sha256', $payload, $webhook_secret);
+        
+        return hash_equals($expected_signature, $signature);
+    }
+
+    /**
      * Get user features based on tier
      *
      * @param int $user_id User ID.
@@ -951,6 +1127,11 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
             'xelite_woocommerce_settings',
             'xelite_woocommerce_tier_mapping',
             array($this, 'sanitize_tier_mapping')
+        );
+        register_setting(
+            'xelite_woocommerce_settings',
+            'xelite_webhook_secret',
+            array($this, 'sanitize_webhook_secret')
         );
     }
 
@@ -1083,6 +1264,71 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
                             <p class="xelite-status-message"></p>
                         </div>
                     </div>
+
+                    <div class="xelite-settings-section">
+                        <h2><?php _e('Webhook Configuration', 'xelite-repost-engine'); ?></h2>
+                        <p><?php _e('Configure webhook settings for external integrations:', 'xelite-repost-engine'); ?></p>
+                        
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row"><?php _e('Webhook URL', 'xelite-repost-engine'); ?></th>
+                                <td>
+                                    <code><?php echo esc_url(rest_url('xelite/v1/subscription-webhook')); ?></code>
+                                    <p class="description"><?php _e('Use this URL to receive subscription events from external systems.', 'xelite-repost-engine'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><?php _e('Webhook Secret', 'xelite-repost-engine'); ?></th>
+                                <td>
+                                    <input type="text" name="xelite_webhook_secret" value="<?php echo esc_attr(get_option('xelite_webhook_secret', '')); ?>" class="regular-text">
+                                    <p class="description"><?php _e('Secret key for webhook signature verification. Leave empty to disable signature checking.', 'xelite-repost-engine'); ?></p>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="xelite-settings-section">
+                        <h2><?php _e('Subscription History', 'xelite-repost-engine'); ?></h2>
+                        <p><?php _e('View subscription events and history:', 'xelite-repost-engine'); ?></p>
+                        
+                        <div class="xelite-history-filters">
+                            <select id="history-user-filter">
+                                <option value="0"><?php _e('All Users', 'xelite-repost-engine'); ?></option>
+                                <?php
+                                $users = get_users(array('fields' => array('ID', 'display_name')));
+                                foreach ($users as $user) {
+                                    echo '<option value="' . esc_attr($user->ID) . '">' . esc_html($user->display_name) . '</option>';
+                                }
+                                ?>
+                            </select>
+                            <button type="button" id="load-history" class="button button-secondary">
+                                <?php _e('Load History', 'xelite-repost-engine'); ?>
+                            </button>
+                        </div>
+                        
+                        <div id="subscription-history-container">
+                            <table class="wp-list-table widefat fixed striped" id="subscription-history-table" style="display: none;">
+                                <thead>
+                                    <tr>
+                                        <th><?php _e('Date', 'xelite-repost-engine'); ?></th>
+                                        <th><?php _e('User', 'xelite-repost-engine'); ?></th>
+                                        <th><?php _e('Event', 'xelite-repost-engine'); ?></th>
+                                        <th><?php _e('Subscription ID', 'xelite-repost-engine'); ?></th>
+                                        <th><?php _e('Status Change', 'xelite-repost-engine'); ?></th>
+                                        <th><?php _e('Actions', 'xelite-repost-engine'); ?></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-tbody">
+                                </tbody>
+                            </table>
+                            <div id="history-loading" style="display: none;">
+                                <p><?php _e('Loading history...', 'xelite-repost-engine'); ?></p>
+                            </div>
+                            <div id="history-empty" style="display: none;">
+                                <p><?php _e('No subscription events found.', 'xelite-repost-engine'); ?></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <style>
@@ -1138,6 +1384,7 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
                 
                 <script>
                 jQuery(document).ready(function($) {
+                    // Refresh all subscriptions
                     $('#refresh-all-subscriptions').on('click', function() {
                         var button = $(this);
                         var statusDiv = $('#refresh-status');
@@ -1170,6 +1417,7 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
                         });
                     });
                     
+                    // Clear all caches
                     $('#clear-all-caches').on('click', function() {
                         var button = $(this);
                         var statusDiv = $('#refresh-status');
@@ -1201,6 +1449,118 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
                             }
                         });
                     });
+
+                    // Load subscription history
+                    $('#load-history').on('click', function() {
+                        var button = $(this);
+                        var userFilter = $('#history-user-filter').val();
+                        var historyTable = $('#subscription-history-table');
+                        var historyTbody = $('#history-tbody');
+                        var historyLoading = $('#history-loading');
+                        var historyEmpty = $('#history-empty');
+                        
+                        button.prop('disabled', true).text('Loading...');
+                        historyTable.hide();
+                        historyEmpty.hide();
+                        historyLoading.show();
+                        
+                        $.ajax({
+                            url: ajaxurl,
+                            type: 'POST',
+                            data: {
+                                action: 'xelite_get_subscription_history',
+                                nonce: '<?php echo wp_create_nonce('xelite_woocommerce_nonce'); ?>',
+                                user_id: userFilter,
+                                limit: 50,
+                                offset: 0
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    var history = response.data;
+                                    if (history.length > 0) {
+                                        historyTbody.empty();
+                                        $.each(history, function(index, event) {
+                                            var row = '<tr>';
+                                            row += '<td>' + formatDate(event.created_at) + '</td>';
+                                            row += '<td>' + getUserName(event.user_id) + '</td>';
+                                            row += '<td>' + formatEventType(event.event_type) + '</td>';
+                                            row += '<td>#' + event.subscription_id + '</td>';
+                                            row += '<td>' + formatStatusChange(event.old_status, event.new_status) + '</td>';
+                                            row += '<td><button type="button" class="button button-small view-event-details" data-event-id="' + event.id + '">View Details</button></td>';
+                                            row += '</tr>';
+                                            historyTbody.append(row);
+                                        });
+                                        historyTable.show();
+                                    } else {
+                                        historyEmpty.show();
+                                    }
+                                } else {
+                                    alert('Error loading history: ' + response.data);
+                                }
+                            },
+                            error: function() {
+                                alert('Error loading subscription history. Please try again.');
+                            },
+                            complete: function() {
+                                button.prop('disabled', false).text('Load History');
+                                historyLoading.hide();
+                            }
+                        });
+                    });
+
+                    // View event details
+                    $(document).on('click', '.view-event-details', function() {
+                        var eventId = $(this).data('event-id');
+                        var eventData = getEventData(eventId);
+                        
+                        if (eventData) {
+                            showEventDetailsModal(eventData);
+                        }
+                    });
+
+                    // Helper functions
+                    function formatDate(dateString) {
+                        var date = new Date(dateString);
+                        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                    }
+
+                    function getUserName(userId) {
+                        // This would need to be implemented with user data
+                        return 'User #' + userId;
+                    }
+
+                    function formatEventType(eventType) {
+                        var types = {
+                            'created': 'Subscription Created',
+                            'cancelled': 'Subscription Cancelled',
+                            'expired': 'Subscription Expired',
+                            'renewed': 'Subscription Renewed',
+                            'payment_complete': 'Payment Complete',
+                            'payment_failed': 'Payment Failed',
+                            'subscription_status_changed': 'Status Changed'
+                        };
+                        return types[eventType] || eventType;
+                    }
+
+                    function formatStatusChange(oldStatus, newStatus) {
+                        if (oldStatus && newStatus) {
+                            return oldStatus + ' → ' + newStatus;
+                        } else if (newStatus) {
+                            return '→ ' + newStatus;
+                        } else {
+                            return '—';
+                        }
+                    }
+
+                    function getEventData(eventId) {
+                        // This would need to be implemented to fetch event details
+                        return null;
+                    }
+
+                    function showEventDetailsModal(eventData) {
+                        // This would need to be implemented to show event details
+                        alert('Event details functionality would be implemented here.');
+                    }
                 });
                 </script>
             <?php endif; ?>
@@ -1228,6 +1588,16 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
     public function sanitize_generation_limit($input) {
         $limit = intval($input);
         return $limit >= -1 ? $limit : 10; // Default to 10 if invalid
+    }
+
+    /**
+     * Sanitize webhook secret
+     *
+     * @param string $input Raw input.
+     * @return string Sanitized secret.
+     */
+    public function sanitize_webhook_secret($input) {
+        return sanitize_text_field($input);
     }
 
     /**
@@ -1300,6 +1670,600 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
      */
     public function is_integration_active() {
         return $this->is_active;
+    }
+
+    /**
+     * Create subscription log table
+     */
+    public function create_subscription_log_table() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'xelite_subscription_logs';
+        
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+            $charset_collate = $wpdb->get_charset_collate();
+            
+            $sql = "CREATE TABLE $table_name (
+                id bigint(20) NOT NULL AUTO_INCREMENT,
+                user_id bigint(20) NOT NULL,
+                subscription_id bigint(20) NOT NULL,
+                event_type varchar(50) NOT NULL,
+                old_status varchar(50) DEFAULT NULL,
+                new_status varchar(50) DEFAULT NULL,
+                event_data longtext DEFAULT NULL,
+                created_at datetime DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                KEY user_id (user_id),
+                KEY subscription_id (subscription_id),
+                KEY event_type (event_type),
+                KEY created_at (created_at)
+            ) $charset_collate;";
+            
+            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+            dbDelta($sql);
+            
+            $this->log('info', 'Created subscription log table');
+        }
+    }
+
+    /**
+     * Handle subscription creation
+     *
+     * @param WC_Subscription $subscription Subscription object.
+     * @param array $args Additional arguments.
+     */
+    public function subscription_created($subscription, $args) {
+        $user_id = $subscription->get_user_id();
+        
+        $this->log('info', "Subscription created for user {$user_id}");
+        
+        // Log the event
+        $this->log_subscription_event($user_id, $subscription, 'created', null, 'active', array(
+            'subscription_total' => $subscription->get_total(),
+            'next_payment_date' => $subscription->get_date('next_payment'),
+            'created_date' => $subscription->get_date('date_created')
+        ));
+        
+        // Activate user features
+        $this->activate_user_features($user_id, $subscription);
+        
+        // Send welcome email
+        $this->send_subscription_welcome_email($user_id, $subscription);
+        
+        // Trigger action for other plugins/themes
+        do_action('xelite_subscription_created', $user_id, $subscription, $args);
+    }
+
+    /**
+     * Handle subscription cancellation
+     *
+     * @param WC_Subscription $subscription Subscription object.
+     */
+    public function subscription_cancelled($subscription) {
+        $user_id = $subscription->get_user_id();
+        
+        $this->log('info', "Subscription cancelled for user {$user_id}");
+        
+        // Log the event
+        $this->log_subscription_event($user_id, $subscription, 'cancelled', 'active', 'cancelled', array(
+            'cancelled_date' => current_time('mysql')
+        ));
+        
+        // Deactivate user features
+        $this->deactivate_user_features($user_id);
+        
+        // Send cancellation email
+        $this->send_subscription_cancellation_email($user_id, $subscription);
+        
+        // Trigger action for other plugins/themes
+        do_action('xelite_subscription_cancelled', $user_id, $subscription);
+    }
+
+    /**
+     * Handle subscription expiration
+     *
+     * @param WC_Subscription $subscription Subscription object.
+     */
+    public function subscription_expired($subscription) {
+        $user_id = $subscription->get_user_id();
+        
+        $this->log('info', "Subscription expired for user {$user_id}");
+        
+        // Log the event
+        $this->log_subscription_event($user_id, $subscription, 'expired', 'active', 'expired', array(
+            'expired_date' => current_time('mysql')
+        ));
+        
+        // Deactivate user features
+        $this->deactivate_user_features($user_id);
+        
+        // Send expiration email
+        $this->send_subscription_expiration_email($user_id, $subscription);
+        
+        // Trigger action for other plugins/themes
+        do_action('xelite_subscription_expired', $user_id, $subscription);
+    }
+
+    /**
+     * Handle subscription renewal
+     *
+     * @param WC_Subscription $subscription Subscription object.
+     * @param WC_Order $renewal_order Renewal order object.
+     */
+    public function subscription_renewed($subscription, $renewal_order) {
+        $user_id = $subscription->get_user_id();
+        
+        $this->log('info', "Subscription renewed for user {$user_id}");
+        
+        // Log the event
+        $this->log_subscription_event($user_id, $subscription, 'renewed', 'active', 'active', array(
+            'renewal_order_id' => $renewal_order->get_id(),
+            'renewal_amount' => $renewal_order->get_total(),
+            'next_payment_date' => $subscription->get_date('next_payment')
+        ));
+        
+        // Refresh user features
+        $this->refresh_user_subscription($user_id);
+        
+        // Send renewal email
+        $this->send_subscription_renewal_email($user_id, $subscription, $renewal_order);
+        
+        // Trigger action for other plugins/themes
+        do_action('xelite_subscription_renewed', $user_id, $subscription, $renewal_order);
+    }
+
+    /**
+     * Handle subscription payment completion
+     *
+     * @param WC_Subscription $subscription Subscription object.
+     */
+    public function subscription_payment_complete($subscription) {
+        $user_id = $subscription->get_user_id();
+        
+        $this->log('info', "Subscription payment completed for user {$user_id}");
+        
+        // Log the event
+        $this->log_subscription_event($user_id, $subscription, 'payment_complete', null, null, array(
+            'payment_date' => current_time('mysql'),
+            'payment_amount' => $subscription->get_total()
+        ));
+        
+        // Trigger action for other plugins/themes
+        do_action('xelite_subscription_payment_complete', $user_id, $subscription);
+    }
+
+    /**
+     * Handle subscription payment failure
+     *
+     * @param WC_Subscription $subscription Subscription object.
+     */
+    public function subscription_payment_failed($subscription) {
+        $user_id = $subscription->get_user_id();
+        
+        $this->log('warning', "Subscription payment failed for user {$user_id}");
+        
+        // Log the event
+        $this->log_subscription_event($user_id, $subscription, 'payment_failed', null, null, array(
+            'failure_date' => current_time('mysql')
+        ));
+        
+        // Send payment failure email
+        $this->send_subscription_payment_failure_email($user_id, $subscription);
+        
+        // Trigger action for other plugins/themes
+        do_action('xelite_subscription_payment_failed', $user_id, $subscription);
+    }
+
+    /**
+     * Log subscription event to database
+     *
+     * @param int $user_id User ID.
+     * @param WC_Subscription $subscription Subscription object.
+     * @param string $event_type Event type.
+     * @param string|null $old_status Old status.
+     * @param string|null $new_status New status.
+     * @param array $event_data Additional event data.
+     */
+    private function log_subscription_event($user_id, $subscription, $event_type, $old_status, $new_status, $event_data = array()) {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'xelite_subscription_logs';
+        
+        $data = array(
+            'user_id' => $user_id,
+            'subscription_id' => $subscription->get_id(),
+            'event_type' => $event_type,
+            'old_status' => $old_status,
+            'new_status' => $new_status,
+            'event_data' => json_encode($event_data),
+            'created_at' => current_time('mysql')
+        );
+        
+        $wpdb->insert($table_name, $data);
+        
+        $this->log('info', "Logged subscription event: {$event_type} for user {$user_id}");
+    }
+
+    /**
+     * Send subscription status email
+     *
+     * @param int $user_id User ID.
+     * @param WC_Subscription $subscription Subscription object.
+     * @param string $old_status Old status.
+     * @param string $new_status New status.
+     */
+    public function send_subscription_status_email($user_id, $subscription, $old_status, $new_status) {
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return false;
+        }
+        
+        $tier = $this->get_user_subscription_tier($user_id, $subscription);
+        $subject = '';
+        $message = '';
+        
+        switch ($new_status) {
+            case 'active':
+                if ($old_status !== 'active') {
+                    $subject = 'Your Repost Intelligence subscription is now active!';
+                    $message = $this->get_welcome_email_content($user, $subscription, $tier);
+                }
+                break;
+            case 'cancelled':
+                $subject = 'Your Repost Intelligence subscription has been cancelled';
+                $message = $this->get_cancellation_email_content($user, $subscription);
+                break;
+            case 'expired':
+                $subject = 'Your Repost Intelligence subscription has expired';
+                $message = $this->get_expiration_email_content($user, $subscription);
+                break;
+        }
+        
+        if ($subject && $message) {
+            return $this->send_email($user->user_email, $subject, $message);
+        }
+        
+        return false;
+    }
+
+    /**
+     * Send subscription welcome email
+     *
+     * @param int $user_id User ID.
+     * @param WC_Subscription $subscription Subscription object.
+     */
+    private function send_subscription_welcome_email($user_id, $subscription) {
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return false;
+        }
+        
+        $tier = $this->get_user_subscription_tier($user_id, $subscription);
+        $subject = 'Welcome to Repost Intelligence!';
+        $message = $this->get_welcome_email_content($user, $subscription, $tier);
+        
+        return $this->send_email($user->user_email, $subject, $message);
+    }
+
+    /**
+     * Send subscription cancellation email
+     *
+     * @param int $user_id User ID.
+     * @param WC_Subscription $subscription Subscription object.
+     */
+    private function send_subscription_cancellation_email($user_id, $subscription) {
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return false;
+        }
+        
+        $subject = 'Your Repost Intelligence subscription has been cancelled';
+        $message = $this->get_cancellation_email_content($user, $subscription);
+        
+        return $this->send_email($user->user_email, $subject, $message);
+    }
+
+    /**
+     * Send subscription expiration email
+     *
+     * @param int $user_id User ID.
+     * @param WC_Subscription $subscription Subscription object.
+     */
+    private function send_subscription_expiration_email($user_id, $subscription) {
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return false;
+        }
+        
+        $subject = 'Your Repost Intelligence subscription has expired';
+        $message = $this->get_expiration_email_content($user, $subscription);
+        
+        return $this->send_email($user->user_email, $subject, $message);
+    }
+
+    /**
+     * Send subscription renewal email
+     *
+     * @param int $user_id User ID.
+     * @param WC_Subscription $subscription Subscription object.
+     * @param WC_Order $renewal_order Renewal order object.
+     */
+    private function send_subscription_renewal_email($user_id, $subscription, $renewal_order) {
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return false;
+        }
+        
+        $subject = 'Your Repost Intelligence subscription has been renewed';
+        $message = $this->get_renewal_email_content($user, $subscription, $renewal_order);
+        
+        return $this->send_email($user->user_email, $subject, $message);
+    }
+
+    /**
+     * Send subscription payment failure email
+     *
+     * @param int $user_id User ID.
+     * @param WC_Subscription $subscription Subscription object.
+     */
+    private function send_subscription_payment_failure_email($user_id, $subscription) {
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return false;
+        }
+        
+        $subject = 'Payment failed for your Repost Intelligence subscription';
+        $message = $this->get_payment_failure_email_content($user, $subscription);
+        
+        return $this->send_email($user->user_email, $subject, $message);
+    }
+
+    /**
+     * Send manual subscription email
+     *
+     * @param int $user_id User ID.
+     * @param string $email_type Email type.
+     * @return bool True if email was sent successfully.
+     */
+    public function send_manual_subscription_email($user_id, $email_type) {
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return false;
+        }
+        
+        $subscriptions = wcs_get_users_subscriptions($user_id);
+        $subscription = null;
+        
+        foreach ($subscriptions as $sub) {
+            if ($sub->has_status('active')) {
+                $subscription = $sub;
+                break;
+            }
+        }
+        
+        if (!$subscription) {
+            return false;
+        }
+        
+        switch ($email_type) {
+            case 'welcome':
+                return $this->send_subscription_welcome_email($user_id, $subscription);
+            case 'cancellation':
+                return $this->send_subscription_cancellation_email($user_id, $subscription);
+            case 'expiration':
+                return $this->send_subscription_expiration_email($user_id, $subscription);
+            case 'payment_failure':
+                return $this->send_subscription_payment_failure_email($user_id, $subscription);
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Send email
+     *
+     * @param string $to Email address.
+     * @param string $subject Email subject.
+     * @param string $message Email message.
+     * @return bool True if email was sent successfully.
+     */
+    private function send_email($to, $subject, $message) {
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . get_option('blogname') . ' <' . get_option('admin_email') . '>'
+        );
+        
+        $result = wp_mail($to, $subject, $message, $headers);
+        
+        if ($result) {
+            $this->log('info', "Email sent to {$to}: {$subject}");
+        } else {
+            $this->log('error', "Failed to send email to {$to}: {$subject}");
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Get subscription history
+     *
+     * @param int $user_id User ID (0 for all users).
+     * @param int $limit Number of records to return.
+     * @param int $offset Offset for pagination.
+     * @return array Subscription history.
+     */
+    public function get_subscription_history($user_id = 0, $limit = 50, $offset = 0) {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'xelite_subscription_logs';
+        
+        $where_clause = '';
+        $where_values = array();
+        
+        if ($user_id > 0) {
+            $where_clause = 'WHERE user_id = %d';
+            $where_values[] = $user_id;
+        }
+        
+        $query = $wpdb->prepare(
+            "SELECT * FROM {$table_name} {$where_clause} ORDER BY created_at DESC LIMIT %d OFFSET %d",
+            array_merge($where_values, array($limit, $offset))
+        );
+        
+        $results = $wpdb->get_results($query, ARRAY_A);
+        
+        // Decode event data
+        foreach ($results as &$result) {
+            if (!empty($result['event_data'])) {
+                $result['event_data'] = json_decode($result['event_data'], true);
+            }
+        }
+        
+        return $results;
+    }
+
+    /**
+     * Get welcome email content
+     *
+     * @param WP_User $user User object.
+     * @param WC_Subscription $subscription Subscription object.
+     * @param string $tier Subscription tier.
+     * @return string Email content.
+     */
+    private function get_welcome_email_content($user, $subscription, $tier) {
+        $tier_name = ucfirst($tier);
+        $next_payment = $subscription->get_date('next_payment');
+        $features = $this->get_user_features($user->ID);
+        
+        $feature_list = '';
+        foreach ($features as $feature => $enabled) {
+            if ($enabled) {
+                $feature_list .= '<li>' . esc_html(ucfirst(str_replace('_', ' ', $feature))) . '</li>';
+            }
+        }
+        
+        return "
+        <div style='max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;'>
+            <h2>Welcome to Repost Intelligence!</h2>
+            <p>Hi {$user->display_name},</p>
+            <p>Thank you for subscribing to Repost Intelligence! Your {$tier_name} subscription is now active.</p>
+            
+            <h3>Your Subscription Details:</h3>
+            <ul>
+                <li><strong>Tier:</strong> {$tier_name}</li>
+                <li><strong>Next Payment:</strong> " . date('F j, Y', strtotime($next_payment)) . "</li>
+                <li><strong>Amount:</strong> " . wc_price($subscription->get_total()) . "</li>
+            </ul>
+            
+            <h3>Features You Now Have Access To:</h3>
+            <ul>
+                {$feature_list}
+            </ul>
+            
+            <p>You can access your dashboard at: <a href='" . admin_url('admin.php?page=xelite-repost-engine') . "'>Repost Intelligence Dashboard</a></p>
+            
+            <p>If you have any questions, please don't hesitate to contact our support team.</p>
+            
+            <p>Best regards,<br>The Repost Intelligence Team</p>
+        </div>";
+    }
+
+    /**
+     * Get cancellation email content
+     *
+     * @param WP_User $user User object.
+     * @param WC_Subscription $subscription Subscription object.
+     * @return string Email content.
+     */
+    private function get_cancellation_email_content($user, $subscription) {
+        return "
+        <div style='max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;'>
+            <h2>Subscription Cancelled</h2>
+            <p>Hi {$user->display_name},</p>
+            <p>Your Repost Intelligence subscription has been cancelled as requested.</p>
+            
+            <p>You will continue to have access to your features until the end of your current billing period.</p>
+            
+            <p>If you change your mind, you can reactivate your subscription at any time from your account dashboard.</p>
+            
+            <p>Thank you for using Repost Intelligence!</p>
+            
+            <p>Best regards,<br>The Repost Intelligence Team</p>
+        </div>";
+    }
+
+    /**
+     * Get expiration email content
+     *
+     * @param WP_User $user User object.
+     * @param WC_Subscription $subscription Subscription object.
+     * @return string Email content.
+     */
+    private function get_expiration_email_content($user, $subscription) {
+        return "
+        <div style='max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;'>
+            <h2>Subscription Expired</h2>
+            <p>Hi {$user->display_name},</p>
+            <p>Your Repost Intelligence subscription has expired.</p>
+            
+            <p>To continue enjoying our features, please renew your subscription from your account dashboard.</p>
+            
+            <p>If you have any questions about your subscription, please contact our support team.</p>
+            
+            <p>Best regards,<br>The Repost Intelligence Team</p>
+        </div>";
+    }
+
+    /**
+     * Get renewal email content
+     *
+     * @param WP_User $user User object.
+     * @param WC_Subscription $subscription Subscription object.
+     * @param WC_Order $renewal_order Renewal order object.
+     * @return string Email content.
+     */
+    private function get_renewal_email_content($user, $subscription, $renewal_order) {
+        $next_payment = $subscription->get_date('next_payment');
+        
+        return "
+        <div style='max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;'>
+            <h2>Subscription Renewed</h2>
+            <p>Hi {$user->display_name},</p>
+            <p>Your Repost Intelligence subscription has been successfully renewed!</p>
+            
+            <h3>Renewal Details:</h3>
+            <ul>
+                <li><strong>Order ID:</strong> #{$renewal_order->get_id()}</li>
+                <li><strong>Amount:</strong> " . wc_price($renewal_order->get_total()) . "</li>
+                <li><strong>Next Payment:</strong> " . date('F j, Y', strtotime($next_payment)) . "</li>
+            </ul>
+            
+            <p>Thank you for continuing with Repost Intelligence!</p>
+            
+            <p>Best regards,<br>The Repost Intelligence Team</p>
+        </div>";
+    }
+
+    /**
+     * Get payment failure email content
+     *
+     * @param WP_User $user User object.
+     * @param WC_Subscription $subscription Subscription object.
+     * @return string Email content.
+     */
+    private function get_payment_failure_email_content($user, $subscription) {
+        return "
+        <div style='max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;'>
+            <h2>Payment Failed</h2>
+            <p>Hi {$user->display_name},</p>
+            <p>We were unable to process the payment for your Repost Intelligence subscription.</p>
+            
+            <p>Please update your payment method in your account dashboard to avoid any interruption to your service.</p>
+            
+            <p>If you need assistance, please contact our support team.</p>
+            
+            <p>Best regards,<br>The Repost Intelligence Team</p>
+        </div>";
     }
 
     /**

@@ -179,6 +179,9 @@ class XeliteRepostEngine {
         // Load Dashboard service
         require_once $this->plugin_dir . 'includes/class-repost-intelligence-dashboard.php';
         
+        // Load Shortcodes service
+        require_once $this->plugin_dir . 'includes/class-repost-intelligence-shortcodes.php';
+        
         // Load admin and public classes
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';

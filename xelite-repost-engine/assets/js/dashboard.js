@@ -1336,12 +1336,413 @@
                 clearTimeout(timeout);
                 timeout = setTimeout(later, wait);
             };
+        },
+
+        /**
+         * Initialize shortcode functionality
+         */
+        initShortcodes: function() {
+            if (typeof xelite_dashboard !== 'undefined' && xelite_dashboard.isShortcode) {
+                this.bindShortcodeEvents();
+                this.initShortcodeCharts();
+            }
+        },
+
+        /**
+         * Bind shortcode-specific event handlers
+         */
+        bindShortcodeEvents: function() {
+            // Shortcode pattern search
+            $(document).on('input', '#shortcode-pattern-search', this.debounce(this.handleShortcodeSearch, 500));
+            
+            // Shortcode pattern sort
+            $(document).on('change', '#shortcode-pattern-sort', this.handleShortcodeSort);
+            
+            // Shortcode chart type change
+            $(document).on('change', '#shortcode-chart-type', this.loadShortcodeChart);
+            
+            // Shortcode generate suggestion
+            $(document).on('click', '#shortcode-generate-suggestion', this.generateShortcodeSuggestion);
+            
+            // Shortcode copy suggestion
+            $(document).on('click', '.xelite-copy-suggestion', this.copyShortcodeSuggestion);
+            
+            // Shortcode edit suggestion
+            $(document).on('click', '.xelite-edit-suggestion', this.editShortcodeSuggestion);
+        },
+
+        /**
+         * Handle shortcode search
+         */
+        handleShortcodeSearch: function() {
+            var searchTerm = $('#shortcode-pattern-search').val();
+            var patterns = $('.xelite-pattern-item');
+            
+            patterns.each(function() {
+                var patternText = $(this).find('.xelite-pattern-content p').text().toLowerCase();
+                if (patternText.includes(searchTerm.toLowerCase())) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        },
+
+        /**
+         * Handle shortcode sort
+         */
+        handleShortcodeSort: function() {
+            var sortBy = $('#shortcode-pattern-sort').val();
+            var patternsList = $('#shortcode-patterns-list');
+            var patterns = patternsList.find('.xelite-pattern-item').get();
+            
+            patterns.sort(function(a, b) {
+                var aVal, bVal;
+                
+                switch(sortBy) {
+                    case 'date':
+                        aVal = new Date($(a).find('.xelite-pattern-date').text());
+                        bVal = new Date($(b).find('.xelite-pattern-date').text());
+                        return bVal - aVal;
+                    case 'engagement':
+                        aVal = parseFloat($(a).find('.xelite-pattern-engagement').text());
+                        bVal = parseFloat($(b).find('.xelite-pattern-engagement').text());
+                        return bVal - aVal;
+                    case 'frequency':
+                        // For frequency, we'd need to implement a more complex sorting
+                        // For now, just sort by date
+                        aVal = new Date($(a).find('.xelite-pattern-date').text());
+                        bVal = new Date($(b).find('.xelite-pattern-date').text());
+                        return bVal - aVal;
+                    default:
+                        return 0;
+                }
+            });
+            
+            patternsList.empty().append(patterns);
+        },
+
+        /**
+         * Initialize shortcode charts
+         */
+        initShortcodeCharts: function() {
+            // Initialize pattern chart if it exists
+            if ($('#shortcode-pattern-chart').length) {
+                this.loadShortcodeChart();
+            }
+            
+            // Initialize analytics charts if they exist
+            if ($('#shortcode-engagement-chart').length) {
+                this.loadShortcodeEngagementChart();
+            }
+            
+            if ($('#shortcode-content-chart').length) {
+                this.loadShortcodeContentChart();
+            }
+        },
+
+        /**
+         * Load shortcode pattern chart
+         */
+        loadShortcodeChart: function() {
+            var chartType = $('#shortcode-chart-type').val();
+            var canvas = document.getElementById('shortcode-pattern-chart');
+            
+            if (!canvas) return;
+            
+            // Destroy existing chart
+            if (window.shortcodePatternChart) {
+                window.shortcodePatternChart.destroy();
+            }
+            
+            // Create sample data (in real implementation, this would come from AJAX)
+            var ctx = canvas.getContext('2d');
+            var data = {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Engagement Score',
+                    data: [65, 59, 80, 81, 56, 55],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4
+                }]
+            };
+            
+            var config = {
+                type: chartType,
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            };
+            
+            window.shortcodePatternChart = new Chart(ctx, config);
+        },
+
+        /**
+         * Load shortcode engagement chart
+         */
+        loadShortcodeEngagementChart: function() {
+            var canvas = document.getElementById('shortcode-engagement-chart');
+            
+            if (!canvas) return;
+            
+            // Destroy existing chart
+            if (window.shortcodeEngagementChart) {
+                window.shortcodeEngagementChart.destroy();
+            }
+            
+            var ctx = canvas.getContext('2d');
+            var data = {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Average Engagement',
+                    data: [75, 82, 68, 91],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4
+                }]
+            };
+            
+            var config = {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            };
+            
+            window.shortcodeEngagementChart = new Chart(ctx, config);
+        },
+
+        /**
+         * Load shortcode content chart
+         */
+        loadShortcodeContentChart: function() {
+            var canvas = document.getElementById('shortcode-content-chart');
+            
+            if (!canvas) return;
+            
+            // Destroy existing chart
+            if (window.shortcodeContentChart) {
+                window.shortcodeContentChart.destroy();
+            }
+            
+            var ctx = canvas.getContext('2d');
+            var data = {
+                labels: ['Educational', 'Entertainment', 'Inspirational', 'Promotional'],
+                datasets: [{
+                    data: [30, 25, 25, 20],
+                    backgroundColor: [
+                        '#667eea',
+                        '#764ba2',
+                        '#f093fb',
+                        '#f5576c'
+                    ]
+                }]
+            };
+            
+            var config = {
+                type: 'pie',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            };
+            
+            window.shortcodeContentChart = new Chart(ctx, config);
+        },
+
+        /**
+         * Generate shortcode suggestion
+         */
+        generateShortcodeSuggestion: function() {
+            var button = $('#shortcode-generate-suggestion');
+            var buttonText = button.find('.xelite-button-text');
+            var buttonLoading = button.find('.xelite-button-loading');
+            
+            // Show loading state
+            button.addClass('loading');
+            
+            $.ajax({
+                url: xelite_dashboard.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'xelite_generate_content',
+                    nonce: xelite_dashboard.nonce,
+                    context: 'shortcode'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Add new suggestion to the list
+                        var newSuggestion = XeliteDashboard.createSuggestionHTML(response.data);
+                        $('#shortcode-suggestions-list').prepend(newSuggestion);
+                        
+                        // Show success message
+                        XeliteDashboard.showMessage('Suggestion generated successfully!', 'success');
+                    } else {
+                        XeliteDashboard.showMessage('Failed to generate suggestion: ' + response.data, 'error');
+                    }
+                },
+                error: function() {
+                    XeliteDashboard.showMessage('Error generating suggestion. Please try again.', 'error');
+                },
+                complete: function() {
+                    // Hide loading state
+                    button.removeClass('loading');
+                }
+            });
+        },
+
+        /**
+         * Copy shortcode suggestion
+         */
+        copyShortcodeSuggestion: function() {
+            var content = $(this).data('content');
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(content).then(function() {
+                    XeliteDashboard.showMessage('Content copied to clipboard!', 'success');
+                });
+            } else {
+                // Fallback for older browsers
+                var textArea = document.createElement('textarea');
+                textArea.value = content;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                XeliteDashboard.showMessage('Content copied to clipboard!', 'success');
+            }
+        },
+
+        /**
+         * Edit shortcode suggestion
+         */
+        editShortcodeSuggestion: function() {
+            var suggestionId = $(this).data('id');
+            var content = $(this).closest('.xelite-suggestion-item').find('.xelite-suggestion-content p').text();
+            
+            // Create a simple edit modal
+            var modal = $('<div class="xelite-modal">' +
+                '<div class="xelite-modal-content">' +
+                '<h3>Edit Suggestion</h3>' +
+                '<textarea id="edit-suggestion-text" rows="4" style="width: 100%; margin: 10px 0;">' + content + '</textarea>' +
+                '<div style="text-align: right; margin-top: 15px;">' +
+                '<button type="button" class="xelite-button xelite-button-secondary" onclick="$(this).closest(\'.xelite-modal\').remove()">Cancel</button> ' +
+                '<button type="button" class="xelite-button" onclick="XeliteDashboard.saveShortcodeSuggestion(' + suggestionId + ')">Save</button>' +
+                '</div>' +
+                '</div>' +
+                '</div>');
+            
+            $('body').append(modal);
+        },
+
+        /**
+         * Save shortcode suggestion
+         */
+        saveShortcodeSuggestion: function(suggestionId) {
+            var newContent = $('#edit-suggestion-text').val();
+            
+            $.ajax({
+                url: xelite_dashboard.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'xelite_update_suggestion',
+                    nonce: xelite_dashboard.nonce,
+                    suggestion_id: suggestionId,
+                    content: newContent
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update the content in the DOM
+                        $('.xelite-suggestion-item[data-id="' + suggestionId + '"] .xelite-suggestion-content p').text(newContent);
+                        $('.xelite-modal').remove();
+                        XeliteDashboard.showMessage('Suggestion updated successfully!', 'success');
+                    } else {
+                        XeliteDashboard.showMessage('Failed to update suggestion: ' + response.data, 'error');
+                    }
+                },
+                error: function() {
+                    XeliteDashboard.showMessage('Error updating suggestion. Please try again.', 'error');
+                }
+            });
+        },
+
+        /**
+         * Create suggestion HTML
+         */
+        createSuggestionHTML: function(suggestion) {
+            return '<div class="xelite-suggestion-item">' +
+                '<div class="xelite-suggestion-header">' +
+                '<span class="xelite-suggestion-date">' + new Date().toLocaleDateString() + '</span>' +
+                '<span class="xelite-suggestion-score">' + suggestion.repost_score + '% repost likelihood</span>' +
+                '</div>' +
+                '<div class="xelite-suggestion-content">' +
+                '<p>' + suggestion.content + '</p>' +
+                '</div>' +
+                '<div class="xelite-suggestion-actions">' +
+                '<button type="button" class="xelite-button xelite-button-small xelite-copy-suggestion" data-content="' + suggestion.content.replace(/"/g, '&quot;') + '">Copy</button>' +
+                '<button type="button" class="xelite-button xelite-button-small xelite-button-secondary xelite-edit-suggestion" data-id="' + suggestion.id + '">Edit</button>' +
+                '</div>' +
+                '</div>';
+        },
+
+        /**
+         * Show message for shortcodes
+         */
+        showMessage: function(message, type) {
+            var messageClass = 'xelite-message ' + type;
+            var messageHTML = '<div class="' + messageClass + '">' + message + '</div>';
+            
+            // Remove existing messages
+            $('.xelite-message').remove();
+            
+            // Add new message
+            $('body').append(messageHTML);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(function() {
+                $('.xelite-message').fadeOut(function() {
+                    $(this).remove();
+                });
+            }, 3000);
         }
     };
 
     // Initialize when document is ready
     $(document).ready(function() {
         XeliteDashboard.init();
+        XeliteDashboard.initShortcodes();
     });
 
 })(jQuery); 

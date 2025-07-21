@@ -95,6 +95,8 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
         // Admin hooks
         add_action('admin_init', array($this, 'check_user_access'));
         add_action('wp_ajax_xelite_check_subscription', array($this, 'ajax_check_subscription'));
+        add_action('wp_ajax_xelite_refresh_all_subscriptions', array($this, 'ajax_refresh_all_subscriptions'));
+        add_action('wp_ajax_xelite_clear_all_caches', array($this, 'ajax_clear_all_caches'));
         
         // Feature access hooks
         add_action('xelite_before_feature_access', array($this, 'check_feature_access'));
@@ -148,6 +150,9 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
         
         $this->log('info', "Subscription status changed for user {$user_id}: {$old_status} -> {$new_status}");
         
+        // Clear user cache immediately
+        $this->clear_user_cache($user_id);
+        
         if ($new_status === 'active' && $old_status !== 'active') {
             $this->activate_user_features($user_id, $subscription);
         } elseif ($new_status !== 'active' && $old_status === 'active') {
@@ -157,6 +162,39 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
         // Update user meta with current subscription status
         update_user_meta($user_id, 'xelite_subscription_status', $new_status);
         update_user_meta($user_id, 'xelite_subscription_updated', current_time('mysql'));
+        
+        // Log detailed subscription change
+        $this->log_subscription_change($user_id, $subscription, $old_status, $new_status);
+        
+        // Trigger action for other plugins/themes
+        do_action('xelite_subscription_status_changed', $user_id, $subscription, $old_status, $new_status);
+    }
+
+    /**
+     * Log detailed subscription change information
+     *
+     * @param int $user_id User ID.
+     * @param WC_Subscription $subscription Subscription object.
+     * @param string $old_status Old status.
+     * @param string $new_status New status.
+     */
+    private function log_subscription_change($user_id, $subscription, $old_status, $new_status) {
+        $change_data = array(
+            'subscription_id' => $subscription->get_id(),
+            'old_status' => $old_status,
+            'new_status' => $new_status,
+            'subscription_total' => $subscription->get_total(),
+            'next_payment_date' => $subscription->get_date('next_payment'),
+            'created_date' => $subscription->get_date('date_created'),
+            'product_ids' => array()
+        );
+        
+        // Get product information
+        foreach ($subscription->get_items() as $item) {
+            $change_data['product_ids'][] = $item->get_product_id();
+        }
+        
+        $this->log_user_activity($user_id, 'subscription_status_changed', $change_data);
     }
 
     /**
@@ -204,13 +242,22 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
     }
 
     /**
-     * Get user subscription tier
+     * Get user subscription tier with caching
      *
      * @param int $user_id User ID.
      * @param WC_Subscription|null $subscription Optional subscription object.
+     * @param bool $force_refresh Force refresh cache.
      * @return string Subscription tier.
      */
-    public function get_user_subscription_tier($user_id, $subscription = null) {
+    public function get_user_subscription_tier($user_id, $subscription = null, $force_refresh = false) {
+        // Check cache first (unless force refresh is requested)
+        if (!$force_refresh) {
+            $cached_tier = wp_cache_get("xelite_user_tier_{$user_id}", 'xelite_subscriptions');
+            if ($cached_tier !== false) {
+                return $cached_tier;
+            }
+        }
+        
         if (!$subscription) {
             $subscriptions = wcs_get_users_subscriptions($user_id);
             
@@ -223,20 +270,25 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
         }
         
         if (!$subscription || !$subscription->has_status('active')) {
-            return 'none';
-        }
-        
-        $tier_mapping = $this->get_tier_mapping();
-        
-        foreach ($subscription->get_items() as $item) {
-            $product_id = $item->get_product_id();
+            $tier = 'none';
+        } else {
+            $tier_mapping = $this->get_tier_mapping();
+            $tier = 'none';
             
-            if (isset($tier_mapping[$product_id])) {
-                return $tier_mapping[$product_id];
+            foreach ($subscription->get_items() as $item) {
+                $product_id = $item->get_product_id();
+                
+                if (isset($tier_mapping[$product_id])) {
+                    $tier = $tier_mapping[$product_id];
+                    break;
+                }
             }
         }
         
-        return 'none';
+        // Cache the result for 5 minutes
+        wp_cache_set("xelite_user_tier_{$user_id}", $tier, 'xelite_subscriptions', 300);
+        
+        return $tier;
     }
 
     /**
@@ -244,20 +296,81 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
      *
      * @return array Tier mapping.
      */
-    private function get_tier_mapping() {
-        $mapping = get_option('xelite_woocommerce_tier_mapping', array());
+    public function get_tier_mapping() {
+        $mapping = array();
         
-        // Default mapping if none is set
+        // Get individual product ID settings
+        $basic_id = get_option('xelite_basic_product_id', '');
+        $premium_id = get_option('xelite_premium_product_id', '');
+        $enterprise_id = get_option('xelite_enterprise_product_id', '');
+        
+        if (!empty($basic_id)) {
+            $mapping[$basic_id] = 'basic';
+        }
+        if (!empty($premium_id)) {
+            $mapping[$premium_id] = 'premium';
+        }
+        if (!empty($enterprise_id)) {
+            $mapping[$enterprise_id] = 'enterprise';
+        }
+        
+        // Fallback to legacy mapping if no individual settings
         if (empty($mapping)) {
-            $mapping = array(
-                // Example product IDs - should be configured in admin
-                'basic_product_id' => 'basic',
-                'premium_product_id' => 'premium',
-                'enterprise_product_id' => 'enterprise'
-            );
+            $legacy_mapping = get_option('xelite_woocommerce_tier_mapping', array());
+            if (!empty($legacy_mapping)) {
+                $mapping = $legacy_mapping;
+            }
         }
         
         return $mapping;
+    }
+
+    /**
+     * Get available subscription products
+     *
+     * @return array Array of subscription products.
+     */
+    public function get_subscription_products() {
+        $products = array();
+        
+        if (!class_exists('WC_Product_Subscription')) {
+            return $products;
+        }
+        
+        $args = array(
+            'post_type' => 'product',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'meta_query' => array(
+                array(
+                    'key' => '_subscription',
+                    'value' => 'yes',
+                    'compare' => '='
+                )
+            )
+        );
+        
+        $query = new WP_Query($args);
+        
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+                $product = wc_get_product(get_the_ID());
+                
+                if ($product && $product->is_type('subscription')) {
+                    $products[] = array(
+                        'id' => $product->get_id(),
+                        'name' => $product->get_name(),
+                        'price' => $product->get_price_html(),
+                        'type' => 'subscription'
+                    );
+                }
+            }
+        }
+        
+        wp_reset_postdata();
+        
+        return $products;
     }
 
     /**
@@ -403,7 +516,134 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
     }
 
     /**
-     * Check content generation limit for basic tier
+     * Helper method for easy feature access checking
+     *
+     * @param string $feature_name Feature name to check.
+     * @param int|null $user_id User ID (defaults to current user).
+     * @return bool True if user can access the feature.
+     */
+    public function can_access_feature($feature_name, $user_id = null) {
+        return $this->can_user_access_feature($feature_name, $user_id);
+    }
+
+    /**
+     * Get user's current subscription status
+     *
+     * @param int|null $user_id User ID (defaults to current user).
+     * @return array Subscription status information.
+     */
+    public function get_user_subscription_status($user_id = null) {
+        if (!$user_id) {
+            $user_id = get_current_user_id();
+        }
+        
+        if (!$user_id) {
+            return array(
+                'has_subscription' => false,
+                'tier' => 'none',
+                'status' => 'none',
+                'expires_at' => null,
+                'features' => array(),
+                'limits' => array()
+            );
+        }
+        
+        $tier = $this->get_user_subscription_tier($user_id);
+        $status = get_user_meta($user_id, 'xelite_subscription_status', true);
+        
+        // Get subscription expiration date
+        $subscriptions = wcs_get_users_subscriptions($user_id);
+        $expires_at = null;
+        
+        foreach ($subscriptions as $subscription) {
+            if ($subscription->has_status('active')) {
+                $expires_at = $subscription->get_date('next_payment');
+                break;
+            }
+        }
+        
+        return array(
+            'has_subscription' => $tier !== 'none',
+            'tier' => $tier,
+            'status' => $status,
+            'expires_at' => $expires_at,
+            'features' => $this->get_user_features($user_id),
+            'limits' => $this->get_user_limits($user_id)
+        );
+    }
+
+    /**
+     * Check if user has active subscription
+     *
+     * @param int|null $user_id User ID (defaults to current user).
+     * @return bool True if user has active subscription.
+     */
+    public function has_active_subscription($user_id = null) {
+        if (!$user_id) {
+            $user_id = get_current_user_id();
+        }
+        
+        if (!$user_id) {
+            return false;
+        }
+        
+        $tier = $this->get_user_subscription_tier($user_id);
+        return $tier !== 'none';
+    }
+
+    /**
+     * Get user's subscription tier
+     *
+     * @param int|null $user_id User ID (defaults to current user).
+     * @return string Subscription tier.
+     */
+    public function get_user_tier($user_id = null) {
+        if (!$user_id) {
+            $user_id = get_current_user_id();
+        }
+        
+        if (!$user_id) {
+            return 'none';
+        }
+        
+        return $this->get_user_subscription_tier($user_id);
+    }
+
+    /**
+     * Clear user subscription cache
+     *
+     * @param int $user_id User ID.
+     */
+    public function clear_user_cache($user_id) {
+        wp_cache_delete("xelite_user_tier_{$user_id}", 'xelite_subscriptions');
+        $this->log('info', "Cleared cache for user {$user_id}");
+    }
+
+    /**
+     * Refresh user subscription data
+     *
+     * @param int $user_id User ID.
+     */
+    public function refresh_user_subscription($user_id) {
+        $this->clear_user_cache($user_id);
+        $tier = $this->get_user_subscription_tier($user_id, null, true);
+        
+        // Update user meta
+        update_user_meta($user_id, 'xelite_subscription_tier', $tier);
+        update_user_meta($user_id, 'xelite_subscription_updated', current_time('mysql'));
+        
+        // Update capabilities
+        if ($tier === 'none') {
+            $this->remove_user_capabilities($user_id);
+        } else {
+            $this->set_user_capabilities($user_id, $tier);
+        }
+        
+        $this->log('info', "Refreshed subscription data for user {$user_id}: {$tier}");
+    }
+
+    /**
+     * Check content generation limit for user tier
      *
      * @param int $user_id User ID.
      * @return bool True if user can generate more content.
@@ -411,11 +651,19 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
     private function check_content_generation_limit($user_id) {
         $tier = get_user_meta($user_id, 'xelite_subscription_tier', true);
         
-        if ($tier !== 'basic') {
-            return true; // No limit for other tiers
+        if ($tier === 'none') {
+            return false;
         }
         
-        $monthly_limit = 10; // Basic tier limit
+        // Get tier-specific limit
+        $limit_option = "xelite_{$tier}_generation_limit";
+        $monthly_limit = get_option($limit_option, $this->get_default_generation_limit($tier));
+        
+        // Unlimited for enterprise or -1 setting
+        if ($monthly_limit === -1) {
+            return true;
+        }
+        
         $current_month = date('Y-m');
         
         // Get current month's generation count
@@ -423,6 +671,22 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
         $generation_count = intval($generation_count);
         
         return $generation_count < $monthly_limit;
+    }
+
+    /**
+     * Get default generation limit for tier
+     *
+     * @param string $tier Subscription tier.
+     * @return int Default generation limit.
+     */
+    private function get_default_generation_limit($tier) {
+        $defaults = array(
+            'basic' => 10,
+            'premium' => 100,
+            'enterprise' => -1 // Unlimited
+        );
+        
+        return isset($defaults[$tier]) ? $defaults[$tier] : 10;
     }
 
     /**
@@ -540,6 +804,48 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
     }
 
     /**
+     * AJAX refresh all user subscriptions
+     */
+    public function ajax_refresh_all_subscriptions() {
+        check_ajax_referer('xelite_woocommerce_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        $users = get_users(array('fields' => 'ID'));
+        $refreshed_count = 0;
+        
+        foreach ($users as $user_id) {
+            $this->refresh_user_subscription($user_id);
+            $refreshed_count++;
+        }
+        
+        wp_send_json_success(array('count' => $refreshed_count));
+    }
+
+    /**
+     * AJAX clear all caches
+     */
+    public function ajax_clear_all_caches() {
+        check_ajax_referer('xelite_woocommerce_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        $users = get_users(array('fields' => 'ID'));
+        $cleared_count = 0;
+        
+        foreach ($users as $user_id) {
+            $this->clear_user_cache($user_id);
+            $cleared_count++;
+        }
+        
+        wp_send_json_success(array('count' => $cleared_count));
+    }
+
+    /**
      * Get user features based on tier
      *
      * @param int $user_id User ID.
@@ -584,32 +890,63 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
      * @param int $user_id User ID.
      * @return array User limits.
      */
-    private function get_user_limits($user_id) {
+    public function get_user_limits($user_id) {
         $tier = get_user_meta($user_id, 'xelite_subscription_tier', true);
         $current_month = date('Y-m');
+        $current_generations = intval(get_user_meta($user_id, "xelite_generation_count_{$current_month}", true));
         
-        $limits = array(
-            'basic' => array(
-                'monthly_generations' => 10,
-                'current_generations' => intval(get_user_meta($user_id, "xelite_generation_count_{$current_month}", true))
-            ),
-            'premium' => array(
-                'monthly_generations' => 100,
-                'current_generations' => intval(get_user_meta($user_id, "xelite_generation_count_{$current_month}", true))
-            ),
-            'enterprise' => array(
-                'monthly_generations' => -1, // Unlimited
-                'current_generations' => intval(get_user_meta($user_id, "xelite_generation_count_{$current_month}", true))
-            )
+        if ($tier === 'none') {
+            return array(
+                'monthly_generations' => 0,
+                'current_generations' => 0
+            );
+        }
+        
+        // Get tier-specific limit from settings
+        $limit_option = "xelite_{$tier}_generation_limit";
+        $monthly_limit = get_option($limit_option, $this->get_default_generation_limit($tier));
+        
+        return array(
+            'monthly_generations' => $monthly_limit,
+            'current_generations' => $current_generations,
+            'remaining_generations' => $monthly_limit === -1 ? -1 : max(0, $monthly_limit - $current_generations)
         );
-        
-        return isset($limits[$tier]) ? $limits[$tier] : array();
     }
 
     /**
      * Register settings
      */
     public function register_settings() {
+        register_setting(
+            'xelite_woocommerce_settings',
+            'xelite_basic_product_id',
+            array($this, 'sanitize_product_id')
+        );
+        register_setting(
+            'xelite_woocommerce_settings',
+            'xelite_premium_product_id',
+            array($this, 'sanitize_product_id')
+        );
+        register_setting(
+            'xelite_woocommerce_settings',
+            'xelite_enterprise_product_id',
+            array($this, 'sanitize_product_id')
+        );
+        register_setting(
+            'xelite_woocommerce_settings',
+            'xelite_basic_generation_limit',
+            array($this, 'sanitize_generation_limit')
+        );
+        register_setting(
+            'xelite_woocommerce_settings',
+            'xelite_premium_generation_limit',
+            array($this, 'sanitize_generation_limit')
+        );
+        register_setting(
+            'xelite_woocommerce_settings',
+            'xelite_enterprise_generation_limit',
+            array($this, 'sanitize_generation_limit')
+        );
         register_setting(
             'xelite_woocommerce_settings',
             'xelite_woocommerce_tier_mapping',
@@ -636,6 +973,7 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
      */
     public function render_settings_page() {
         $tier_mapping = get_option('xelite_woocommerce_tier_mapping', array());
+        $subscription_products = $this->get_subscription_products();
         ?>
         <div class="wrap">
             <h1><?php _e('WooCommerce Integration Settings', 'xelite-repost-engine'); ?></h1>
@@ -645,28 +983,251 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
                     <p><?php _e('WooCommerce and WooCommerce Subscriptions must be installed and activated for this integration to work.', 'xelite-repost-engine'); ?></p>
                 </div>
             <?php else: ?>
-                <form method="post" action="options.php">
-                    <?php
-                    settings_fields('xelite_woocommerce_settings');
-                    do_settings_sections('xelite_woocommerce_settings');
-                    ?>
+                <div class="xelite-woocommerce-settings">
+                    <div class="xelite-settings-section">
+                        <h2><?php _e('Subscription Product Mapping', 'xelite-repost-engine'); ?></h2>
+                        <p><?php _e('Map your WooCommerce subscription products to subscription tiers to control feature access:', 'xelite-repost-engine'); ?></p>
+                        
+                        <form method="post" action="options.php">
+                            <?php
+                            settings_fields('xelite_woocommerce_settings');
+                            do_settings_sections('xelite_woocommerce_settings');
+                            ?>
+                            
+                            <table class="form-table">
+                                <tr>
+                                    <th scope="row"><?php _e('Available Subscription Products', 'xelite-repost-engine'); ?></th>
+                                    <td>
+                                        <?php if (!empty($subscription_products)): ?>
+                                            <ul class="xelite-product-list">
+                                                <?php foreach ($subscription_products as $product): ?>
+                                                    <li>
+                                                        <strong><?php echo esc_html($product['name']); ?></strong>
+                                                        (ID: <?php echo esc_html($product['id']); ?>)
+                                                        - <?php echo esc_html($product['price']); ?>
+                                                    </li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        <?php else: ?>
+                                            <p class="description"><?php _e('No subscription products found. Please create subscription products in WooCommerce first.', 'xelite-repost-engine'); ?></p>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><?php _e('Tier Mapping Configuration', 'xelite-repost-engine'); ?></th>
+                                    <td>
+                                        <div class="xelite-tier-mapping">
+                                            <div class="xelite-tier-row">
+                                                <label for="basic_product_id"><?php _e('Basic Tier Product ID:', 'xelite-repost-engine'); ?></label>
+                                                <input type="number" id="basic_product_id" name="xelite_basic_product_id" value="<?php echo esc_attr($tier_mapping['basic_product_id'] ?? ''); ?>" class="regular-text">
+                                                <p class="description"><?php _e('Product ID for Basic subscription tier', 'xelite-repost-engine'); ?></p>
+                                            </div>
+                                            
+                                            <div class="xelite-tier-row">
+                                                <label for="premium_product_id"><?php _e('Premium Tier Product ID:', 'xelite-repost-engine'); ?></label>
+                                                <input type="number" id="premium_product_id" name="xelite_premium_product_id" value="<?php echo esc_attr($tier_mapping['premium_product_id'] ?? ''); ?>" class="regular-text">
+                                                <p class="description"><?php _e('Product ID for Premium subscription tier', 'xelite-repost-engine'); ?></p>
+                                            </div>
+                                            
+                                            <div class="xelite-tier-row">
+                                                <label for="enterprise_product_id"><?php _e('Enterprise Tier Product ID:', 'xelite-repost-engine'); ?></label>
+                                                <input type="number" id="enterprise_product_id" name="xelite_enterprise_product_id" value="<?php echo esc_attr($tier_mapping['enterprise_product_id'] ?? ''); ?>" class="regular-text">
+                                                <p class="description"><?php _e('Product ID for Enterprise subscription tier', 'xelite-repost-engine'); ?></p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><?php _e('Feature Limits', 'xelite-repost-engine'); ?></th>
+                                    <td>
+                                        <div class="xelite-feature-limits">
+                                            <h4><?php _e('Monthly Content Generation Limits', 'xelite-repost-engine'); ?></h4>
+                                            <div class="xelite-limit-row">
+                                                <label for="basic_limit"><?php _e('Basic Tier:', 'xelite-repost-engine'); ?></label>
+                                                <input type="number" id="basic_limit" name="xelite_basic_generation_limit" value="<?php echo esc_attr(get_option('xelite_basic_generation_limit', 10)); ?>" min="1" class="small-text">
+                                                <span><?php _e('generations per month', 'xelite-repost-engine'); ?></span>
+                                            </div>
+                                            <div class="xelite-limit-row">
+                                                <label for="premium_limit"><?php _e('Premium Tier:', 'xelite-repost-engine'); ?></label>
+                                                <input type="number" id="premium_limit" name="xelite_premium_generation_limit" value="<?php echo esc_attr(get_option('xelite_premium_generation_limit', 100)); ?>" min="1" class="small-text">
+                                                <span><?php _e('generations per month', 'xelite-repost-engine'); ?></span>
+                                            </div>
+                                            <div class="xelite-limit-row">
+                                                <label for="enterprise_limit"><?php _e('Enterprise Tier:', 'xelite-repost-engine'); ?></label>
+                                                <input type="number" id="enterprise_limit" name="xelite_enterprise_generation_limit" value="<?php echo esc_attr(get_option('xelite_enterprise_generation_limit', -1)); ?>" min="-1" class="small-text">
+                                                <span><?php _e('generations per month (-1 for unlimited)', 'xelite-repost-engine'); ?></span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <?php submit_button(__('Save Settings', 'xelite-repost-engine')); ?>
+                        </form>
+                    </div>
                     
-                    <table class="form-table">
-                        <tr>
-                            <th scope="row"><?php _e('Product ID to Tier Mapping', 'xelite-repost-engine'); ?></th>
-                            <td>
-                                <p><?php _e('Map your WooCommerce subscription product IDs to subscription tiers:', 'xelite-repost-engine'); ?></p>
-                                <textarea name="xelite_woocommerce_tier_mapping" rows="10" cols="50" class="large-text code"><?php echo esc_textarea(json_encode($tier_mapping, JSON_PRETTY_PRINT)); ?></textarea>
-                                <p class="description"><?php _e('Enter as JSON format: {"product_id": "tier_name"}', 'xelite-repost-engine'); ?></p>
-                            </td>
-                        </tr>
-                    </table>
+                    <div class="xelite-settings-section">
+                        <h2><?php _e('Subscription Management', 'xelite-repost-engine'); ?></h2>
+                        <p><?php _e('Manage user subscriptions and clear caches:', 'xelite-repost-engine'); ?></p>
+                        
+                        <div class="xelite-admin-actions">
+                            <button type="button" id="refresh-all-subscriptions" class="button button-secondary">
+                                <?php _e('Refresh All User Subscriptions', 'xelite-repost-engine'); ?>
+                            </button>
+                            <button type="button" id="clear-all-caches" class="button button-secondary">
+                                <?php _e('Clear All Caches', 'xelite-repost-engine'); ?>
+                            </button>
+                        </div>
+                        
+                        <div id="refresh-status" style="display: none;">
+                            <p class="xelite-status-message"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <style>
+                .xelite-woocommerce-settings .xelite-settings-section {
+                    background: #fff;
+                    padding: 20px;
+                    margin: 20px 0;
+                    border: 1px solid #ccd0d4;
+                    border-radius: 4px;
+                }
+                .xelite-product-list {
+                    margin: 0;
+                    padding: 0;
+                    list-style: none;
+                }
+                .xelite-product-list li {
+                    padding: 8px 0;
+                    border-bottom: 1px solid #f0f0f0;
+                }
+                .xelite-tier-row, .xelite-limit-row {
+                    margin: 15px 0;
+                    padding: 10px;
+                    background: #f9f9f9;
+                    border-radius: 4px;
+                }
+                .xelite-tier-row label, .xelite-limit-row label {
+                    display: inline-block;
+                    width: 200px;
+                    font-weight: 600;
+                }
+                .xelite-admin-actions {
+                    margin: 20px 0;
+                }
+                .xelite-admin-actions button {
+                    margin-right: 10px;
+                }
+                .xelite-status-message {
+                    padding: 10px;
+                    border-radius: 4px;
+                    margin: 10px 0;
+                }
+                .xelite-status-message.success {
+                    background: #d4edda;
+                    border: 1px solid #c3e6cb;
+                    color: #155724;
+                }
+                .xelite-status-message.error {
+                    background: #f8d7da;
+                    border: 1px solid #f5c6cb;
+                    color: #721c24;
+                }
+                </style>
+                
+                <script>
+                jQuery(document).ready(function($) {
+                    $('#refresh-all-subscriptions').on('click', function() {
+                        var button = $(this);
+                        var statusDiv = $('#refresh-status');
+                        var statusMessage = $('.xelite-status-message');
+                        
+                        button.prop('disabled', true).text('Refreshing...');
+                        statusDiv.show();
+                        statusMessage.removeClass('success error').text('Refreshing user subscriptions...');
+                        
+                        $.ajax({
+                            url: ajaxurl,
+                            type: 'POST',
+                            data: {
+                                action: 'xelite_refresh_all_subscriptions',
+                                nonce: '<?php echo wp_create_nonce('xelite_woocommerce_nonce'); ?>'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    statusMessage.addClass('success').text('Successfully refreshed ' + response.data.count + ' user subscriptions.');
+                                } else {
+                                    statusMessage.addClass('error').text('Error: ' + response.data);
+                                }
+                            },
+                            error: function() {
+                                statusMessage.addClass('error').text('Error refreshing subscriptions. Please try again.');
+                            },
+                            complete: function() {
+                                button.prop('disabled', false).text('Refresh All User Subscriptions');
+                            }
+                        });
+                    });
                     
-                    <?php submit_button(); ?>
-                </form>
+                    $('#clear-all-caches').on('click', function() {
+                        var button = $(this);
+                        var statusDiv = $('#refresh-status');
+                        var statusMessage = $('.xelite-status-message');
+                        
+                        button.prop('disabled', true).text('Clearing...');
+                        statusDiv.show();
+                        statusMessage.removeClass('success error').text('Clearing all caches...');
+                        
+                        $.ajax({
+                            url: ajaxurl,
+                            type: 'POST',
+                            data: {
+                                action: 'xelite_clear_all_caches',
+                                nonce: '<?php echo wp_create_nonce('xelite_woocommerce_nonce'); ?>'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    statusMessage.addClass('success').text('Successfully cleared all caches.');
+                                } else {
+                                    statusMessage.addClass('error').text('Error: ' + response.data);
+                                }
+                            },
+                            error: function() {
+                                statusMessage.addClass('error').text('Error clearing caches. Please try again.');
+                            },
+                            complete: function() {
+                                button.prop('disabled', false).text('Clear All Caches');
+                            }
+                        });
+                    });
+                });
+                </script>
             <?php endif; ?>
         </div>
         <?php
+    }
+
+    /**
+     * Sanitize product ID
+     *
+     * @param mixed $input Raw input.
+     * @return int Sanitized product ID.
+     */
+    public function sanitize_product_id($input) {
+        $product_id = intval($input);
+        return $product_id > 0 ? $product_id : '';
+    }
+
+    /**
+     * Sanitize generation limit
+     *
+     * @param mixed $input Raw input.
+     * @return int Sanitized generation limit.
+     */
+    public function sanitize_generation_limit($input) {
+        $limit = intval($input);
+        return $limit >= -1 ? $limit : 10; // Default to 10 if invalid
     }
 
     /**

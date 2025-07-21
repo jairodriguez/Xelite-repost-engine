@@ -77,6 +77,12 @@ class Repost_Intelligence_Dashboard extends XeliteRepostEngine_Abstract_Base {
         add_action('wp_ajax_xelite_dashboard_save_content', array($this, 'ajax_save_content'));
         add_action('wp_ajax_xelite_dashboard_get_patterns', array($this, 'ajax_get_patterns'));
         add_action('wp_ajax_xelite_dashboard_update_settings', array($this, 'ajax_update_settings'));
+        
+        // Enhanced pattern display AJAX handlers
+        add_action('wp_ajax_xelite_get_filtered_patterns', array($this, 'ajax_get_filtered_patterns'));
+        add_action('wp_ajax_xelite_get_pattern_charts', array($this, 'ajax_get_pattern_charts'));
+        add_action('wp_ajax_xelite_export_patterns', array($this, 'ajax_export_patterns'));
+        add_action('wp_ajax_xelite_get_pattern_analysis', array($this, 'ajax_get_pattern_analysis'));
     }
 
     /**
@@ -207,11 +213,20 @@ class Repost_Intelligence_Dashboard extends XeliteRepostEngine_Abstract_Base {
             XELITE_REPOST_ENGINE_VERSION
         );
 
+        // Enqueue Chart.js
+        wp_enqueue_script(
+            'chart-js',
+            'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js',
+            array(),
+            '4.4.0',
+            true
+        );
+
         // Enqueue dashboard scripts
         wp_enqueue_script(
             'xelite-repost-engine-dashboard',
             XELITE_REPOST_ENGINE_PLUGIN_URL . 'assets/js/dashboard.js',
-            array('jquery', 'wp-util'),
+            array('jquery', 'wp-util', 'chart-js'),
             XELITE_REPOST_ENGINE_VERSION,
             true
         );
@@ -595,5 +610,243 @@ class Repost_Intelligence_Dashboard extends XeliteRepostEngine_Abstract_Base {
     public function is_dashboard_page() {
         global $pagenow;
         return $pagenow === 'admin.php' && isset($_GET['page']) && $_GET['page'] === $this->dashboard_page;
+    }
+
+    /**
+     * AJAX handler for getting filtered patterns
+     */
+    public function ajax_get_filtered_patterns() {
+        check_ajax_referer('xelite_dashboard_nonce', 'nonce');
+        
+        if (!$this->user_has_access()) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        try {
+            $filters = array(
+                'source_handle' => sanitize_text_field($_POST['source_handle'] ?? ''),
+                'min_reposts' => absint($_POST['min_reposts'] ?? 1),
+                'sort_by' => sanitize_text_field($_POST['sort_by'] ?? 'repost_count'),
+                'sort_order' => sanitize_text_field($_POST['sort_order'] ?? 'desc'),
+                'search' => sanitize_text_field($_POST['search'] ?? ''),
+                'page' => absint($_POST['page'] ?? 1),
+                'per_page' => absint($_POST['per_page'] ?? 20),
+                'date_from' => sanitize_text_field($_POST['date_from'] ?? ''),
+                'date_to' => sanitize_text_field($_POST['date_to'] ?? ''),
+                'content_type' => sanitize_text_field($_POST['content_type'] ?? ''),
+                'tone' => sanitize_text_field($_POST['tone'] ?? ''),
+                'min_engagement' => absint($_POST['min_engagement'] ?? 0)
+            );
+            
+            $container = XeliteRepostEngine_Container::instance();
+            $pattern_analyzer = $container->get('pattern_analyzer');
+            
+            $patterns = $pattern_analyzer->get_filtered_patterns($filters);
+            $total_count = $pattern_analyzer->get_filtered_patterns_count($filters);
+            
+            wp_send_json_success(array(
+                'patterns' => $patterns,
+                'total_count' => $total_count,
+                'current_page' => $filters['page'],
+                'total_pages' => ceil($total_count / $filters['per_page']),
+                'filters' => $filters
+            ));
+        } catch (Exception $e) {
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * AJAX handler for getting pattern charts
+     */
+    public function ajax_get_pattern_charts() {
+        check_ajax_referer('xelite_dashboard_nonce', 'nonce');
+        
+        if (!$this->user_has_access()) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        try {
+            $chart_type = sanitize_text_field($_POST['chart_type'] ?? 'overview');
+            $filters = array(
+                'source_handle' => sanitize_text_field($_POST['source_handle'] ?? ''),
+                'date_from' => sanitize_text_field($_POST['date_from'] ?? ''),
+                'date_to' => sanitize_text_field($_POST['date_to'] ?? '')
+            );
+            
+            $container = XeliteRepostEngine_Container::instance();
+            $pattern_visualizer = $container->get('pattern_visualizer');
+            
+            $chart_data = array();
+            
+            switch ($chart_type) {
+                case 'repost_trends':
+                    $chart_data = $pattern_visualizer->generate_time_chart_data($filters);
+                    break;
+                case 'content_types':
+                    $chart_data = $pattern_visualizer->generate_format_chart_data($filters);
+                    break;
+                case 'tone_analysis':
+                    $chart_data = $pattern_visualizer->generate_tone_chart_data($filters);
+                    break;
+                case 'length_distribution':
+                    $chart_data = $pattern_visualizer->generate_length_chart_data($filters);
+                    break;
+                case 'engagement_correlation':
+                    $chart_data = $pattern_visualizer->generate_correlation_chart_data($filters);
+                    break;
+                default:
+                    $chart_data = $pattern_visualizer->generate_dashboard_data($filters['source_handle']);
+            }
+            
+            wp_send_json_success($chart_data);
+        } catch (Exception $e) {
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * AJAX handler for exporting patterns
+     */
+    public function ajax_export_patterns() {
+        check_ajax_referer('xelite_dashboard_nonce', 'nonce');
+        
+        if (!$this->user_has_access()) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        try {
+            $export_format = sanitize_text_field($_POST['format'] ?? 'csv');
+            $filters = json_decode(stripslashes($_POST['filters'] ?? '{}'), true);
+            
+            if (!is_array($filters)) {
+                $filters = array();
+            }
+            
+            $container = XeliteRepostEngine_Container::instance();
+            $pattern_analyzer = $container->get('pattern_analyzer');
+            
+            $patterns = $pattern_analyzer->get_filtered_patterns($filters);
+            
+            switch ($export_format) {
+                case 'csv':
+                    $this->export_patterns_csv($patterns);
+                    break;
+                case 'json':
+                    $this->export_patterns_json($patterns);
+                    break;
+                case 'pdf':
+                    $this->export_patterns_pdf($patterns);
+                    break;
+                default:
+                    wp_send_json_error('Unsupported export format');
+            }
+        } catch (Exception $e) {
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * AJAX handler for getting detailed pattern analysis
+     */
+    public function ajax_get_pattern_analysis() {
+        check_ajax_referer('xelite_dashboard_nonce', 'nonce');
+        
+        if (!$this->user_has_access()) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        try {
+            $pattern_id = absint($_POST['pattern_id'] ?? 0);
+            
+            if (!$pattern_id) {
+                wp_send_json_error('Pattern ID is required');
+            }
+            
+            $container = XeliteRepostEngine_Container::instance();
+            $pattern_analyzer = $container->get('pattern_analyzer');
+            $pattern_visualizer = $container->get('pattern_visualizer');
+            
+            $pattern = $pattern_analyzer->get_pattern_by_id($pattern_id);
+            
+            if (!$pattern) {
+                wp_send_json_error('Pattern not found');
+            }
+            
+            $analysis = array(
+                'pattern' => $pattern,
+                'score' => $pattern_visualizer->calculate_pattern_score($pattern),
+                'recommendations' => $pattern_visualizer->get_score_recommendations($pattern),
+                'similar_patterns' => $pattern_analyzer->get_similar_patterns($pattern_id, 5),
+                'trends' => $pattern_visualizer->generate_pattern_trends($pattern_id)
+            );
+            
+            wp_send_json_success($analysis);
+        } catch (Exception $e) {
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export patterns as CSV
+     */
+    private function export_patterns_csv($patterns) {
+        $filename = 'repost-patterns-' . date('Y-m-d-H-i-s') . '.csv';
+        
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
+        $output = fopen('php://output', 'w');
+        
+        // CSV headers
+        fputcsv($output, array(
+            'ID', 'Source Handle', 'Text', 'Repost Count', 'Avg Engagement',
+            'Length', 'Tone', 'Format', 'Hashtag Count', 'Created At'
+        ));
+        
+        // CSV data
+        foreach ($patterns as $pattern) {
+            fputcsv($output, array(
+                $pattern['id'] ?? '',
+                $pattern['source_handle'] ?? '',
+                $pattern['text'] ?? '',
+                $pattern['repost_count'] ?? 0,
+                $pattern['avg_engagement'] ?? 0,
+                strlen($pattern['text'] ?? ''),
+                $pattern['tone'] ?? '',
+                $pattern['format'] ?? '',
+                $pattern['hashtag_count'] ?? 0,
+                $pattern['created_at'] ?? ''
+            ));
+        }
+        
+        fclose($output);
+        exit;
+    }
+
+    /**
+     * Export patterns as JSON
+     */
+    private function export_patterns_json($patterns) {
+        $filename = 'repost-patterns-' . date('Y-m-d-H-i-s') . '.json';
+        
+        header('Content-Type: application/json');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
+        echo json_encode($patterns, JSON_PRETTY_PRINT);
+        exit;
+    }
+
+    /**
+     * Export patterns as PDF
+     */
+    private function export_patterns_pdf($patterns) {
+        // This would require a PDF library like TCPDF or mPDF
+        // For now, we'll return an error
+        wp_send_json_error('PDF export not yet implemented');
     }
 } 

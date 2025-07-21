@@ -80,6 +80,19 @@
             $(document).on('click', '#apply-filters', this.applyFilters);
             $(document).on('click', '#reset-filters', this.resetFilters);
             
+            // Enhanced pattern display controls
+            $(document).on('click', '.export-option', this.exportPatterns);
+            $(document).on('change', '#chart-type', this.loadChart);
+            $(document).on('click', '#refresh-chart', this.loadChart);
+            $(document).on('input', '#pattern-search', this.debounce(this.handleSearch, 500));
+            
+            // Chart initialization
+            $(document).ready(function() {
+                if ($('#pattern-chart').length) {
+                    XeliteDashboard.initCharts();
+                }
+            });
+            
             // Pagination
             $(document).on('click', '#prev-page', this.previousPage);
             $(document).on('click', '#next-page', this.nextPage);
@@ -838,6 +851,491 @@
                 XeliteDashboard.hideLoading('#patterns-loading');
                 XeliteDashboard.showError('Failed to run pattern analysis. Please try again.');
             });
+        },
+
+        /**
+         * Load chart data and render
+         */
+        loadChart: function() {
+            var chartType = $('#chart-type').val();
+            var filters = this.getCurrentFilters();
+            
+            $('#chart-loading').show();
+            $('#chart-error').hide();
+            
+            $.ajax({
+                url: xelite_dashboard.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'xelite_get_pattern_charts',
+                    nonce: xelite_dashboard.nonce,
+                    chart_type: chartType,
+                    source_handle: filters.source_handle,
+                    date_from: filters.date_from,
+                    date_to: filters.date_to
+                },
+                success: function(response) {
+                    $('#chart-loading').hide();
+                    if (response.success) {
+                        XeliteDashboard.renderChart(response.data, chartType);
+                        XeliteDashboard.updateInsights(response.data);
+                    } else {
+                        $('#chart-error').show().find('p').text(response.data);
+                    }
+                },
+                error: function() {
+                    $('#chart-loading').hide();
+                    $('#chart-error').show().find('p').text('Failed to load chart data');
+                }
+            });
+        },
+
+        /**
+         * Render Chart.js chart
+         */
+        renderChart: function(data, chartType) {
+            var ctx = document.getElementById('pattern-chart');
+            if (!ctx) return;
+            
+            // Destroy existing chart
+            if (this.currentChart) {
+                this.currentChart.destroy();
+            }
+            
+            var config = this.getChartConfig(data, chartType);
+            this.currentChart = new Chart(ctx, config);
+        },
+
+        /**
+         * Get chart configuration based on type
+         */
+        getChartConfig: function(data, chartType) {
+            var baseConfig = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                }
+            };
+            
+            switch (chartType) {
+                case 'repost_trends':
+                    return this.getLineChartConfig(data, baseConfig);
+                case 'content_types':
+                case 'tone_analysis':
+                    return this.getPieChartConfig(data, baseConfig);
+                case 'length_distribution':
+                    return this.getBarChartConfig(data, baseConfig);
+                case 'engagement_correlation':
+                    return this.getScatterChartConfig(data, baseConfig);
+                default:
+                    return this.getBarChartConfig(data, baseConfig);
+            }
+        },
+
+        /**
+         * Get line chart configuration
+         */
+        getLineChartConfig: function(data, baseConfig) {
+            return {
+                type: 'line',
+                data: {
+                    labels: data.labels || [],
+                    datasets: [{
+                        label: data.label || 'Reposts',
+                        data: data.values || [],
+                        borderColor: '#0073aa',
+                        backgroundColor: 'rgba(0, 115, 170, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    ...baseConfig.options,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            };
+        },
+
+        /**
+         * Get pie chart configuration
+         */
+        getPieChartConfig: function(data, baseConfig) {
+            return {
+                type: 'pie',
+                data: {
+                    labels: data.labels || [],
+                    datasets: [{
+                        data: data.values || [],
+                        backgroundColor: [
+                            '#0073aa', '#00a32a', '#dba617', '#d63638',
+                            '#3B82F6', '#10B981', '#F59E0B', '#EF4444'
+                        ]
+                    }]
+                },
+                options: baseConfig.options
+            };
+        },
+
+        /**
+         * Get bar chart configuration
+         */
+        getBarChartConfig: function(data, baseConfig) {
+            return {
+                type: 'bar',
+                data: {
+                    labels: data.labels || [],
+                    datasets: [{
+                        label: data.label || 'Count',
+                        data: data.values || [],
+                        backgroundColor: '#0073aa',
+                        borderColor: '#005a87',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    ...baseConfig.options,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            };
+        },
+
+        /**
+         * Get scatter chart configuration
+         */
+        getScatterChartConfig: function(data, baseConfig) {
+            return {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: data.label || 'Engagement vs Reposts',
+                        data: data.points || [],
+                        backgroundColor: '#0073aa'
+                    }]
+                },
+                options: {
+                    ...baseConfig.options,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Repost Count'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Engagement Rate'
+                            }
+                        }
+                    }
+                }
+                };
+            },
+
+        /**
+         * Update insights panel
+         */
+        updateInsights: function(data) {
+            var insights = $('#insights-content');
+            if (!insights.length) return;
+            
+            var html = '';
+            if (data.insights && data.insights.length > 0) {
+                data.insights.forEach(function(insight) {
+                    html += '<div class="insight-item">';
+                    html += '<strong>' + insight.title + ':</strong> ' + insight.description;
+                    html += '</div>';
+                });
+            } else {
+                html = '<p>No insights available for this chart.</p>';
+            }
+            
+            insights.html(html);
+        },
+
+        /**
+         * Apply filters and reload data
+         */
+        applyFilters: function() {
+            var filters = XeliteDashboard.getCurrentFilters();
+            XeliteDashboard.loadFilteredPatterns(filters);
+        },
+
+        /**
+         * Reset filters to defaults
+         */
+        resetFilters: function() {
+            $('#pattern-source').val('');
+            $('#pattern-min-reposts').val('5');
+            $('#pattern-min-engagement').val('');
+            $('#pattern-date-from').val('');
+            $('#pattern-date-to').val('');
+            $('#pattern-content-type').val('');
+            $('#pattern-tone').val('');
+            $('#pattern-sort').val('repost_count');
+            $('#pattern-sort-order').val('desc');
+            $('#pattern-search').val('');
+            
+            XeliteDashboard.applyFilters();
+        },
+
+        /**
+         * Get current filter values
+         */
+        getCurrentFilters: function() {
+            return {
+                source_handle: $('#pattern-source').val(),
+                min_reposts: $('#pattern-min-reposts').val(),
+                min_engagement: $('#pattern-min-engagement').val(),
+                date_from: $('#pattern-date-from').val(),
+                date_to: $('#pattern-date-to').val(),
+                content_type: $('#pattern-content-type').val(),
+                tone: $('#pattern-tone').val(),
+                sort_by: $('#pattern-sort').val(),
+                sort_order: $('#pattern-sort-order').val(),
+                search: $('#pattern-search').val()
+            };
+        },
+
+        /**
+         * Load filtered patterns via AJAX
+         */
+        loadFilteredPatterns: function(filters) {
+            $('#patterns-loading').show();
+            
+            $.ajax({
+                url: xelite_dashboard.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'xelite_get_filtered_patterns',
+                    nonce: xelite_dashboard.nonce,
+                    ...filters
+                },
+                success: function(response) {
+                    $('#patterns-loading').hide();
+                    if (response.success) {
+                        XeliteDashboard.renderPatterns(response.data.patterns);
+                        XeliteDashboard.updatePagination(response.data);
+                        XeliteDashboard.updateStatistics(response.data);
+                    } else {
+                        XeliteDashboard.showMessage('error', response.data);
+                    }
+                },
+                error: function() {
+                    $('#patterns-loading').hide();
+                    XeliteDashboard.showMessage('error', 'Failed to load patterns');
+                }
+            });
+        },
+
+        /**
+         * Render patterns list
+         */
+        renderPatterns: function(patterns) {
+            var container = $('#patterns-list');
+            if (!container.length) return;
+            
+            if (patterns.length === 0) {
+                container.html('<div class="xelite-empty-state"><p>No patterns found matching your criteria.</p></div>');
+                return;
+            }
+            
+            var html = '';
+            patterns.forEach(function(pattern) {
+                html += XeliteDashboard.renderPatternItem(pattern);
+            });
+            
+            container.html(html);
+        },
+
+        /**
+         * Render single pattern item
+         */
+        renderPatternItem: function(pattern) {
+            return `
+                <div class="xelite-pattern-item" data-pattern-id="${pattern.id}">
+                    <div class="pattern-header">
+                        <div class="pattern-source">
+                            <span class="source-handle">@${pattern.source_handle}</span>
+                            <span class="repost-count">${pattern.repost_count} reposts</span>
+                        </div>
+                        
+                        <div class="pattern-meta">
+                            <span class="pattern-date">${new Date(pattern.created_at).toLocaleDateString()}</span>
+                            <span class="pattern-engagement">${pattern.avg_engagement} avg engagement</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pattern-content">
+                        <div class="pattern-text">${pattern.text}</div>
+                        
+                        <div class="pattern-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Length:</span>
+                                <span class="detail-value">${pattern.text.length} chars</span>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <span class="detail-label">Tone:</span>
+                                <span class="detail-value">${pattern.tone || 'N/A'}</span>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <span class="detail-label">Format:</span>
+                                <span class="detail-value">${pattern.format || 'Text'}</span>
+                            </div>
+                            
+                            <div class="detail-item">
+                                <span class="detail-label">Hashtags:</span>
+                                <span class="detail-value">${pattern.hashtag_count || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pattern-actions">
+                        <button type="button" class="xelite-content-btn copy" data-content="${pattern.text}">
+                            <span class="dashicons dashicons-clipboard"></span>
+                            Copy
+                        </button>
+                        
+                        <button type="button" class="xelite-content-btn analyze" data-pattern-id="${pattern.id}">
+                            <span class="dashicons dashicons-chart-line"></span>
+                            Analyze
+                        </button>
+                        
+                        <button type="button" class="xelite-content-btn generate-similar" data-pattern-id="${pattern.id}">
+                            <span class="dashicons dashicons-admin-generic"></span>
+                            Generate Similar
+                        </button>
+                        
+                        <button type="button" class="xelite-content-btn bookmark" data-pattern-id="${pattern.id}">
+                            <span class="dashicons dashicons-bookmark"></span>
+                            Bookmark
+                        </button>
+                    </div>
+                </div>
+            `;
+        },
+
+        /**
+         * Update pagination controls
+         */
+        updatePagination: function(data) {
+            var pagination = $('.patterns-pagination');
+            if (!pagination.length) return;
+            
+            $('#showing-start').text((data.current_page - 1) * data.filters.per_page + 1);
+            $('#showing-end').text(Math.min(data.current_page * data.filters.per_page, data.total_count));
+            $('#total-count').text(data.total_count);
+            
+            $('.current-page').text(data.current_page);
+            $('.total-pages').text(data.total_pages);
+            
+            $('#prev-page').prop('disabled', data.current_page <= 1);
+            $('#next-page').prop('disabled', data.current_page >= data.total_pages);
+        },
+
+        /**
+         * Update statistics cards
+         */
+        updateStatistics: function(data) {
+            $('#total-patterns').text(data.total_count);
+            
+            if (data.patterns.length > 0) {
+                var avgReposts = data.patterns.reduce(function(sum, pattern) {
+                    return sum + pattern.repost_count;
+                }, 0) / data.patterns.length;
+                
+                var avgEngagement = data.patterns.reduce(function(sum, pattern) {
+                    return sum + pattern.avg_engagement;
+                }, 0) / data.patterns.length;
+                
+                $('#avg-reposts').text(avgReposts.toFixed(1));
+                $('#avg-engagement').text(avgEngagement.toFixed(1));
+                
+                var uniqueSources = [...new Set(data.patterns.map(function(pattern) {
+                    return pattern.source_handle;
+                }))];
+                $('#unique-sources').text(uniqueSources.length);
+            }
+        },
+
+        /**
+         * Handle search input with debouncing
+         */
+        handleSearch: function() {
+            XeliteDashboard.applyFilters();
+        },
+
+        /**
+         * Export patterns
+         */
+        exportPatterns: function() {
+            var format = $(this).data('format');
+            var filters = XeliteDashboard.getCurrentFilters();
+            
+            var form = $('<form>', {
+                method: 'POST',
+                action: xelite_dashboard.ajaxUrl,
+                target: '_blank'
+            });
+            
+            form.append($('<input>', {
+                type: 'hidden',
+                name: 'action',
+                value: 'xelite_export_patterns'
+            }));
+            
+            form.append($('<input>', {
+                type: 'hidden',
+                name: 'nonce',
+                value: xelite_dashboard.nonce
+            }));
+            
+            form.append($('<input>', {
+                type: 'hidden',
+                name: 'format',
+                value: format
+            }));
+            
+            form.append($('<input>', {
+                type: 'hidden',
+                name: 'filters',
+                value: JSON.stringify(filters)
+            }));
+            
+            $('body').append(form);
+            form.submit();
+            form.remove();
+        },
+
+        /**
+         * Debounce function for search
+         */
+        debounce: function(func, wait) {
+            var timeout;
+            return function executedFunction() {
+                var later = function() {
+                    clearTimeout(timeout);
+                    func();
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
     };
 

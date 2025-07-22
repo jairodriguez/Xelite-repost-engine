@@ -48,6 +48,13 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
     private $logger;
 
     /**
+     * Few-shot collector service
+     *
+     * @var XeliteRepostEngine_Few_Shot_Collector
+     */
+    private $few_shot_collector;
+
+    /**
      * Prompt templates
      *
      * @var array
@@ -61,12 +68,14 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
      * @param XeliteRepostEngine_Pattern_Analyzer $pattern_analyzer Pattern analyzer service.
      * @param XeliteRepostEngine_Database $database Database service.
      * @param XeliteRepostEngine_Logger $logger Logger service.
+     * @param XeliteRepostEngine_Few_Shot_Collector $few_shot_collector Few-shot collector service.
      */
-    public function __construct($user_meta, $pattern_analyzer, $database, $logger = null) {
+    public function __construct($user_meta, $pattern_analyzer, $database, $logger = null, $few_shot_collector = null) {
         $this->user_meta = $user_meta;
         $this->pattern_analyzer = $pattern_analyzer;
         $this->database = $database;
         $this->logger = $logger;
+        $this->few_shot_collector = $few_shot_collector;
         
         $this->init_prompt_templates();
         $this->init_hooks();
@@ -78,28 +87,45 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
     private function init_prompt_templates() {
         $this->prompt_templates = array(
             'content_generation' => array(
-                'version' => '1.0',
+                'version' => '2.0',
                 'template' => $this->get_content_generation_template(),
                 'max_tokens' => 3000,
-                'temperature' => 0.7
+                'temperature' => 0.7,
+                'few_shot_enabled' => true,
+                'max_examples' => 5,
+                'example_selection_strategy' => 'engagement_score'
             ),
             'content_optimization' => array(
-                'version' => '1.0',
+                'version' => '2.0',
                 'template' => $this->get_content_optimization_template(),
                 'max_tokens' => 2000,
-                'temperature' => 0.6
+                'temperature' => 0.6,
+                'few_shot_enabled' => true,
+                'max_examples' => 3,
+                'example_selection_strategy' => 'similar_content'
             ),
             'hashtag_suggestion' => array(
                 'version' => '1.0',
                 'template' => $this->get_hashtag_suggestion_template(),
                 'max_tokens' => 500,
-                'temperature' => 0.5
+                'temperature' => 0.5,
+                'few_shot_enabled' => false
             ),
             'engagement_prediction' => array(
                 'version' => '1.0',
                 'template' => $this->get_engagement_prediction_template(),
                 'max_tokens' => 1000,
-                'temperature' => 0.3
+                'temperature' => 0.3,
+                'few_shot_enabled' => false
+            ),
+            'few_shot_enhanced_generation' => array(
+                'version' => '1.0',
+                'template' => $this->get_few_shot_enhanced_template(),
+                'max_tokens' => 3500,
+                'temperature' => 0.8,
+                'few_shot_enabled' => true,
+                'max_examples' => 7,
+                'example_selection_strategy' => 'category_match'
             )
         );
     }
@@ -111,6 +137,8 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
         add_action('wp_ajax_xelite_test_prompt', array($this, 'ajax_test_prompt'));
         add_action('wp_ajax_xelite_ab_test_prompts', array($this, 'ajax_ab_test_prompts'));
         add_action('wp_ajax_xelite_get_prompt_analytics', array($this, 'ajax_get_prompt_analytics'));
+        add_action('wp_ajax_xelite_get_available_templates', array($this, 'ajax_get_available_templates'));
+        add_action('wp_ajax_xelite_build_enhanced_prompt', array($this, 'ajax_build_enhanced_prompt'));
     }
 
     /**
@@ -121,11 +149,46 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
      * @return array Built prompt with metadata.
      */
     public function build_content_generation_prompt($user_id, $options = array()) {
+        $template_type = $options['template_type'] ?? 'content_generation';
+        
+        // Use few-shot enhanced template if available and requested
+        if (isset($options['use_enhanced_template']) && $options['use_enhanced_template'] && 
+            isset($this->prompt_templates['few_shot_enhanced_generation'])) {
+            $template_type = 'few_shot_enhanced_generation';
+        }
+        
+        return $this->build_prompt_with_template($user_id, $template_type, $options);
+    }
+
+    /**
+     * Build prompt with specific template type
+     *
+     * @param int $user_id User ID.
+     * @param string $template_type Template type.
+     * @param array $options Generation options.
+     * @return array Built prompt with metadata.
+     */
+    public function build_prompt_with_template($user_id, $template_type, $options = array()) {
+        if (!isset($this->prompt_templates[$template_type])) {
+            $this->log('error', 'Template type not found', array('template_type' => $template_type));
+            return false;
+        }
+
+        $template_config = $this->prompt_templates[$template_type];
         $user_context = $this->extract_user_context($user_id);
         $repost_patterns = $this->analyze_repost_patterns($user_id, $options);
-        $few_shot_examples = $this->get_few_shot_examples($user_id, $options);
         
-        $template = $this->prompt_templates['content_generation']['template'];
+        // Get few-shot examples if enabled for this template
+        $few_shot_examples = array();
+        if ($template_config['few_shot_enabled']) {
+            $example_options = array_merge($options, array(
+                'max_examples' => $template_config['max_examples'] ?? 3,
+                'selection_strategy' => $template_config['example_selection_strategy'] ?? 'engagement_score'
+            ));
+            $few_shot_examples = $this->get_few_shot_examples($user_id, $example_options);
+        }
+        
+        $template = $template_config['template'];
         $prompt = $this->populate_template($template, array(
             'user_context' => $user_context,
             'repost_patterns' => $repost_patterns,
@@ -135,13 +198,16 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
 
         return array(
             'prompt' => $prompt,
-            'template_version' => $this->prompt_templates['content_generation']['version'],
+            'template_type' => $template_type,
+            'template_version' => $template_config['version'],
             'user_context' => $user_context,
             'repost_patterns' => $repost_patterns,
             'few_shot_examples_count' => count($few_shot_examples),
+            'few_shot_enabled' => $template_config['few_shot_enabled'],
             'estimated_tokens' => $this->estimate_token_count($prompt),
-            'max_tokens' => $this->prompt_templates['content_generation']['max_tokens'],
-            'temperature' => $this->prompt_templates['content_generation']['temperature']
+            'max_tokens' => $template_config['max_tokens'],
+            'temperature' => $template_config['temperature'],
+            'example_selection_strategy' => $template_config['example_selection_strategy'] ?? null
         );
     }
 
@@ -346,6 +412,42 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
      * @return array Few-shot examples.
      */
     private function get_few_shot_examples($user_id, $options = array()) {
+        // Use the few-shot collector service if available
+        if ($this->few_shot_collector) {
+            $max_examples = $options['max_examples'] ?? 3;
+            $content_type = $options['content_type'] ?? null;
+            $category_id = $options['category_id'] ?? null;
+            $min_engagement = $options['min_engagement'] ?? 0;
+            
+            $filters = array(
+                'is_active' => 1,
+                'limit' => $max_examples
+            );
+            
+            if ($content_type) {
+                $filters['content_type'] = $content_type;
+            }
+            
+            if ($category_id) {
+                $filters['category_id'] = $category_id;
+            }
+            
+            if ($min_engagement > 0) {
+                $filters['min_engagement'] = $min_engagement;
+            }
+            
+            $examples = $this->few_shot_collector->get_few_shot_examples($filters);
+            
+            $this->log('debug', 'Retrieved few-shot examples from collector', array(
+                'user_id' => $user_id,
+                'examples_count' => count($examples),
+                'filters' => $filters
+            ));
+            
+            return $examples;
+        }
+        
+        // Fallback to database method if few-shot collector not available
         $target_accounts = $this->user_meta->get_user_meta($user_id, 'target_accounts');
         
         if (empty($target_accounts)) {
@@ -370,7 +472,7 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
 
         $examples = array_slice($examples, 0, $max_examples);
 
-        $this->log('debug', 'Retrieved few-shot examples', array(
+        $this->log('debug', 'Retrieved few-shot examples from database', array(
             'user_id' => $user_id,
             'examples_count' => count($examples)
         ));
@@ -502,11 +604,57 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
         }
 
         $formatted = array();
+        $formatted[] = "Here are examples of highly successful content that achieved high engagement:";
+        $formatted[] = "";
         
         foreach ($examples as $index => $example) {
-            $formatted[] = "Example " . ($index + 1) . ":";
-            $formatted[] = "Tweet: " . $example['original_text'];
-            $formatted[] = "Engagement Score: " . ($example['engagement_score'] ?? 'N/A');
+            $formatted[] = "EXAMPLE " . ($index + 1) . ":";
+            $formatted[] = "Content: " . $example['original_text'];
+            
+            // Add engagement metrics if available
+            if (isset($example['engagement_score'])) {
+                $formatted[] = "Engagement Score: " . number_format($example['engagement_score'], 2);
+            }
+            
+            if (isset($example['repost_count']) && $example['repost_count'] > 0) {
+                $formatted[] = "Reposts: " . $example['repost_count'];
+            }
+            
+            if (isset($example['like_count']) && $example['like_count'] > 0) {
+                $formatted[] = "Likes: " . $example['like_count'];
+            }
+            
+            if (isset($example['retweet_count']) && $example['retweet_count'] > 0) {
+                $formatted[] = "Retweets: " . $example['retweet_count'];
+            }
+            
+            // Add content analysis if available
+            if (isset($example['content_length'])) {
+                $formatted[] = "Length: " . $example['content_length'] . " characters";
+            }
+            
+            if (isset($example['content_type']) && $example['content_type'] !== 'text') {
+                $formatted[] = "Type: " . ucfirst($example['content_type']);
+            }
+            
+            if (isset($example['hashtags']) && !empty($example['hashtags'])) {
+                $hashtags = is_array($example['hashtags']) ? $example['hashtags'] : json_decode($example['hashtags'], true);
+                if ($hashtags) {
+                    $formatted[] = "Hashtags: " . implode(', ', $hashtags);
+                }
+            }
+            
+            if (isset($example['mentions']) && !empty($example['mentions'])) {
+                $mentions = is_array($example['mentions']) ? $example['mentions'] : json_decode($example['mentions'], true);
+                if ($mentions) {
+                    $formatted[] = "Mentions: " . implode(', ', $mentions);
+                }
+            }
+            
+            if (isset($example['selection_reason']) && !empty($example['selection_reason'])) {
+                $formatted[] = "Why it worked: " . $example['selection_reason'];
+            }
+            
             $formatted[] = "";
         }
 
@@ -568,15 +716,24 @@ Additional Options:
 {{options}}
 
 Instructions:
-1. Create 3 different content variations that follow the identified patterns
-2. Ensure each variation is within the optimal length range
-3. Use the most effective tone identified in the patterns
-4. Include recommended format elements (hashtags, emojis, etc.)
-5. Incorporate high-engagement words naturally
-6. Make content authentic and valuable to the target audience
-7. Ensure content aligns with the user's writing style and offer
+1. Study the provided examples carefully - these are proven successful content pieces
+2. Analyze what makes each example effective (tone, structure, length, hashtags, etc.)
+3. Create 3 different content variations that incorporate the successful elements from the examples
+4. Ensure each variation is within the optimal length range identified in patterns
+5. Use the most effective tone and format elements from the patterns
+6. Incorporate high-engagement words naturally
+7. Make content authentic and valuable to the target audience
+8. Ensure content aligns with the user's writing style and offer
+9. Apply the same level of quality and engagement potential as the examples
 
-Generate the content variations below:
+Key Principles from Examples:
+- Notice the content structure and flow
+- Pay attention to how hashtags and mentions are used
+- Observe the tone and voice consistency
+- Consider the length and readability
+- Identify what makes each piece "repost-worthy"
+
+Generate the content variations below, ensuring they match the quality and effectiveness of the provided examples:
 
 EOT;
     }
@@ -671,6 +828,50 @@ Instructions:
 5. Compare against successful patterns
 
 Analysis:
+
+EOT;
+    }
+
+    /**
+     * Get few-shot enhanced generation template
+     *
+     * @return string Template.
+     */
+    private function get_few_shot_enhanced_template() {
+        return <<<EOT
+You are an expert social media content creator with deep knowledge of what makes content go viral and get reposted. You have access to proven examples of highly successful content that achieved exceptional engagement.
+
+User Context:
+{{user_context}}
+
+Repost Patterns Analysis:
+{{repost_patterns}}
+
+Proven Successful Examples:
+{{few_shot_examples}}
+
+Additional Options:
+{{options}}
+
+Instructions:
+1. Carefully analyze each provided example to understand what makes it successful
+2. Identify the key elements: tone, structure, length, hashtag usage, call-to-action, etc.
+3. Create 3 different content variations that incorporate the most effective elements from the examples
+4. Each variation should be as compelling and repost-worthy as the examples provided
+5. Ensure content aligns with the user's context and target audience
+6. Apply the optimal patterns identified in the analysis
+7. Make each piece authentic, valuable, and highly shareable
+
+Key Success Factors to Emulate:
+- Emotional resonance and relatability
+- Clear value proposition
+- Engaging storytelling or insights
+- Strategic use of hashtags and mentions
+- Optimal length and readability
+- Strong call-to-action or takeaway
+- Authentic voice and personality
+
+Generate 3 content variations below, each with the potential to achieve similar success as the provided examples:
 
 EOT;
     }
@@ -929,6 +1130,157 @@ EOT;
         }
         
         wp_send_json_success($analytics);
+    }
+
+    /**
+     * AJAX handler for getting available templates
+     */
+    public function ajax_get_available_templates() {
+        check_ajax_referer('xelite_prompt_nonce', 'nonce');
+        
+        if (!current_user_can('edit_posts')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+
+        $templates = $this->get_available_templates();
+        $stats = $this->get_prompt_template_stats();
+        
+        wp_send_json_success(array(
+            'templates' => $templates,
+            'stats' => $stats
+        ));
+    }
+
+    /**
+     * AJAX handler for building enhanced prompts
+     */
+    public function ajax_build_enhanced_prompt() {
+        check_ajax_referer('xelite_prompt_nonce', 'nonce');
+        
+        if (!current_user_can('edit_posts')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+
+        $user_id = get_current_user_id();
+        $template_type = sanitize_text_field($_POST['template_type'] ?? 'content_generation');
+        $options = json_decode(stripslashes($_POST['options'] ?? '{}'), true);
+
+        $prompt_data = $this->build_prompt_with_template($user_id, $template_type, $options);
+        
+        if (!$prompt_data) {
+            wp_send_json_error('Failed to build prompt');
+        }
+        
+        wp_send_json_success($prompt_data);
+    }
+
+    /**
+     * Track prompt performance and update few-shot example usage
+     *
+     * @param array $prompt_data Prompt data used.
+     * @param array $generated_content Generated content.
+     * @param array $performance_metrics Performance metrics.
+     */
+    public function track_prompt_performance($prompt_data, $generated_content, $performance_metrics = array()) {
+        if (!$this->few_shot_collector) {
+            return;
+        }
+
+        // Extract example IDs from prompt data
+        $example_ids = array();
+        if (isset($prompt_data['few_shot_examples_count']) && $prompt_data['few_shot_examples_count'] > 0) {
+            // This would need to be enhanced to track specific example IDs
+            // For now, we'll track that examples were used
+            $this->log('info', 'Prompt used few-shot examples', array(
+                'examples_count' => $prompt_data['few_shot_examples_count'],
+                'performance_metrics' => $performance_metrics
+            ));
+        }
+
+        // Track prompt template performance
+        $template_version = $prompt_data['template_version'] ?? '1.0';
+        $this->track_template_performance($template_version, $performance_metrics);
+    }
+
+    /**
+     * Track template performance
+     *
+     * @param string $template_version Template version.
+     * @param array $performance_metrics Performance metrics.
+     */
+    private function track_template_performance($template_version, $performance_metrics) {
+        $template_stats = get_option('xelite_prompt_template_stats', array());
+        
+        if (!isset($template_stats[$template_version])) {
+            $template_stats[$template_version] = array(
+                'usage_count' => 0,
+                'total_engagement' => 0,
+                'successful_generations' => 0,
+                'average_engagement' => 0
+            );
+        }
+
+        $template_stats[$template_version]['usage_count']++;
+        
+        if (isset($performance_metrics['engagement_score'])) {
+            $template_stats[$template_version]['total_engagement'] += $performance_metrics['engagement_score'];
+            $template_stats[$template_version]['successful_generations']++;
+            $template_stats[$template_version]['average_engagement'] = 
+                $template_stats[$template_version]['total_engagement'] / $template_stats[$template_version]['successful_generations'];
+        }
+
+        update_option('xelite_prompt_template_stats', $template_stats);
+    }
+
+    /**
+     * Get prompt template statistics
+     *
+     * @return array Template statistics.
+     */
+    public function get_prompt_template_stats() {
+        return get_option('xelite_prompt_template_stats', array());
+    }
+
+    /**
+     * Get available template types and their configurations
+     *
+     * @return array Template configurations.
+     */
+    public function get_available_templates() {
+        $templates = array();
+        
+        foreach ($this->prompt_templates as $type => $config) {
+            $templates[$type] = array(
+                'type' => $type,
+                'version' => $config['version'],
+                'max_tokens' => $config['max_tokens'],
+                'temperature' => $config['temperature'],
+                'few_shot_enabled' => $config['few_shot_enabled'] ?? false,
+                'max_examples' => $config['max_examples'] ?? 0,
+                'example_selection_strategy' => $config['example_selection_strategy'] ?? null,
+                'description' => $this->get_template_description($type)
+            );
+        }
+        
+        return $templates;
+    }
+
+    /**
+     * Get template description
+     *
+     * @param string $template_type Template type.
+     * @return string Description.
+     */
+    private function get_template_description($template_type) {
+        $descriptions = array(
+            'content_generation' => 'Standard content generation with basic few-shot learning support',
+            'content_optimization' => 'Optimize existing content using few-shot examples',
+            'hashtag_suggestion' => 'Generate hashtag suggestions for content',
+            'engagement_prediction' => 'Predict engagement and repost potential',
+            'few_shot_enhanced_generation' => 'Advanced content generation with comprehensive few-shot learning'
+        );
+        
+        return $descriptions[$template_type] ?? 'No description available';
     }
 
     /**

@@ -9832,3 +9832,210 @@ The system is now ready to automatically collect and manage exemplary reposts th
 
 ---
 
+_**User**_
+
+proceed with subtask 13.2
+
+---
+
+_**Assistant**_
+
+I'll proceed with subtask 13.2: "Develop Enhanced AI Prompt Templates with Few-Shot Examples". Let me first check the current task status and then implement the enhanced AI prompt templates that integrate with the few-shot learning system we just built.
+
+
+---
+
+
+
+---
+
+Now let me set this subtask to in-progress and start implementing the enhanced AI prompt templates with few-shot examples.
+
+
+---
+
+
+
+---
+
+Let me first examine the existing AI class to understand the current prompt structure and then enhance it with few-shot learning capabilities.
+
+
+---
+
+Read file: xelite-repost-engine/includes/class-xelite-repost-engine-openai.php
+
+---
+
+Now let me examine the prompt builder class to understand how prompts are currently constructed:
+
+
+---
+
+Read file: xelite-repost-engine/includes/class-xelite-repost-engine-prompt-builder.php
+
+---
+
+Now I need to enhance the existing prompt builder to integrate with the few-shot learning system. Let me update the prompt builder to use the few-shot collector service and create enhanced templates.
+
+
+---
+
+
+
+---
+
+
+
+---
+
+Now let me update the `get_few_shot_examples` method to use the few-shot collector service:
+
+
+---
+
+
+
+---
+
+Now let me enhance the `format_few_shot_examples` method to provide more detailed and structured examples:
+
+
+---
+
+
+
+---
+
+Now let me enhance the content generation template to better utilize the few-shot examples:
+
+
+---
+
+
+
+---
+
+Now let me add a new method to track prompt performance and update the few-shot examples usage:
+
+
+---
+
+
+
+---
+
+Now I need to update the container to inject the few-shot collector into the prompt builder:
+
+
+---
+
+
+
+---
+
+Now let me create an enhanced prompt template configuration system. I'll add a new method to manage prompt templates dynamically:
+
+
+---
+
+
+
+---
+
+Now let me add the new few-shot enhanced template method:
+
+
+---
+
+
+
+---
+
+Now let me add a method to build prompts with specific template types and enhance the existing build method:
+
+
+---
+
+
+
+---
+
+Now let me add a method to get available template types and their configurations:
+
+
+---
+
+
+
+---
+
+Now let me add an AJAX handler to get available templates:
+
+
+---
+
+
+
+---
+
+Now let me add the new AJAX handlers:
+
+
+---
+
+
+
+---
+
+Now let me update the subtask status to done and log the completion:
+
+
+---
+
+
+
+---
+
+
+
+---
+
+Perfect! I have successfully completed **Subtask 13.2: "Develop Enhanced AI Prompt Templates with Few-Shot Examples"**. 
+
+## Summary of What Was Accomplished
+
+I enhanced the AI prompt system to integrate with the few-shot learning data collection system we built in subtask 13.1. Here are the key improvements:
+
+### 🔧 **Enhanced Prompt Builder Class**
+- **Few-Shot Integration**: Added few-shot collector service dependency injection
+- **Smart Example Selection**: Enhanced `get_few_shot_examples()` to use the collector with filtering options
+- **Rich Example Formatting**: Improved `format_few_shot_examples()` to provide detailed examples with engagement metrics, hashtags, mentions, and success reasons
+
+### 📋 **New Template System**
+- **Template Configuration**: Added metadata for few-shot learning settings (enabled/disabled, max examples, selection strategy)
+- **Enhanced Templates**: Updated existing templates to v2.0 with few-shot support
+- **New Advanced Template**: Created `few_shot_enhanced_generation` template with comprehensive instructions
+
+### 🎯 **Template Features**
+- **Content Generation (v2.0)**: 5 few-shot examples with engagement-based selection
+- **Content Optimization (v2.0)**: 3 similar content examples  
+- **Few-Shot Enhanced Generation (v1.0)**: 7 examples with category matching
+- **Selection Strategies**: engagement_score, similar_content, category_match
+
+### �� **New Methods & AJAX Endpoints**
+- `build_prompt_with_template()` - Build prompts with specific template types
+- `get_available_templates()` - Get all templates with configurations
+- `track_prompt_performance()` - Track performance and update few-shot usage
+- New AJAX handlers for template management and enhanced prompt building
+
+### 🔗 **Service Integration**
+- Updated service container to inject few-shot collector into prompt builder
+- Ensured proper dependency injection throughout the system
+
+The enhanced prompt system now provides much more effective AI-generated content by leveraging proven successful examples with detailed engagement metrics, making the AI understand what makes content truly repost-worthy.
+
+**Next up**: Subtask 13.3 - "Implement A/B Testing for Few-Shot Prompt Optimization"
+
+---
+

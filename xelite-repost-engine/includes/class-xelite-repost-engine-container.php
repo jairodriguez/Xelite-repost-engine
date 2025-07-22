@@ -233,15 +233,16 @@ class XeliteRepostEngine_Container {
             return new XeliteRepostEngine_OpenAI($container->get('logger'));
         }, true);
 
-        // Register Prompt Builder service
-        $this->register('prompt_builder', function($container) {
-            return new XeliteRepostEngine_Prompt_Builder(
-                $container->get('user_meta'),
-                $container->get('pattern_analyzer'),
-                $container->get('database'),
-                $container->get('logger')
-            );
-        }, true);
+                        // Register Prompt Builder service
+                $this->register('prompt_builder', function($container) {
+                    return new XeliteRepostEngine_Prompt_Builder(
+                        $container->get('user_meta'),
+                        $container->get('pattern_analyzer'),
+                        $container->get('database'),
+                        $container->get('logger'),
+                        $container->get('few_shot_collector')
+                    );
+                }, true);
 
         // Register Dashboard service
         $this->register('dashboard', function($container) {

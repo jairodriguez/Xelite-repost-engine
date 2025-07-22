@@ -149,6 +149,12 @@ class XeliteRepostEngine {
         require_once $this->plugin_dir . 'includes/api/class-xelite-repost-engine-x-api.php';
         require_once $this->plugin_dir . 'includes/api/class-xelite-repost-engine-x-processor.php';
         
+        // Load X Poster class
+        require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-x-poster.php';
+        
+        // Load Scheduler class
+        require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-scheduler.php';
+        
         // Load scraper class
         require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-scraper.php';
         
@@ -249,6 +255,12 @@ class XeliteRepostEngine {
         
         // Initialize Dashboard service
         $this->container->get('dashboard');
+        
+        // Initialize X Poster service
+        $this->container->get('x_poster');
+        
+        // Initialize Scheduler service
+        $this->container->get('scheduler');
     }
     
 

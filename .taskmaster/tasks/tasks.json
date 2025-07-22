@@ -424,7 +424,7 @@
         "dependencies": [
           1
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -490,7 +490,7 @@
               1
             ],
             "details": "1. Extend the X poster class with scheduling capabilities\n2. Create database tables for storing scheduled posts\n3. Implement WordPress cron hooks for executing scheduled posts\n4. Add methods to manage the scheduling queue (add, remove, edit)\n5. Create admin UI components for scheduling interface\n6. Implement time zone handling for accurate scheduling\n7. Add logging for scheduled post execution",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -502,7 +502,7 @@
               2
             ],
             "details": "1. Create capability checks for posting and scheduling features\n2. Implement tier-based limits (posts per day, scheduling window, etc.)\n3. Add subscription status validation before posting/scheduling\n4. Create admin settings to configure limits per subscription tier\n5. Implement graceful degradation for expired subscriptions\n6. Add user notifications about subscription requirements\n7. Test with various subscription scenarios",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           }
         ]
@@ -725,7 +725,7 @@
     ],
     "metadata": {
       "created": "2025-07-19T00:36:39.765Z",
-      "updated": "2025-07-21T00:54:59.761Z",
+      "updated": "2025-07-22T02:38:56.779Z",
       "description": "Tasks for master context"
     }
   }

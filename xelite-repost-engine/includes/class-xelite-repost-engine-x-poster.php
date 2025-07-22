@@ -57,15 +57,24 @@ class XeliteRepostEngine_X_Poster extends XeliteRepostEngine_Abstract_Base {
     private $logger;
 
     /**
+     * WooCommerce integration instance
+     *
+     * @var XeliteRepostEngine_WooCommerce|null
+     */
+    private $woocommerce;
+
+    /**
      * Constructor
      *
      * @param XeliteRepostEngine_Database $database Database instance.
      * @param XeliteRepostEngine_User_Meta $user_meta User meta instance.
      * @param XeliteRepostEngine_Logger|null $logger Logger instance.
+     * @param XeliteRepostEngine_WooCommerce|null $woocommerce WooCommerce instance.
      */
-    public function __construct($database, $user_meta, $logger = null) {
+    public function __construct($database, $user_meta, $logger = null, $woocommerce = null) {
         parent::__construct($database, $user_meta);
         $this->logger = $logger;
+        $this->woocommerce = $woocommerce;
         
         $this->init();
     }
@@ -314,6 +323,156 @@ class XeliteRepostEngine_X_Poster extends XeliteRepostEngine_Abstract_Base {
         
         $this->log('info', 'Token refreshed for user ' . $user_id);
         return true;
+    }
+
+    /**
+     * Check subscription access for posting
+     *
+     * @param int $user_id User ID.
+     * @param string $feature Feature name.
+     * @return array Access check result.
+     */
+    public function check_subscription_access($user_id, $feature) {
+        if (!$this->woocommerce) {
+            return array(
+                'allowed' => true,
+                'reason' => 'WooCommerce integration not available'
+            );
+        }
+
+        if (!$this->woocommerce->is_integration_active()) {
+            return array(
+                'allowed' => true,
+                'reason' => 'WooCommerce integration not active'
+            );
+        }
+
+        if (!$this->woocommerce->can_access_feature($feature, $user_id)) {
+            $tier = $this->woocommerce->get_user_tier($user_id);
+            return array(
+                'allowed' => false,
+                'reason' => "Feature '{$feature}' requires an active subscription. Current tier: {$tier}",
+                'current_tier' => $tier
+            );
+        }
+
+        return array(
+            'allowed' => true,
+            'reason' => 'Access granted'
+        );
+    }
+
+    /**
+     * Check posting limits for user
+     *
+     * @param int $user_id User ID.
+     * @return array Limit check result.
+     */
+    public function check_posting_limits($user_id) {
+        if (!$this->woocommerce) {
+            return array(
+                'allowed' => true,
+                'reason' => 'WooCommerce integration not available'
+            );
+        }
+
+        if (!$this->woocommerce->is_integration_active()) {
+            return array(
+                'allowed' => true,
+                'reason' => 'WooCommerce integration not active'
+            );
+        }
+
+        // Get user's posting limits
+        $limits = $this->get_user_posting_limits($user_id);
+        
+        // Check daily posting count
+        $daily_posts = $this->get_user_daily_posts($user_id);
+        
+        if ($limits['daily_posts'] > 0 && $daily_posts >= $limits['daily_posts']) {
+            return array(
+                'allowed' => false,
+                'reason' => "Daily posting limit reached ({$daily_posts}/{$limits['daily_posts']})",
+                'current' => $daily_posts,
+                'limit' => $limits['daily_posts']
+            );
+        }
+
+        return array(
+            'allowed' => true,
+            'reason' => 'Within posting limits'
+        );
+    }
+
+    /**
+     * Get user's posting limits based on subscription tier
+     *
+     * @param int $user_id User ID.
+     * @return array Posting limits.
+     */
+    public function get_user_posting_limits($user_id) {
+        if (!$this->woocommerce) {
+            return array(
+                'daily_posts' => -1, // Unlimited
+                'scheduling_window' => 30, // 30 days
+                'media_uploads' => -1 // Unlimited
+            );
+        }
+
+        $tier = $this->woocommerce->get_user_tier($user_id);
+        
+        // Default limits by tier
+        $tier_limits = array(
+            'basic' => array(
+                'daily_posts' => 5,
+                'scheduling_window' => 7, // 7 days
+                'media_uploads' => 2
+            ),
+            'premium' => array(
+                'daily_posts' => 20,
+                'scheduling_window' => 30, // 30 days
+                'media_uploads' => 10
+            ),
+            'enterprise' => array(
+                'daily_posts' => -1, // Unlimited
+                'scheduling_window' => 90, // 90 days
+                'media_uploads' => -1 // Unlimited
+            )
+        );
+
+        return isset($tier_limits[$tier]) ? $tier_limits[$tier] : $tier_limits['basic'];
+    }
+
+    /**
+     * Get user's daily post count
+     *
+     * @param int $user_id User ID.
+     * @return int Daily post count.
+     */
+    public function get_user_daily_posts($user_id) {
+        global $wpdb;
+        
+        $today = date('Y-m-d');
+        $table_name = $wpdb->prefix . 'xelite_posted_tweets';
+        
+        $count = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$table_name} WHERE user_id = %d AND DATE(posted_at) = %s",
+            $user_id,
+            $today
+        ));
+        
+        return intval($count);
+    }
+
+    /**
+     * Increment user's daily post count
+     *
+     * @param int $user_id User ID.
+     */
+    public function increment_daily_posts($user_id) {
+        // This is handled by store_post_record method
+        // Just log the action for tracking
+        $this->log('info', "Incremented daily post count for user {$user_id}");
     }
 
     /**

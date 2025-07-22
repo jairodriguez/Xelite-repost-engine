@@ -178,6 +178,16 @@ class XeliteRepostEngine_Container {
             return new XeliteRepostEngine_X_Processor($container->get('database'), $container->get('x_api'));
         }, true);
         
+        // Register X Poster service
+        $this->register('x_poster', function($container) {
+            return new XeliteRepostEngine_X_Poster($container->get('database'), $container->get('user_meta'), $container->get('logger'), $container->get('woocommerce'));
+        }, true);
+        
+        // Register Scheduler service
+        $this->register('scheduler', function($container) {
+            return new XeliteRepostEngine_Scheduler($container->get('database'), $container->get('user_meta'), $container->get('x_poster'), $container->get('logger'), $container->get('woocommerce'));
+        }, true);
+        
         // Register Scraper service
         $this->register('scraper', function($container) {
             return new XeliteRepostEngine_Scraper($container->get('x_api'), $container->get('x_processor'), $container->get('database'));

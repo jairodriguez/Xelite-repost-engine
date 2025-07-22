@@ -27,12 +27,26 @@
         init: function() {
             this.bindEvents();
             this.initCharts();
+            this.initUserPreferences();
             this.loadInitialData();
         },
         
         // Bind event listeners
         bindEvents: function() {
             var self = this;
+            
+            // Tab navigation
+            $('.xelite-analytics-tabs .nav-tab').on('click', function(e) {
+                e.preventDefault();
+                var targetTab = $(this).data('tab');
+                self.switchTab(targetTab);
+            });
+            
+            // Contextual help toggle
+            $('.xelite-help-toggle').on('click', function(e) {
+                e.preventDefault();
+                self.toggleHelp();
+            });
             
             // Date range filter
             $('#date_range').on('change', function() {
@@ -93,6 +107,106 @@
             setInterval(function() {
                 self.refreshData();
             }, 300000);
+        },
+        
+        // Switch between analytics tabs
+        switchTab: function(tabName) {
+            // Update tab navigation
+            $('.xelite-analytics-tabs .nav-tab').removeClass('nav-tab-active');
+            $('.xelite-analytics-tabs .nav-tab[data-tab="' + tabName + '"]').addClass('nav-tab-active');
+            
+            // Update tab content
+            $('.xelite-tab-panel').removeClass('active');
+            $('#' + tabName + '-tab').addClass('active');
+            
+            // Store current tab in user preferences
+            this.saveUserPreference('current_tab', tabName);
+            
+            // Load tab-specific data if needed
+            this.loadTabData(tabName);
+        },
+        
+        // Toggle contextual help visibility
+        toggleHelp: function() {
+            var helpContent = $('.xelite-analytics-help-content');
+            var toggleButton = $('.xelite-help-toggle');
+            
+            if (helpContent.is(':visible')) {
+                helpContent.slideUp(300);
+                toggleButton.find('.dashicons').removeClass('dashicons-arrow-up-alt2').addClass('dashicons-arrow-down-alt2');
+                toggleButton.find('span').text('Show Help');
+                this.saveUserPreference('help_visible', 'false');
+            } else {
+                helpContent.slideDown(300);
+                toggleButton.find('.dashicons').removeClass('dashicons-arrow-down-alt2').addClass('dashicons-arrow-up-alt2');
+                toggleButton.find('span').text('Hide Help');
+                this.saveUserPreference('help_visible', 'true');
+            }
+        },
+        
+        // Load tab-specific data
+        loadTabData: function(tabName) {
+            switch(tabName) {
+                case 'content-performance':
+                    this.loadContentPerformanceData();
+                    break;
+                case 'repost-patterns':
+                    this.loadRepostPatternsData();
+                    break;
+                case 'predictions':
+                    this.loadPredictionsData();
+                    break;
+                default:
+                    // Overview tab data is loaded by default
+                    break;
+            }
+        },
+        
+        // Load content performance data
+        loadContentPerformanceData: function() {
+            // This will be implemented when we add content performance features
+            console.log('Loading content performance data...');
+        },
+        
+        // Load repost patterns data
+        loadRepostPatternsData: function() {
+            // This will be implemented when we add repost patterns features
+            console.log('Loading repost patterns data...');
+        },
+        
+        // Load predictions data
+        loadPredictionsData: function() {
+            // This will be implemented when we add predictions features
+            console.log('Loading predictions data...');
+        },
+        
+        // Save user preference
+        saveUserPreference: function(key, value) {
+            // Save to localStorage for client-side persistence
+            localStorage.setItem('xelite_analytics_' + key, value);
+            
+            // Optionally save to server via AJAX
+            // This could be implemented later for cross-device sync
+        },
+        
+        // Load user preference
+        loadUserPreference: function(key, defaultValue) {
+            return localStorage.getItem('xelite_analytics_' + key) || defaultValue;
+        },
+        
+        // Initialize user preferences
+        initUserPreferences: function() {
+            // Restore last active tab
+            var lastTab = this.loadUserPreference('current_tab', 'overview');
+            if (lastTab !== 'overview') {
+                this.switchTab(lastTab);
+            }
+            
+            // Restore help visibility
+            var helpVisible = this.loadUserPreference('help_visible', 'false');
+            if (helpVisible === 'true') {
+                this.toggleHelp();
+            }
         },
         
         // Initialize Chart.js charts

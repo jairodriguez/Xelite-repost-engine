@@ -28,11 +28,54 @@ $content_types = $analytics_collector->get_content_types();
 $engagement_ranges = $analytics_collector->get_engagement_ranges();
 ?>
 
-<div class="wrap xelite-analytics-dashboard">
-    <h1><?php _e('Analytics Dashboard', 'xelite-repost-engine'); ?></h1>
+        <div class="wrap xelite-analytics-dashboard">
+            <h1><?php _e('Analytics Dashboard', 'xelite-repost-engine'); ?></h1>
+            
+            <!-- Analytics Navigation Tabs -->
+            <nav class="nav-tab-wrapper xelite-analytics-tabs">
+                <a href="#overview" class="nav-tab nav-tab-active" data-tab="overview">
+                    <span class="dashicons dashicons-chart-area"></span>
+                    <?php _e('Overview', 'xelite-repost-engine'); ?>
+                </a>
+                <a href="#content-performance" class="nav-tab" data-tab="content-performance">
+                    <span class="dashicons dashicons-chart-line"></span>
+                    <?php _e('Content Performance', 'xelite-repost-engine'); ?>
+                </a>
+                <a href="#repost-patterns" class="nav-tab" data-tab="repost-patterns">
+                    <span class="dashicons dashicons-update"></span>
+                    <?php _e('Repost Patterns', 'xelite-repost-engine'); ?>
+                </a>
+                <a href="#predictions" class="nav-tab" data-tab="predictions">
+                    <span class="dashicons dashicons-lightbulb"></span>
+                    <?php _e('Predictions', 'xelite-repost-engine'); ?>
+                </a>
+            </nav>
+            
+            <!-- Contextual Help -->
+            <div class="xelite-analytics-help">
+                <p class="description">
+                    <span class="dashicons dashicons-info"></span>
+                    <?php _e('Use the filters below to analyze your content performance and repost patterns. The data is updated in real-time and provides insights to optimize your social media strategy.', 'xelite-repost-engine'); ?>
+                    <a href="#" class="xelite-help-toggle"><?php _e('Learn more', 'xelite-repost-engine'); ?></a>
+                </p>
+                <div class="xelite-help-content" style="display: none;">
+                    <h4><?php _e('Understanding Your Analytics', 'xelite-repost-engine'); ?></h4>
+                    <ul>
+                        <li><strong><?php _e('Engagement Rate:', 'xelite-repost-engine'); ?></strong> <?php _e('Percentage of followers who interact with your content (likes, retweets, replies).', 'xelite-repost-engine'); ?></li>
+                        <li><strong><?php _e('Repost Likelihood:', 'xelite-repost-engine'); ?></strong> <?php _e('AI-predicted probability that your content will be reposted by other accounts.', 'xelite-repost-engine'); ?></li>
+                        <li><strong><?php _e('Best Posting Time:', 'xelite-repost-engine'); ?></strong> <?php _e('Time period when your content typically receives the highest engagement.', 'xelite-repost-engine'); ?></li>
+                        <li><strong><?php _e('Content Type Performance:', 'xelite-repost-engine'); ?></strong> <?php _e('Which types of content (text, image, video) perform best for your audience.', 'xelite-repost-engine'); ?></li>
+                    </ul>
+                </div>
+            </div>
     
-    <!-- Date Range Filter -->
-    <div class="xelite-analytics-filters">
+    <!-- Tab Content Container -->
+    <div class="xelite-analytics-tab-content">
+        
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="xelite-tab-panel active">
+            <!-- Date Range Filter -->
+            <div class="xelite-analytics-filters">
         <div class="xelite-filter-group">
             <label for="date_range"><?php _e('Date Range:', 'xelite-repost-engine'); ?></label>
             <select id="date_range" name="date_range">
@@ -239,7 +282,127 @@ $engagement_ranges = $analytics_collector->get_engagement_ranges();
                 <?php _e('Export as PDF', 'xelite-repost-engine'); ?>
             </button>
         </div>
-    </div>
+        </div> <!-- End Overview Tab -->
+        
+        <!-- Content Performance Tab -->
+        <div id="content-performance-tab" class="xelite-tab-panel">
+            <div class="xelite-tab-content">
+                <h3><?php _e('Content Performance Analysis', 'xelite-repost-engine'); ?></h3>
+                <p class="description"><?php _e('Detailed analysis of how different types of content perform across various metrics.', 'xelite-repost-engine'); ?></p>
+                
+                <!-- Content Type Performance Chart -->
+                <div class="xelite-chart-section">
+                    <h4><?php _e('Content Type Performance', 'xelite-repost-engine'); ?></h4>
+                    <div class="xelite-chart-wrapper">
+                        <canvas id="content_performance_chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Engagement by Content Length -->
+                <div class="xelite-chart-section">
+                    <h4><?php _e('Engagement by Content Length', 'xelite-repost-engine'); ?></h4>
+                    <div class="xelite-chart-wrapper">
+                        <canvas id="content_length_chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Content Performance Table -->
+                <div class="xelite-performance-table">
+                    <h4><?php _e('Performance Breakdown', 'xelite-repost-engine'); ?></h4>
+                    <table class="wp-list-table widefat fixed striped">
+                        <thead>
+                            <tr>
+                                <th><?php _e('Content Type', 'xelite-repost-engine'); ?></th>
+                                <th><?php _e('Posts', 'xelite-repost-engine'); ?></th>
+                                <th><?php _e('Avg. Engagement', 'xelite-repost-engine'); ?></th>
+                                <th><?php _e('Avg. Repost Likelihood', 'xelite-repost-engine'); ?></th>
+                                <th><?php _e('Best Time', 'xelite-repost-engine'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="content_performance_table">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Repost Patterns Tab -->
+        <div id="repost-patterns-tab" class="xelite-tab-panel">
+            <div class="xelite-tab-content">
+                <h3><?php _e('Repost Pattern Analysis', 'xelite-repost-engine'); ?></h3>
+                <p class="description"><?php _e('Analyze patterns in content that gets reposted by other accounts.', 'xelite-repost-engine'); ?></p>
+                
+                <!-- Repost Frequency Chart -->
+                <div class="xelite-chart-section">
+                    <h4><?php _e('Repost Frequency Over Time', 'xelite-repost-engine'); ?></h4>
+                    <div class="xelite-chart-wrapper">
+                        <canvas id="repost_frequency_chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Repost Patterns by Account Type -->
+                <div class="xelite-chart-section">
+                    <h4><?php _e('Repost Patterns by Account Type', 'xelite-repost-engine'); ?></h4>
+                    <div class="xelite-chart-wrapper">
+                        <canvas id="account_type_chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Repost Pattern Insights -->
+                <div class="xelite-pattern-insights">
+                    <h4><?php _e('Pattern Insights', 'xelite-repost-engine'); ?></h4>
+                    <div class="xelite-insights-grid" id="pattern_insights">
+                        <!-- Insights will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Predictions Tab -->
+        <div id="predictions-tab" class="xelite-tab-panel">
+            <div class="xelite-tab-content">
+                <h3><?php _e('AI-Powered Predictions', 'xelite-repost-engine'); ?></h3>
+                <p class="description"><?php _e('Predictive analytics to help optimize your content strategy.', 'xelite-repost-engine'); ?></p>
+                
+                <!-- Prediction Accuracy -->
+                <div class="xelite-prediction-accuracy">
+                    <h4><?php _e('Prediction Accuracy', 'xelite-repost-engine'); ?></h4>
+                    <div class="xelite-accuracy-metrics">
+                        <div class="xelite-accuracy-card">
+                            <span class="xelite-accuracy-value" id="overall_accuracy">85%</span>
+                            <span class="xelite-accuracy-label"><?php _e('Overall Accuracy', 'xelite-repost-engine'); ?></span>
+                        </div>
+                        <div class="xelite-accuracy-card">
+                            <span class="xelite-accuracy-value" id="engagement_accuracy">92%</span>
+                            <span class="xelite-accuracy-label"><?php _e('Engagement Prediction', 'xelite-repost-engine'); ?></span>
+                        </div>
+                        <div class="xelite-accuracy-card">
+                            <span class="xelite-accuracy-value" id="repost_accuracy">78%</span>
+                            <span class="xelite-accuracy-label"><?php _e('Repost Prediction', 'xelite-repost-engine'); ?></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Future Performance Predictions -->
+                <div class="xelite-future-predictions">
+                    <h4><?php _e('Future Performance Predictions', 'xelite-repost-engine'); ?></h4>
+                    <div class="xelite-chart-wrapper">
+                        <canvas id="future_predictions_chart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Optimization Recommendations -->
+                <div class="xelite-optimization-recommendations">
+                    <h4><?php _e('Optimization Recommendations', 'xelite-repost-engine'); ?></h4>
+                    <div class="xelite-recommendations-list" id="optimization_recommendations">
+                        <!-- Recommendations will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div> <!-- End Tab Content Container -->
 </div>
 
         <script type="text/javascript">

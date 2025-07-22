@@ -1686,4 +1686,242 @@
     .xelite-export-options {
         flex-direction: column;
     }
+}
+
+/* Analytics Dashboard Tabbed Interface */
+.xelite-analytics-tabs {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.xelite-analytics-tabs .nav-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    margin-right: 5px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: #f8f9fa;
+    color: #646970;
+    text-decoration: none;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.xelite-analytics-tabs .nav-tab:hover {
+    background: #f0f6fc;
+    color: #0073aa;
+}
+
+.xelite-analytics-tabs .nav-tab.nav-tab-active {
+    background: #fff;
+    color: #0073aa;
+    border-color: #e1e5e9;
+    border-bottom-color: #fff;
+    margin-bottom: -1px;
+}
+
+.xelite-analytics-tabs .nav-tab .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Tab Content Panels */
+.xelite-analytics-tab-content {
+    background: #fff;
+    border: 1px solid #e1e5e9;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+}
+
+.xelite-tab-panel {
+    display: none;
+    padding: 20px;
+}
+
+.xelite-tab-panel.active {
+    display: block;
+}
+
+/* Contextual Help */
+.xelite-analytics-help {
+    margin-bottom: 20px;
+    background: #f0f6fc;
+    border: 1px solid #0073aa;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.xelite-help-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    background: #0073aa;
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.xelite-help-toggle:hover {
+    background: #005a87;
+    color: #fff;
+}
+
+.xelite-help-toggle .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.xelite-analytics-help-content {
+    display: none;
+    padding: 16px;
+    background: #fff;
+    border-top: 1px solid #0073aa;
+}
+
+.xelite-analytics-help-content h4 {
+    margin: 0 0 12px 0;
+    color: #1d2327;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.xelite-analytics-help-content ul {
+    margin: 0 0 12px 0;
+    padding-left: 20px;
+}
+
+.xelite-analytics-help-content li {
+    margin-bottom: 6px;
+    color: #646970;
+    line-height: 1.5;
+}
+
+.xelite-analytics-help-content .help-note {
+    background: #f8f9fa;
+    border-left: 3px solid #0073aa;
+    padding: 12px;
+    margin-top: 12px;
+    font-style: italic;
+    color: #646970;
+}
+
+/* Content Performance Tab */
+.xelite-content-performance {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.xelite-content-performance-chart {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 20px;
+    min-height: 300px;
+}
+
+.xelite-content-performance-chart h4 {
+    margin: 0 0 16px 0;
+    color: #1d2327;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Repost Patterns Tab */
+.xelite-repost-patterns-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.xelite-pattern-analysis {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 20px;
+    min-height: 300px;
+}
+
+.xelite-pattern-analysis h4 {
+    margin: 0 0 16px 0;
+    color: #1d2327;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Predictions Tab */
+.xelite-predictions-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.xelite-prediction-model {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 20px;
+    min-height: 300px;
+}
+
+.xelite-prediction-model h4 {
+    margin: 0 0 16px 0;
+    color: #1d2327;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Responsive Design for Analytics Tabs */
+@media (max-width: 768px) {
+    .xelite-analytics-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .xelite-analytics-tabs .nav-tab {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .xelite-content-performance,
+    .xelite-repost-patterns-content,
+    .xelite-predictions-content {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .xelite-content-performance-chart,
+    .xelite-pattern-analysis,
+    .xelite-prediction-model {
+        min-height: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    .xelite-analytics-tabs .nav-tab {
+        flex: none;
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 2px;
+        border-radius: 4px;
+        border-bottom: 1px solid #e1e5e9;
+    }
+    
+    .xelite-analytics-tabs .nav-tab.nav-tab-active {
+        margin-bottom: 2px;
+        border-bottom-color: #0073aa;
+    }
+    
+    .xelite-tab-panel {
+        padding: 16px;
+    }
 } 

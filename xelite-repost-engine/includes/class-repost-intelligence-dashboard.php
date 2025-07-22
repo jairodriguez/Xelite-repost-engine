@@ -231,6 +231,15 @@ class Repost_Intelligence_Dashboard extends XeliteRepostEngine_Abstract_Base {
             true
         );
 
+        // Enqueue analytics dashboard scripts
+        wp_enqueue_script(
+            'xelite-analytics-dashboard',
+            XELITE_REPOST_ENGINE_PLUGIN_URL . 'assets/js/analytics-dashboard.js',
+            array('jquery', 'wp-util', 'chart-js'),
+            XELITE_REPOST_ENGINE_VERSION,
+            true
+        );
+
         // Localize script for AJAX
         wp_localize_script('xelite-repost-engine-dashboard', 'xelite_dashboard', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
@@ -424,9 +433,9 @@ class Repost_Intelligence_Dashboard extends XeliteRepostEngine_Abstract_Base {
      */
     private function get_analytics_data() {
         $container = XeliteRepostEngine_Container::instance();
-        $pattern_visualizer = $container->get('pattern_visualizer');
+        $analytics_collector = $container->get('analytics_collector');
         
-        return $pattern_visualizer->generate_dashboard_data();
+        return $analytics_collector->get_dashboard_data($this->user_id);
     }
 
     /**

@@ -242,8 +242,9 @@ $engagement_ranges = $analytics_collector->get_engagement_ranges();
     </div>
 </div>
 
-<script type="text/javascript">
-// Analytics dashboard data for JavaScript
-var xeliteAnalyticsData = <?php echo json_encode($analytics_data); ?>;
-var xeliteAnalyticsNonce = '<?php echo wp_create_nonce('xelite_analytics_nonce'); ?>';
-</script> 
+        <script type="text/javascript">
+        // Analytics dashboard data for JavaScript
+        var xeliteAnalyticsData = <?php echo json_encode($analytics_data); ?>;
+        var xeliteAnalyticsNonce = '<?php echo wp_create_nonce('xelite_analytics_nonce'); ?>';
+        var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
+        </script> 

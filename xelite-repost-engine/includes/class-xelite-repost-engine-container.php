@@ -247,5 +247,10 @@ class XeliteRepostEngine_Container {
         $this->register('dashboard', function($container) {
             return new Repost_Intelligence_Dashboard();
         }, true);
+
+        // Register Few-Shot Collector service
+        $this->register('few_shot_collector', function($container) {
+            return new XeliteRepostEngine_Few_Shot_Collector($container->get('database'), $container->get('logger'));
+        }, true);
     }
 } 

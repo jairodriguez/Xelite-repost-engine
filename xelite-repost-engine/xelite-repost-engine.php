@@ -191,6 +191,9 @@ class XeliteRepostEngine {
         // Load Analytics Collector service
         require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-analytics-collector.php';
         
+        // Load Few-Shot Collector service
+        require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-few-shot-collector.php';
+        
         // Load admin and public classes
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';

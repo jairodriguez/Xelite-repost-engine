@@ -233,25 +233,35 @@ class XeliteRepostEngine_Container {
             return new XeliteRepostEngine_OpenAI($container->get('logger'));
         }, true);
 
-                        // Register Prompt Builder service
-                $this->register('prompt_builder', function($container) {
-                    return new XeliteRepostEngine_Prompt_Builder(
-                        $container->get('user_meta'),
-                        $container->get('pattern_analyzer'),
-                        $container->get('database'),
-                        $container->get('logger'),
-                        $container->get('few_shot_collector')
-                    );
-                }, true);
+        // Register Few-Shot Collector service
+        $this->register('few_shot_collector', function($container) {
+            return new XeliteRepostEngine_Few_Shot_Collector($container->get('database'), $container->get('logger'));
+        }, true);
+
+        // Register Prompt Builder service
+        $this->register('prompt_builder', function($container) {
+            return new XeliteRepostEngine_Prompt_Builder(
+                $container->get('user_meta'),
+                $container->get('pattern_analyzer'),
+                $container->get('database'),
+                $container->get('logger'),
+                $container->get('few_shot_collector')
+            );
+        }, true);
+
+        // Register A/B Testing service
+        $this->register('ab_testing', function($container) {
+            return new XeliteRepostEngine_AB_Testing(
+                $container->get('database'),
+                $container->get('prompt_builder'),
+                $container->get('few_shot_collector'),
+                $container->get('logger')
+            );
+        }, true);
 
         // Register Dashboard service
         $this->register('dashboard', function($container) {
             return new Repost_Intelligence_Dashboard();
-        }, true);
-
-        // Register Few-Shot Collector service
-        $this->register('few_shot_collector', function($container) {
-            return new XeliteRepostEngine_Few_Shot_Collector($container->get('database'), $container->get('logger'));
         }, true);
     }
 } 

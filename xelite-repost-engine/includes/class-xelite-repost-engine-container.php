@@ -188,6 +188,11 @@ class XeliteRepostEngine_Container {
             return new XeliteRepostEngine_Scheduler($container->get('database'), $container->get('user_meta'), $container->get('x_poster'), $container->get('logger'), $container->get('woocommerce'));
         }, true);
         
+        // Register Analytics Collector service
+        $this->register('analytics_collector', function($container) {
+            return new XeliteRepostEngine_Analytics_Collector($container->get('database'), $container->get('user_meta'), $container->get('logger'));
+        }, true);
+        
         // Register Scraper service
         $this->register('scraper', function($container) {
             return new XeliteRepostEngine_Scraper($container->get('x_api'), $container->get('x_processor'), $container->get('database'));

@@ -200,6 +200,7 @@ class XeliteRepostEngine {
         // Load admin and public classes
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-fields.php';
         require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-admin-settings.php';
+        require_once $this->plugin_dir . 'includes/admin/class-xelite-repost-engine-help-tabs.php';
         require_once $this->plugin_dir . 'public/class-xelite-repost-engine-public.php';
     }
     
@@ -236,6 +237,9 @@ class XeliteRepostEngine {
         // Initialize admin settings
         if (is_admin()) {
             $this->container->get('admin_settings');
+            
+            // Initialize help tabs
+            new Xelite_Repost_Engine_Help_Tabs();
         }
         
         // Initialize cron service

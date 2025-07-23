@@ -80,6 +80,10 @@
       color: #ef4444;
     }
 
+    .status-value.info {
+      color: #3b82f6;
+    }
+
     .button {
       width: 100%;
       padding: 12px 20px;
@@ -112,10 +116,31 @@
       background: rgba(255, 255, 255, 0.3);
     }
 
+    .button-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+    }
+
+    .button-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
     .button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .button-group .button {
+      flex: 1;
+      margin-bottom: 0;
     }
 
     .settings-section {
@@ -216,6 +241,11 @@
       border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
+    .message.info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
     .loading {
       display: inline-block;
       width: 16px;
@@ -235,6 +265,49 @@
       font-size: 10px;
       opacity: 0.6;
       margin-top: 10px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+    }
+
+    .stat-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      opacity: 0.8;
+      margin-top: 2px;
     }
   </style>
 </head>
@@ -260,12 +333,37 @@
         <span class="status-label">Total Scrapes:</span>
         <span id="scrape-count" class="status-value">0</span>
       </div>
+      
+      <div id="progress-container" style="display: none;">
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <div id="progress-text" style="text-align: center; font-size: 12px; margin-top: 5px;">
+          Scraping in progress...
+        </div>
+      </div>
+
+      <div id="stats-grid" class="stats-grid" style="display: none;">
+        <div class="stat-item">
+          <div id="posts-found" class="stat-value">0</div>
+          <div class="stat-label">Posts Found</div>
+        </div>
+        <div class="stat-item">
+          <div id="new-posts" class="stat-value">0</div>
+          <div class="stat-label">New Posts</div>
+        </div>
+      </div>
     </div>
 
-    <button id="scrape-button" class="button button-primary">
-      <span id="scrape-button-text">Start Scraping</span>
-      <span id="scrape-button-loading" class="loading" style="display: none;"></span>
-    </button>
+    <div class="button-group">
+      <button id="scrape-button" class="button button-primary">
+        <span id="scrape-button-text">Start Scraping</span>
+        <span id="scrape-button-loading" class="loading" style="display: none;"></span>
+      </button>
+      <button id="stop-button" class="button button-danger" style="display: none;">
+        Stop Scraping
+      </button>
+    </div>
 
     <div class="settings-section">
       <div class="settings-title">Settings</div>
@@ -278,6 +376,11 @@
       <div class="setting-item">
         <span class="setting-label">Max posts per scrape</span>
         <input type="number" id="max-posts-input" class="input-number" min="1" max="100" value="50">
+      </div>
+
+      <div class="setting-item">
+        <span class="setting-label">Rate limit delay (ms)</span>
+        <input type="number" id="rate-limit-input" class="input-number" min="500" max="5000" value="1000" step="100">
       </div>
     </div>
 

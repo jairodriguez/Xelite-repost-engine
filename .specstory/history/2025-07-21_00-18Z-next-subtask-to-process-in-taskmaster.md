@@ -14344,3 +14344,1112 @@ The extension provides a robust fallback mechanism for the Xelite Repost Engine 
 
 ---
 
+_**User**_
+
+proceed with 14.2
+
+---
+
+_**Assistant**_
+
+I'll help you proceed with task 14.2. Let me first check the current task details to understand what needs to be implemented.
+
+
+---
+
+
+
+---
+
+Now let me examine the current content.js file to see what scraping logic is already implemented and what needs to be enhanced:
+
+
+---
+
+Read file: xelite-repost-engine/chrome-extension/content.js
+
+---
+
+Now I need to enhance the content.js file with more advanced scraping logic as specified in task 14.2. I'll implement the missing features: mutation observers for dynamic content, better error handling, rate limiting, and enhanced DOM traversal. Let me update the content.js file:
+
+
+---
+
+```diff
+      this.scrapedData = [];
+      this.maxPosts = 50;
++     this.rateLimitDelay = 1000; // 1 second between requests
++     this.lastScrapeTime = 0;
++     this.mutationObserver = null;
++     this.retryAttempts = 0;
++     this.maxRetries = 3;
++     this.scrapedPostIds = new Set(); // Track already scraped posts
+      this.init();
+    }
+```
+
+```diff
+            this.startScraping();
+            break;
++         case 'stopScraping':
++           this.stopScraping();
++           break;
+          default:
+            console.log('Unknown action:', request.action);
+```
+
+```diff
+        }
+      });
++ 
++     // Set up mutation observer for dynamic content
++     this.setupMutationObserver();
++   }
++ 
++   setupMutationObserver() {
++     // Create mutation observer to watch for new content
++     this.mutationObserver = new MutationObserver((mutations) => {
++       if (this.isScraping) {
++         // Check if new posts were added
++         const hasNewPosts = mutations.some(mutation => {
++           return Array.from(mutation.addedNodes).some(node => {
++             if (node.nodeType === Node.ELEMENT_NODE) {
++               return this.isPostElement(node) || node.querySelector('[data-testid="tweet"]');
++             }
++             return false;
++           });
++         });
++ 
++         if (hasNewPosts) {
++           console.log('New posts detected, continuing scraping...');
++           // Throttle the scraping to avoid overwhelming the page
++           setTimeout(() => {
++             this.continueScraping();
++           }, 500);
++         }
++       }
++     });
++ 
++     // Start observing the document body for changes
++     this.mutationObserver.observe(document.body, {
++       childList: true,
++       subtree: true
++     });
++ 
++     console.log('Mutation observer set up for dynamic content');
++   }
++ 
++   isPostElement(element) {
++     // Check if an element is likely a post
++     const postSelectors = [
++       'article[data-testid="tweet"]',
++       '[data-testid="cellInnerDiv"]',
++       '[role="article"]'
++     ];
++ 
++     return postSelectors.some(selector => {
++       return element.matches(selector) || element.querySelector(selector);
++     });
+    }
+  
+```
+
+```diff
+        return;
+      }
++ 
++     // Check rate limiting
++     const now = Date.now();
++     if (now - this.lastScrapeTime < this.rateLimitDelay) {
++       const waitTime = this.rateLimitDelay - (now - this.lastScrapeTime);
++       console.log(`Rate limiting: waiting ${waitTime}ms before scraping`);
++       await new Promise(resolve => setTimeout(resolve, waitTime));
++     }
+  
+      this.isScraping = true;
++     this.retryAttempts = 0;
++     this.scrapedPostIds.clear();
+      console.log('Starting X scraping...');
+  
+```
+
+```diff
+  
+        // Extract posts from the current page
+-       const posts = this.extractPosts();
++       const posts = await this.extractPostsWithRetry();
+        
+        if (posts.length > 0) {
+```
+
+```diff
+              timestamp: Date.now(),
+              url: window.location.href,
+-             userAgent: navigator.userAgent
++             userAgent: navigator.userAgent,
++             totalPostsFound: posts.length
+            }
+          }, (response) => {
+            if (response && response.success) {
+              console.log('Data sent successfully:', response);
+-             this.showNotification('Scraping completed!', 'success');
++             this.showNotification(`Scraping completed! Found ${posts.length} posts`, 'success');
+            } else {
+              console.error('Failed to send data:', response);
+```
+
+```diff
+        console.error('Error during scraping:', error);
+        this.showNotification('Scraping failed: ' + error.message, 'error');
++       
++       // Retry logic
++       if (this.retryAttempts < this.maxRetries) {
++         this.retryAttempts++;
++         console.log(`Retrying scraping (attempt ${this.retryAttempts}/${this.maxRetries})`);
++         setTimeout(() => this.startScraping(), 2000);
++         return;
++       }
+      } finally {
+        this.isScraping = false;
+-     }
++       this.lastScrapeTime = Date.now();
++     }
++   }
++ 
++   async continueScraping() {
++     if (!this.isScraping) return;
++ 
++     try {
++       const newPosts = await this.extractNewPosts();
++       if (newPosts.length > 0) {
++         this.scrapedData = [...this.scrapedData, ...newPosts];
++         
++         // Update background script with new data
++         chrome.runtime.sendMessage({
++           action: 'scrapeData',
++           data: {
++             posts: this.scrapedData,
++             timestamp: Date.now(),
++             url: window.location.href,
++             userAgent: navigator.userAgent,
++             totalPostsFound: this.scrapedData.length,
++             newPostsFound: newPosts.length
++           }
++         });
++       }
++     } catch (error) {
++       console.error('Error during continued scraping:', error);
++     }
++   }
++ 
++   stopScraping() {
++     this.isScraping = false;
++     console.log('Scraping stopped');
++     this.showNotification('Scraping stopped', 'info');
++   }
++ 
++   async extractPostsWithRetry() {
++     let posts = [];
++     let attempts = 0;
++     const maxAttempts = 3;
++ 
++     while (attempts < maxAttempts && posts.length === 0) {
++       attempts++;
++       console.log(`Extracting posts (attempt ${attempts}/${maxAttempts})`);
++       
++       posts = this.extractPosts();
++       
++       if (posts.length === 0) {
++         console.log('No posts found, waiting for content to load...');
++         await new Promise(resolve => setTimeout(resolve, 2000));
++       }
++     }
++ 
++     return posts;
++   }
++ 
++   async extractNewPosts() {
++     const allPosts = this.extractPosts();
++     const newPosts = allPosts.filter(post => {
++       const postId = this.generatePostId(post);
++       if (this.scrapedPostIds.has(postId)) {
++         return false;
++       }
++       this.scrapedPostIds.add(postId);
++       return true;
++     });
++ 
++     return newPosts;
++   }
++ 
++   generatePostId(post) {
++     // Generate a unique ID for a post based on its content and timestamp
++     const content = post.text || '';
++     const timestamp = post.timestamp || '';
++     const author = post.author || '';
++     return btoa(`${author}-${timestamp}-${content.substring(0, 50)}`).replace(/[^a-zA-Z0-9]/g, '');
+    }
+  
+```
+
+```diff
+      const posts = [];
+      
+-     // Common selectors for X (Twitter) posts
++     // Enhanced selectors for X (Twitter) posts with fallback strategies
+      const selectors = [
+        'article[data-testid="tweet"]',
+        '[data-testid="cellInnerDiv"]',
+        '[data-testid="tweetText"]',
+-       '.css-1rynq56'
++       '.css-1rynq56',
++       '[role="article"]',
++       '[data-testid="tweetButtonInline"]',
++       '.css-1dbjc4n[data-testid="tweet"]'
+      ];
+  
+```
+
+```diff
+      // Try different selectors to find posts
+      for (const selector of selectors) {
++       try {
+          postElements = document.querySelectorAll(selector);
+          if (postElements.length > 0) {
+            console.log(`Found ${postElements.length} posts using selector: ${selector}`);
+            break;
++         }
++       } catch (error) {
++         console.warn(`Selector failed: ${selector}`, error);
++         continue;
+        }
+      }
+  
+      // If no posts found with specific selectors, try a more general approach
+      if (postElements.length === 0) {
++       console.log('Trying general approach to find posts...');
++       
+        // Look for elements that might contain tweets
+-       const possiblePosts = document.querySelectorAll('[role="article"], .css-1dbjc4n');
++       const possiblePosts = document.querySelectorAll('[role="article"], .css-1dbjc4n, [data-testid]');
+        postElements = Array.from(possiblePosts).filter(el => {
+          // Filter for elements that likely contain tweet content
+-         return el.textContent && el.textContent.length > 50;
++         return el.textContent && 
++                el.textContent.length > 50 && 
++                !el.textContent.includes('Follow') &&
++                !el.textContent.includes('Sign up') &&
++                this.hasTweetIndicators(el);
+        });
+      }
+  
+      console.log(`Processing ${Math.min(postElements.length, this.maxPosts)} posts`);
+  
+-     // Process each post element
++     // Process each post element with error handling
+      for (let i = 0; i < Math.min(postElements.length, this.maxPosts); i++) {
++       try {
+          const element = postElements[i];
+          const postData = this.extractPostData(element);
+          
+-       if (postData && postData.text) {
++         if (postData && postData.text && postData.text.trim().length > 0) {
+            posts.push(postData);
++         }
++       } catch (error) {
++         console.error(`Error processing post ${i}:`, error);
++         continue;
+        }
+      }
+  
+      return posts;
+    }
++ 
++   hasTweetIndicators(element) {
++     // Check if element has indicators that it's a tweet
++     const indicators = [
++       '[data-testid="like"]',
++       '[data-testid="retweet"]',
++       '[data-testid="reply"]',
++       'time',
++       'a[href*="/status/"]',
++       '[aria-label*="Like"]',
++       '[aria-label*="Retweet"]'
++     ];
++ 
++     return indicators.some(indicator => {
++       try {
++         return element.querySelector(indicator) !== null;
++       } catch (error) {
++         return false;
++       }
++     });
++   }
+  
+    extractPostData(element) {
+```
+
+```diff
+          text: '',
+          author: '',
++         username: '',
+          timestamp: '',
+          url: '',
+```
+
+```diff
+          media: [],
+          hashtags: [],
+-         mentions: []
+-       };
+- 
+-       // Extract text content
+-       const textSelectors = [
+-         '[data-testid="tweetText"]',
+-         '.css-1rynq56',
+-         '[lang]'
+-       ];
+- 
+-       for (const selector of textSelectors) {
+-         const textElement = element.querySelector(selector);
+-         if (textElement && textElement.textContent) {
+-           postData.text = textElement.textContent.trim();
+-           break;
+-         }
+-       }
+- 
+-       // If no specific text element found, get all text content
+-       if (!postData.text) {
+-         postData.text = element.textContent.trim();
+-       }
++         mentions: [],
++         isRetweet: false,
++         isReply: false,
++         isQuote: false,
++         postType: 'tweet'
++       };
++ 
++       // Extract text content with enhanced selectors
++       postData.text = this.extractTextContent(element);
+  
+        // Extract author information
+-       const authorSelectors = [
+-         '[data-testid="User-Name"]',
+-         '[role="link"]',
+-         'a[href*="/status/"]'
+-       ];
+- 
+-       for (const selector of authorSelectors) {
+-         const authorElement = element.querySelector(selector);
+-         if (authorElement && authorElement.textContent) {
+-           postData.author = authorElement.textContent.trim();
+-           break;
+-         }
+-       }
++       const authorInfo = this.extractAuthorInfo(element);
++       postData.author = authorInfo.name;
++       postData.username = authorInfo.username;
+  
+        // Extract timestamp
+-       const timeSelectors = [
+-         'time',
+-         '[datetime]',
+-         '[data-testid="tweetText"] + time'
+-       ];
+- 
+-       for (const selector of timeSelectors) {
+-         const timeElement = element.querySelector(selector);
+-         if (timeElement) {
+-           postData.timestamp = timeElement.getAttribute('datetime') || timeElement.textContent.trim();
+-           break;
+-         }
+-       }
++       postData.timestamp = this.extractTimestamp(element);
+  
+        // Extract engagement metrics
+```
+
+```diff
+  
+        // Extract post URL
+-       const linkElement = element.querySelector('a[href*="/status/"]');
+-       if (linkElement) {
+-         postData.url = new URL(linkElement.href, window.location.origin).href;
+-       }
++       postData.url = this.extractPostUrl(element);
++ 
++       // Determine post type
++       this.determinePostType(element, postData);
+  
+        return postData;
+```
+
+```diff
+      }
+    }
++ 
++   extractTextContent(element) {
++     // Enhanced text extraction with multiple strategies
++     const textSelectors = [
++       '[data-testid="tweetText"]',
++       '.css-1rynq56',
++       '[lang]',
++       '.tweet-text',
++       '[data-testid="tweetText"] span',
++       '.css-1rynq56 span'
++     ];
++ 
++     for (const selector of textSelectors) {
++       try {
++         const textElement = element.querySelector(selector);
++         if (textElement && textElement.textContent) {
++           const text = textElement.textContent.trim();
++           if (text.length > 0) {
++             return text;
++           }
++         }
++       } catch (error) {
++         console.warn(`Text selector failed: ${selector}`, error);
++         continue;
++       }
++     }
++ 
++     // Fallback: get all text content and clean it
++     const allText = element.textContent || '';
++     return this.cleanTextContent(allText);
++   }
++ 
++   cleanTextContent(text) {
++     // Clean up text content by removing common UI elements
++     return text
++       .replace(/\s+/g, ' ') // Normalize whitespace
++       .replace(/Follow|Sign up|Log in|Subscribe/gi, '') // Remove common UI text
++       .replace(/^\s+|\s+$/g, '') // Trim whitespace
++       .substring(0, 1000); // Limit length
++   }
++ 
++   extractAuthorInfo(element) {
++     const authorInfo = {
++       name: '',
++       username: ''
++     };
++ 
++     // Try to find author name
++     const nameSelectors = [
++       '[data-testid="User-Name"] span',
++       '[data-testid="User-Name"]',
++       '.css-1rynq56 span',
++       'a[href*="/status/"]',
++       '[role="link"]'
++     ];
++ 
++     for (const selector of nameSelectors) {
++       try {
++         const nameElement = element.querySelector(selector);
++         if (nameElement && nameElement.textContent) {
++           const text = nameElement.textContent.trim();
++           if (text && !text.includes('@') && text.length < 50) {
++             authorInfo.name = text;
++             break;
++           }
++         }
++       } catch (error) {
++         continue;
++       }
++     }
++ 
++     // Try to find username
++     const usernameSelectors = [
++       '[data-testid="User-Name"] a[href*="/"]',
++       'a[href*="/status/"]',
++       '.css-1rynq56 a'
++     ];
++ 
++     for (const selector of usernameSelectors) {
++       try {
++         const usernameElement = element.querySelector(selector);
++         if (usernameElement && usernameElement.href) {
++           const match = usernameElement.href.match(/\/([^\/]+)\/?$/);
++           if (match && match[1] && !match[1].includes('status')) {
++             authorInfo.username = match[1];
++             break;
++           }
++         }
++       } catch (error) {
++         continue;
++       }
++     }
++ 
++     return authorInfo;
++   }
++ 
++   extractTimestamp(element) {
++     const timeSelectors = [
++       'time[datetime]',
++       'time',
++       '[datetime]',
++       '[data-testid="tweetText"] + time',
++       'a[href*="/status/"] time'
++     ];
++ 
++     for (const selector of timeSelectors) {
++       try {
++         const timeElement = element.querySelector(selector);
++         if (timeElement) {
++           const datetime = timeElement.getAttribute('datetime');
++           if (datetime) {
++             return datetime;
++           }
++           const text = timeElement.textContent.trim();
++           if (text) {
++             return text;
++           }
++         }
++       } catch (error) {
++         continue;
++       }
++     }
++ 
++     return '';
++   }
+  
+    extractEngagementMetrics(element, postData) {
+-     // Common selectors for engagement metrics
++     // Enhanced engagement metrics extraction
+      const metricSelectors = {
+        likes: [
+          '[data-testid="like"]',
+          '[aria-label*="Like"]',
+-         '[aria-label*="likes"]'
++         '[aria-label*="likes"]',
++         '[data-testid="like"] span',
++         'span[aria-label*="Like"]'
+        ],
+        retweets: [
+          '[data-testid="retweet"]',
+          '[aria-label*="Retweet"]',
+-         '[aria-label*="retweets"]'
++         '[aria-label*="retweets"]',
++         '[data-testid="retweet"] span',
++         'span[aria-label*="Retweet"]'
+        ],
+        replies: [
+          '[data-testid="reply"]',
+          '[aria-label*="Reply"]',
+-         '[aria-label*="replies"]'
++         '[aria-label*="replies"]',
++         '[data-testid="reply"] span',
++         'span[aria-label*="Reply"]'
+        ],
+        views: [
+          '[data-testid="view"]',
+          '[aria-label*="View"]',
+-         '[aria-label*="views"]'
++         '[aria-label*="views"]',
++         '[data-testid="view"] span',
++         'span[aria-label*="View"]'
+        ]
+      };
+  
+      for (const [metric, selectors] of Object.entries(metricSelectors)) {
+        for (const selector of selectors) {
++         try {
+            const metricElement = element.querySelector(selector);
+            if (metricElement) {
+```
+
+```diff
+                break;
+              }
++           }
++         } catch (error) {
++           continue;
+          }
+        }
+```
+
+```diff
+      if (!text) return null;
+      
+-     // Remove common text and extract numbers
++     // Enhanced number extraction
+      const cleanText = text.replace(/[^\d.,KMB]/g, '');
+      
+```
+
+```diff
+  
+    extractMedia(element, postData) {
++     // Enhanced media extraction
++     try {
+        // Look for images
+-     const images = element.querySelectorAll('img[src*="pbs.twimg.com"], img[alt*="Image"]');
++       const images = element.querySelectorAll('img[src*="pbs.twimg.com"], img[alt*="Image"], img[data-testid="tweetPhoto"]');
+        images.forEach(img => {
+-       if (img.src && !img.src.includes('profile')) {
++         if (img.src && !img.src.includes('profile') && !img.src.includes('avatar')) {
+            postData.media.push({
+              type: 'image',
+```
+
+```diff
+  
+        // Look for videos
+-     const videos = element.querySelectorAll('video, [data-testid="videoPlayer"]');
++       const videos = element.querySelectorAll('video, [data-testid="videoPlayer"], [data-testid="video"]');
+        videos.forEach(video => {
+          if (video.src) {
+```
+
+```diff
+          }
+        });
++     } catch (error) {
++       console.warn('Error extracting media:', error);
++     }
++   }
++ 
++   extractPostUrl(element) {
++     try {
++       const linkElement = element.querySelector('a[href*="/status/"]');
++       if (linkElement) {
++         return new URL(linkElement.href, window.location.origin).href;
++       }
++     } catch (error) {
++       console.warn('Error extracting post URL:', error);
++     }
++     return '';
++   }
++ 
++   determinePostType(element, postData) {
++     // Determine if this is a retweet, reply, or quote
++     try {
++       // Check for retweet indicators
++       const retweetIndicators = [
++         '[data-testid="retweet"]',
++         '[aria-label*="Retweeted"]',
++         '.css-1rynq56:contains("Retweeted")'
++       ];
++ 
++       if (retweetIndicators.some(selector => element.querySelector(selector))) {
++         postData.isRetweet = true;
++         postData.postType = 'retweet';
++       }
++ 
++       // Check for reply indicators
++       const replyIndicators = [
++         '[data-testid="reply"]',
++         '[aria-label*="Replying to"]',
++         '.css-1rynq56:contains("Replying to")'
++       ];
++ 
++       if (replyIndicators.some(selector => element.querySelector(selector))) {
++         postData.isReply = true;
++         postData.postType = 'reply';
++       }
++ 
++       // Check for quote indicators
++       const quoteIndicators = [
++         '[data-testid="quote"]',
++         '[aria-label*="Quote"]',
++         '.css-1rynq56:contains("Quote")'
++       ];
++ 
++       if (quoteIndicators.some(selector => element.querySelector(selector))) {
++         postData.isQuote = true;
++         postData.postType = 'quote';
++       }
++     } catch (error) {
++       console.warn('Error determining post type:', error);
++     }
+    }
+  
+```
+
+---
+
+Now let me also update the background.js file to handle the new stopScraping action and improve the communication with the enhanced content script:
+
+
+---
+
+```diff
+        autoScrape: false,
+        scrapeInterval: 300000, // 5 minutes
+-       maxPostsPerScrape: 50
++       maxPostsPerScrape: 50,
++       rateLimitDelay: 1000, // 1 second between scrapes
++       maxRetries: 3
+      }
+    });
+```
+
+```diff
+        return true; // Keep message channel open for async response
+        
++     case 'stopScraping':
++       handleStopScraping(sendResponse);
++       return true;
++       
+      case 'getStatus':
+        handleGetStatus(sendResponse);
+```
+
+```diff
+        return;
+      }
++     
++     // Check rate limiting
++     const data = await chrome.storage.local.get(['lastScrapeTime', 'settings']);
++     const rateLimitDelay = data.settings?.rateLimitDelay || 1000;
++     
++     if (data.lastScrapeTime && (Date.now() - data.lastScrapeTime) < rateLimitDelay) {
++       const waitTime = rateLimitDelay - (Date.now() - data.lastScrapeTime);
++       sendResponse({ 
++         success: false, 
++         error: `Rate limited. Please wait ${Math.ceil(waitTime / 1000)} seconds before scraping again.` 
++       });
++       return;
++     }
+      
+      // Inject content script to start scraping
+```
+
+```diff
+    }
+  }
++ 
++ // Handle stop scraping request
++ async function handleStopScraping(sendResponse) {
++   try {
++     // Get current active tab
++     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
++     
++     if (!tab) {
++       sendResponse({ success: false, error: 'No active tab found' });
++       return;
++     }
++     
++     // Send stop message to content script
++     await chrome.tabs.sendMessage(tab.id, { action: 'stopScraping' });
++     
++     sendResponse({ success: true, message: 'Scraping stopped' });
++     
++   } catch (error) {
++     console.error('Error stopping scraping:', error);
++     sendResponse({ success: false, error: error.message });
++   }
++ }
+  
+  // Handle get status request
+```
+
+```diff
+        'lastScrapeTime', 
+        'scrapeCount', 
+-       'settings'
++       'settings',
++       'lastScrapedData'
+      ]);
++     
++     // Calculate time since last scrape
++     let timeSinceLastScrape = null;
++     if (data.lastScrapeTime) {
++       timeSinceLastScrape = Date.now() - data.lastScrapeTime;
++     }
+      
+      sendResponse({
+```
+
+```diff
+          isEnabled: data.isEnabled || false,
+          lastScrapeTime: data.lastScrapeTime,
++         timeSinceLastScrape: timeSinceLastScrape,
+          scrapeCount: data.scrapeCount || 0,
+-         settings: data.settings || {}
++         settings: data.settings || {},
++         lastScrapedData: data.lastScrapedData || null
+        }
+      });
+```
+
+```diff
+      const currentData = await chrome.storage.local.get('scrapeCount');
+      const newCount = (currentData.scrapeCount || 0) + 1;
++     
++     // Prepare enhanced data storage
++     const enhancedData = {
++       ...data,
++       scrapeId: Date.now(),
++       extensionVersion: chrome.runtime.getManifest().version,
++       processingTime: Date.now() - (data.timestamp || Date.now())
++     };
+      
+      await chrome.storage.local.set({ 
+        scrapeCount: newCount,
+-       lastScrapeTime: Date.now()
+-     });
+-     
+-     // Store scraped data temporarily
+-     await chrome.storage.local.set({ 
+-       lastScrapedData: data,
+-       lastScrapeTime: Date.now()
++       lastScrapeTime: Date.now(),
++       lastScrapedData: enhancedData
+      });
+      
+-     console.log('Scraped data stored:', data);
+-     sendResponse({ success: true, message: 'Data scraped successfully', count: newCount });
++     console.log('Scraped data stored:', enhancedData);
++     
++     // Send success response with enhanced information
++     sendResponse({ 
++       success: true, 
++       message: 'Data scraped successfully', 
++       count: newCount,
++       totalPosts: data.posts?.length || 0,
++       newPosts: data.newPostsFound || 0
++     });
+      
+    } catch (error) {
+```
+
+```diff
+      // Check if we're on Twitter/X and auto-scrape is enabled
+      if ((tab.url.includes('twitter.com') || tab.url.includes('x.com'))) {
+-       const data = await chrome.storage.local.get('settings');
++       const data = await chrome.storage.local.get(['settings', 'lastScrapeTime']);
++       
+        if (data.settings && data.settings.autoScrape) {
++         // Check rate limiting for auto-scrape
++         const rateLimitDelay = data.settings.rateLimitDelay || 1000;
++         const canScrape = !data.lastScrapeTime || (Date.now() - data.lastScrapeTime) >= rateLimitDelay;
++         
++         if (canScrape) {
+            // Wait a bit for the page to fully load
+            setTimeout(() => {
+```
+
+```diff
+        }
+      }
++   }
++ });
++ 
++ // Handle tab activation to check for ongoing scraping
++ chrome.tabs.onActivated.addListener(async (activeInfo) => {
++   try {
++     const tab = await chrome.tabs.get(activeInfo.tabId);
++     
++     if (tab.url && (tab.url.includes('twitter.com') || tab.url.includes('x.com'))) {
++       // Check if there's ongoing scraping data
++       const data = await chrome.storage.local.get('lastScrapedData');
++       if (data.lastScrapedData && data.lastScrapedData.url === tab.url) {
++         console.log('Found previous scraping data for this tab');
++       }
++     }
++   } catch (error) {
++     console.error('Error handling tab activation:', error);
++   }
++ });
++ 
++ // Handle extension startup
++ chrome.runtime.onStartup.addListener(() => {
++   console.log('Xelite Repost Engine Scraper started');
++   
++   // Reset any ongoing scraping state
++   chrome.storage.local.set({
++     isScraping: false,
++     lastScrapeTime: null
++   });
+  }); 
+```
+
+---
+
+Now let me update the popup.html to include a stop scraping button and better status display:
+
+
+---
+
+```diff
+        color: #ef4444;
+      }
++ 
++     .status-value.info {
++       color: #3b82f6;
++     }
+  
+      .button {
+```
+
+```diff
+        background: rgba(255, 255, 255, 0.3);
+      }
++ 
++     .button-danger {
++       background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
++       color: white;
++     }
++ 
++     .button-danger:hover {
++       transform: translateY(-2px);
++       box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
++     }
+  
+      .button:disabled {
+```
+
+```diff
+        transform: none;
+      }
++ 
++     .button-group {
++       display: flex;
++       gap: 10px;
++       margin-bottom: 10px;
++     }
++ 
++     .button-group .button {
++       flex: 1;
++       margin-bottom: 0;
++     }
+  
+      .settings-section {
+```
+
+```diff
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
++ 
++     .message.info {
++       background: rgba(59, 130, 246, 0.2);
++       border: 1px solid rgba(59, 130, 246, 0.3);
++     }
+  
+      .loading {
+```
+
+```diff
+        margin-top: 10px;
+      }
++ 
++     .progress-bar {
++       width: 100%;
++       height: 4px;
++       background: rgba(255, 255, 255, 0.2);
++       border-radius: 2px;
++       margin: 10px 0;
++       overflow: hidden;
++     }
++ 
++     .progress-fill {
++       height: 100%;
++       background: linear-gradient(90deg, #10b981, #059669);
++       border-radius: 2px;
++       transition: width 0.3s ease;
++       width: 0%;
++     }
++ 
++     .stats-grid {
++       display: grid;
++       grid-template-columns: 1fr 1fr;
++       gap: 10px;
++       margin-top: 10px;
++     }
++ 
++     .stat-item {
++       text-align: center;
++       padding: 8px;
++       background: rgba(255, 255, 255, 0.05);
++       border-radius: 6px;
++     }
++ 
++     .stat-value {
++       font-size: 16px;
++       font-weight: 600;
++       color: #10b981;
++     }
++ 
++     .stat-label {
++       font-size: 10px;
++       opacity: 0.8;
++       margin-top: 2px;
++     }
+    </style>
+  </head>
+```
+
+```diff
+          <span id="scrape-count" class="status-value">0</span>
+        </div>
++       
++       <div id="progress-container" style="display: none;">
++         <div class="progress-bar">
++           <div id="progress-fill" class="progress-fill"></div>
++         </div>
++         <div id="progress-text" style="text-align: center; font-size: 12px; margin-top: 5px;">
++           Scraping in progress...
++         </div>
++       </div>
++ 
++       <div id="stats-grid" class="stats-grid" style="display: none;">
++         <div class="stat-item">
++           <div id="posts-found" class="stat-value">0</div>
++           <div class="stat-label">Posts Found</div>
++         </div>
++         <div class="stat-item">
++           <div id="new-posts" class="stat-value">0</div>
++           <div class="stat-label">New Posts</div>
++         </div>
++       </div>
+      </div>
+  
++     <div class="button-group">
+        <button id="scrape-button" class="button button-primary">
+          <span id="scrape-button-text">Start Scraping</span>
+          <span id="scrape-button-loading" class="loading" style="display: none;"></span>
+        </button>
++       <button id="stop-button" class="button button-danger" style="display: none;">
++         Stop Scraping
++       </button>
++     </div>
+  
+      <div class="settings-section">
+```
+
+```diff
+          <input type="number" id="max-posts-input" class="input-number" min="1" max="100" value="50">
+        </div>
++ 
++       <div class="setting-item">
++         <span class="setting-label">Rate limit delay (ms)</span>
++         <input type="number" id="rate-limit-input" class="input-number" min="500" max="5000" value="1000" step="100">
++       </div>
+      </div>
+  
+```
+
+---
+
+Now let me update the popup.js to handle the new UI elements and enhanced functionality:
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+

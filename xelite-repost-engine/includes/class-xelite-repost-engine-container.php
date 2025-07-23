@@ -263,5 +263,10 @@ class XeliteRepostEngine_Container {
         $this->register('dashboard', function($container) {
             return new Repost_Intelligence_Dashboard();
         }, true);
+
+        // Register Extension API service
+        $this->register('extension_api', function($container) {
+            return new XeliteRepostEngine_Extension_API();
+        }, true);
     }
 } 

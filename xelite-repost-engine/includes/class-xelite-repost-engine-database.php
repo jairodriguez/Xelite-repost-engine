@@ -42,6 +42,8 @@ class XeliteRepostEngine_Database extends XeliteRepostEngine_Abstract_Base imple
             'reposts' => $this->wpdb->prefix . 'xelite_reposts',
             'pattern_analysis' => $this->wpdb->prefix . 'xelite_pattern_analysis',
             'pattern_performance' => $this->wpdb->prefix . 'xelite_pattern_performance',
+            'extension_data' => $this->wpdb->prefix . 'xelite_extension_data',
+            'extension_posts' => $this->wpdb->prefix . 'xelite_extension_posts',
         );
         
         $this->log_debug('Database class initialized');
@@ -119,11 +121,65 @@ class XeliteRepostEngine_Database extends XeliteRepostEngine_Abstract_Base imple
             KEY date (date),
             KEY timestamp (timestamp)
         ) $charset_collate;";
+
+        // Extension Data table
+        $extension_data_table = $this->wpdb->prefix . 'xelite_extension_data';
+        $extension_data_sql = "CREATE TABLE $extension_data_table (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            user_id bigint(20) NOT NULL COMMENT 'WordPress user ID',
+            source_url varchar(500) NOT NULL COMMENT 'Source URL where data was scraped',
+            timestamp datetime NOT NULL COMMENT 'When the data was scraped',
+            total_posts int(11) DEFAULT 0 COMMENT 'Total number of posts scraped',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY user_id (user_id),
+            KEY source_url (source_url),
+            KEY timestamp (timestamp),
+            KEY created_at (created_at)
+        ) $charset_collate;";
+
+        // Extension Posts table
+        $extension_posts_table = $this->wpdb->prefix . 'xelite_extension_posts';
+        $extension_posts_sql = "CREATE TABLE $extension_posts_table (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            extension_data_id bigint(20) NOT NULL COMMENT 'Reference to extension_data table',
+            user_id bigint(20) NOT NULL COMMENT 'WordPress user ID',
+            text longtext NOT NULL COMMENT 'Post text content',
+            author varchar(255) NOT NULL COMMENT 'Post author name',
+            username varchar(255) DEFAULT NULL COMMENT 'Post author username',
+            timestamp varchar(255) DEFAULT NULL COMMENT 'Post timestamp',
+            url varchar(500) DEFAULT NULL COMMENT 'Post URL',
+            likes int(11) DEFAULT 0 COMMENT 'Number of likes',
+            retweets int(11) DEFAULT 0 COMMENT 'Number of retweets',
+            replies int(11) DEFAULT 0 COMMENT 'Number of replies',
+            views int(11) DEFAULT 0 COMMENT 'Number of views',
+            media longtext DEFAULT NULL COMMENT 'JSON array of media URLs',
+            hashtags longtext DEFAULT NULL COMMENT 'JSON array of hashtags',
+            mentions longtext DEFAULT NULL COMMENT 'JSON array of mentions',
+            is_retweet tinyint(1) DEFAULT 0 COMMENT 'Whether this is a retweet',
+            is_reply tinyint(1) DEFAULT 0 COMMENT 'Whether this is a reply',
+            is_quote tinyint(1) DEFAULT 0 COMMENT 'Whether this is a quote',
+            post_type varchar(50) DEFAULT 'tweet' COMMENT 'Type of post (tweet, retweet, reply, quote)',
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY extension_data_id (extension_data_id),
+            KEY user_id (user_id),
+            KEY author (author),
+            KEY username (username),
+            KEY is_retweet (is_retweet),
+            KEY is_reply (is_reply),
+            KEY is_quote (is_quote),
+            KEY post_type (post_type),
+            KEY created_at (created_at)
+        ) $charset_collate;";
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         $result = dbDelta($sql);
         $pattern_result = dbDelta($pattern_sql);
         $pattern_performance_result = dbDelta($pattern_performance_sql);
+        $extension_data_result = dbDelta($extension_data_sql);
+        $extension_posts_result = dbDelta($extension_posts_sql);
         
         // Store database version for future migrations
         $this->update_database_version();

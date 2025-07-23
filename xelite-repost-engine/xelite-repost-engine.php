@@ -270,6 +270,9 @@ class XeliteRepostEngine {
         
         // Initialize Scheduler service
         $this->container->get('scheduler');
+        
+        // Initialize Extension API service
+        $this->container->get('extension_api');
     }
     
 

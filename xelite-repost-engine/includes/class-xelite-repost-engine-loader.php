@@ -103,6 +103,9 @@ class XeliteRepostEngine_Loader {
         $user_meta = $this->container->get('user_meta');
         $assets = $this->container->get('assets');
         
+        // Initialize extension API
+        $extension_api = new XeliteRepostEngine_Extension_API();
+        
         // Setup cron jobs for scraping
         add_action('xelite_repost_engine_scraper_cron', array($this, 'run_scraper_cron'));
         

@@ -74,6 +74,9 @@ class XeliteRepostEngine_Loader {
         add_action('wp_ajax_xelite_repost_engine_admin_action', array($admin, 'handle_admin_ajax'));
         add_action('wp_ajax_xelite_repost_engine_save_user_meta', array($admin, 'handle_save_user_meta'));
         add_action('wp_ajax_xelite_repost_engine_preview_context', array($admin, 'handle_preview_context'));
+        
+        // Load onboarding wizard
+        $this->load_onboarding();
     }
     
     /**
@@ -91,6 +94,17 @@ class XeliteRepostEngine_Loader {
         // Add public AJAX handlers
         add_action('wp_ajax_xelite_repost_engine_public_action', array($public, 'handle_public_ajax'));
         add_action('wp_ajax_nopriv_xelite_repost_engine_public_action', array($public, 'handle_public_ajax'));
+    }
+
+    /**
+     * Load onboarding wizard
+     */
+    private function load_onboarding() {
+        // Include onboarding class
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-xelite-repost-engine-onboarding.php';
+        
+        // Initialize onboarding wizard
+        new Xelite_Repost_Engine_Onboarding();
     }
     
     /**
@@ -413,10 +427,21 @@ class XeliteRepostEngine_Loader {
      * Plugin activation
      */
     public function activate() {
+        // Create database tables
+        $database = $this->container->get('database');
+        $database->create_tables();
+        
         // Schedule cron job
         if (!wp_next_scheduled('xelite_repost_engine_scraper_cron')) {
             wp_schedule_event(time(), 'xelite_repost_engine_daily', 'xelite_repost_engine_scraper_cron');
         }
+        
+        // Set activation flag for onboarding redirect
+        update_option('xelite_repost_engine_show_onboarding', true);
+        
+        // Clear any existing onboarding completion flags
+        delete_option('xelite_repost_engine_onboarding_completed');
+        delete_option('xelite_repost_engine_onboarding_skipped');
     }
     
     /**

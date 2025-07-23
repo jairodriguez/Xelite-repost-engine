@@ -1,0 +1,10 @@
+.git
+.gitignore
+README.md
+.env.example
+.cursor
+.specstory
+.taskmaster
+tests/
+*.log
+.DS_Store 

@@ -74,7 +74,7 @@ class XeliteRepostEngine_AB_Testing extends XeliteRepostEngine_Abstract_Base {
     /**
      * Initialize the A/B testing system
      */
-    private function init() {
+    protected function init() {
         global $wpdb;
         $this->tables = array(
             'ab_tests' => $wpdb->prefix . 'xelite_ab_tests',

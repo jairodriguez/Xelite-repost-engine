@@ -65,7 +65,7 @@ class XeliteRepostEngine_WooCommerce extends XeliteRepostEngine_Abstract_Base {
     /**
      * Initialize the integration
      */
-    private function init() {
+    protected function init() {
         // Check if WooCommerce is active
         if (!$this->is_woocommerce_active()) {
             $this->log('warning', 'WooCommerce or WooCommerce Subscriptions not active');

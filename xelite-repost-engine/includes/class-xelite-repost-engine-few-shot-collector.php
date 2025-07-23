@@ -58,7 +58,7 @@ class XeliteRepostEngine_Few_Shot_Collector extends XeliteRepostEngine_Abstract_
     /**
      * Initialize the class
      */
-    private function init() {
+    protected function init() {
         global $wpdb;
         
         // Define table names

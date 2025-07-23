@@ -54,7 +54,12 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         
         // Initialize tabs
         $this->init_tabs();
-        
+    }
+
+    /**
+     * Initialize the class
+     */
+    protected function init() {
         // Hook into WordPress admin
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));

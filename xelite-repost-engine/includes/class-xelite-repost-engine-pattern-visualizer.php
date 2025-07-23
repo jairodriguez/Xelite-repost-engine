@@ -55,11 +55,19 @@ class XeliteRepostEngine_Pattern_Visualizer extends XeliteRepostEngine_Abstract_
      * @param XeliteRepostEngine_Logger $logger Logger service.
      */
     public function __construct($pattern_analyzer, $database, $logger = null) {
+        parent::__construct();
+        
         $this->pattern_analyzer = $pattern_analyzer;
         $this->database = $database;
         $this->logger = $logger;
         
         $this->init_color_schemes();
+    }
+
+    /**
+     * Initialize the class
+     */
+    protected function init() {
         $this->init_hooks();
     }
 

@@ -54,11 +54,18 @@ class XeliteRepostEngine_Pattern_Validator extends XeliteRepostEngine_Abstract_B
      * @param XeliteRepostEngine_Logger $logger Logger service.
      */
     public function __construct($pattern_analyzer, $database, $logger = null) {
+        parent::__construct();
+        
         $this->pattern_analyzer = $pattern_analyzer;
         $this->database = $database;
         $this->logger = $logger;
         $this->cache_expiration = 3600; // 1 hour default
-        
+    }
+
+    /**
+     * Initialize the class
+     */
+    protected function init() {
         $this->init_hooks();
     }
 

@@ -92,6 +92,16 @@ class XeliteRepostEngine_Scraper extends XeliteRepostEngine_Abstract_Base {
     }
 
     /**
+     * Initialize the class
+     */
+    protected function init() {
+        // Initialize hooks and setup
+        add_action('xelite_scheduled_scraping', array($this, 'run_scheduled_scraping'));
+        add_action('wp_ajax_xelite_test_scraper', array($this, 'ajax_test_scraper'));
+        add_action('wp_ajax_xelite_get_scraping_stats', array($this, 'ajax_get_scraping_stats'));
+    }
+
+    /**
      * Load rate limiting data from database
      */
     private function load_rate_limits() {

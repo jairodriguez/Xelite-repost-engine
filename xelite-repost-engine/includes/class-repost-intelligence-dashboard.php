@@ -61,7 +61,12 @@ class Repost_Intelligence_Dashboard extends XeliteRepostEngine_Abstract_Base {
         parent::__construct();
         
         $this->user_id = get_current_user_id();
-        
+    }
+
+    /**
+     * Initialize the class
+     */
+    protected function init() {
         // Initialize dashboard
         add_action('init', array($this, 'init_dashboard'));
         

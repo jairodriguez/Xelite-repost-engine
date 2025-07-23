@@ -67,6 +67,8 @@ class XeliteRepostEngine_OpenAI extends XeliteRepostEngine_Abstract_Base {
      * @param XeliteRepostEngine_Logger $logger Logger service.
      */
     public function __construct($logger = null) {
+        parent::__construct();
+        
         $this->logger = $logger;
         $this->cache_expiration = 3600; // 1 hour default
         $this->rate_limits = array(
@@ -78,6 +80,12 @@ class XeliteRepostEngine_OpenAI extends XeliteRepostEngine_Abstract_Base {
         );
         
         $this->init_api_key();
+    }
+
+    /**
+     * Initialize the class
+     */
+    protected function init() {
         $this->init_hooks();
     }
 

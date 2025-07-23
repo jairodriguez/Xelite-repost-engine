@@ -64,7 +64,7 @@ class XeliteRepostEngine_Scheduler extends XeliteRepostEngine_Abstract_Base {
     /**
      * Initialize the class
      */
-    private function init() {
+    protected function init() {
         $this->init_hooks();
         $this->create_scheduling_tables();
     }

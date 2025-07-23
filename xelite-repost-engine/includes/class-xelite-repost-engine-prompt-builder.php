@@ -71,6 +71,8 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
      * @param XeliteRepostEngine_Few_Shot_Collector $few_shot_collector Few-shot collector service.
      */
     public function __construct($user_meta, $pattern_analyzer, $database, $logger = null, $few_shot_collector = null) {
+        parent::__construct();
+        
         $this->user_meta = $user_meta;
         $this->pattern_analyzer = $pattern_analyzer;
         $this->database = $database;
@@ -78,6 +80,12 @@ class XeliteRepostEngine_Prompt_Builder extends XeliteRepostEngine_Abstract_Base
         $this->few_shot_collector = $few_shot_collector;
         
         $this->init_prompt_templates();
+    }
+
+    /**
+     * Initialize the class
+     */
+    protected function init() {
         $this->init_hooks();
     }
 

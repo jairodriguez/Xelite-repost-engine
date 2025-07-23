@@ -44,7 +44,7 @@ class XeliteRepostEngine_Analytics_Collector extends XeliteRepostEngine_Abstract
     /**
      * Initialize the class
      */
-    private function init() {
+    protected function init() {
         $this->init_hooks();
         $this->create_analytics_tables();
     }

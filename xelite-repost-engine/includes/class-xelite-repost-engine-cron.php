@@ -66,13 +66,20 @@ class XeliteRepostEngine_Cron extends XeliteRepostEngine_Abstract_Base {
      * @param XeliteRepostEngine_Logger $logger Logger service.
      */
     public function __construct($scraper, $database, $logger = null) {
+        parent::__construct();
+        
         $this->scraper = $scraper;
         $this->database = $database;
         $this->logger = $logger;
         
         // Set lock file path
         $this->lock_file = WP_CONTENT_DIR . '/xelite-repost-engine-cron.lock';
-        
+    }
+
+    /**
+     * Initialize the class
+     */
+    protected function init() {
         // Initialize hooks
         $this->init_hooks();
     }

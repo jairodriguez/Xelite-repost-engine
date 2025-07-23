@@ -77,6 +77,12 @@ class XeliteRepostEngine_Loader {
         
         // Load onboarding wizard
         $this->load_onboarding();
+        
+        // Load PDF guide functionality
+        $this->load_pdf_guide();
+        
+        // Load tutorials and tooltips functionality
+        $this->load_tutorials();
     }
     
     /**
@@ -105,6 +111,28 @@ class XeliteRepostEngine_Loader {
         
         // Initialize onboarding wizard
         new Xelite_Repost_Engine_Onboarding();
+    }
+
+    /**
+     * Load PDF guide functionality
+     */
+    private function load_pdf_guide() {
+        // Include PDF guide class
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-xelite-repost-engine-pdf-guide.php';
+        
+        // Initialize PDF guide
+        new Xelite_Repost_Engine_PDF_Guide();
+    }
+
+    /**
+     * Load tutorials and tooltips functionality
+     */
+    private function load_tutorials() {
+        // Include tutorials class
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-xelite-repost-engine-tutorials.php';
+        
+        // Initialize tutorials and tooltips
+        new Xelite_Repost_Engine_Tutorials();
     }
     
     /**

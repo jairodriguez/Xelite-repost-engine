@@ -90,10 +90,10 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
                 'icon' => 'dashicons-admin-generic',
                 'description' => __('Configure basic plugin settings and preferences.', 'xelite-repost-engine')
             ),
-            'api_keys' => array(
-                'title' => __('API Keys', 'xelite-repost-engine'),
-                'icon' => 'dashicons-admin-network',
-                'description' => __('Configure API keys for X (Twitter) integration.', 'xelite-repost-engine')
+            'x_integration' => array(
+                'title' => __('X Integration', 'xelite-repost-engine'),
+                'icon' => 'dashicons-share',
+                'description' => __('Configure X (Twitter) API authentication and posting settings.', 'xelite-repost-engine')
             ),
             'openai' => array(
                 'title' => __('OpenAI Integration', 'xelite-repost-engine'),
@@ -188,8 +188,8 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
             case 'general':
                 $this->register_general_settings();
                 break;
-            case 'api_keys':
-                $this->register_api_settings();
+            case 'x_integration':
+                $this->register_x_integration_settings();
                 break;
             case 'openai':
                 $this->register_openai_settings();
@@ -276,38 +276,120 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
     }
     
     /**
-     * Register API settings
+     * Register X Integration settings
      */
-    private function register_api_settings() {
+    private function register_x_integration_settings() {
+        // OAuth 2.0 Configuration Section
         add_settings_section(
-            'api_settings_section',
-            __('API Configuration', 'xelite-repost-engine'),
-            array($this, 'api_settings_section_callback'),
+            'x_oauth_section',
+            __('OAuth 2.0 Configuration', 'xelite-repost-engine'),
+            array($this, 'x_oauth_section_callback'),
             $this->settings_page
         );
         
-        // X API Authentication Section
+        // OAuth 2.0 Fields (for user authentication and posting)
         add_settings_field(
-            'x_api_authentication',
-            __('X (Twitter) API Authentication', 'xelite-repost-engine'),
-            array($this, 'x_api_auth_field_callback'),
+            'xelite_x_client_id',
+            __('Client ID', 'xelite-repost-engine'),
+            array($this, 'text_field_callback'),
             $this->settings_page,
-            'api_settings_section',
+            'x_oauth_section',
             array(
-                'description' => __('Configure X API authentication using OAuth. This is required for accessing repost data.', 'xelite-repost-engine')
+                'field' => 'xelite_x_client_id',
+                'description' => __('Your X API Client ID from the X Developer Portal.', 'xelite-repost-engine')
             )
         );
         
-
+        add_settings_field(
+            'xelite_x_client_secret',
+            __('Client Secret', 'xelite-repost-engine'),
+            array($this, 'password_field_callback'),
+            $this->settings_page,
+            'x_oauth_section',
+            array(
+                'field' => 'xelite_x_client_secret',
+                'description' => __('Your X API Client Secret from the X Developer Portal.', 'xelite-repost-engine')
+            )
+        );
         
         add_settings_field(
-            'api_connection_status',
-            __('Connection Status', 'xelite-repost-engine'),
-            array($this, 'connection_status_field_callback'),
+            'xelite_x_redirect_uri',
+            __('Redirect URI', 'xelite-repost-engine'),
+            array($this, 'url_field_callback'),
             $this->settings_page,
-            'api_settings_section',
+            'x_oauth_section',
             array(
-                'description' => __('Current status of your API connections. Test each connection to verify your credentials.', 'xelite-repost-engine')
+                'field' => 'xelite_x_redirect_uri',
+                'description' => __('OAuth 2.0 redirect URI configured in your X app.', 'xelite-repost-engine')
+            )
+        );
+        
+        // API Credentials Section (for scraping/reading repost data)
+        add_settings_section(
+            'x_api_section',
+            __('API Credentials', 'xelite-repost-engine'),
+            array($this, 'x_api_section_callback'),
+            $this->settings_page
+        );
+        
+        // API Key Fields (for reading repost data from target accounts)
+        add_settings_field(
+            'x_api_consumer_key',
+            __('API Key (Consumer Key)', 'xelite-repost-engine'),
+            array($this, 'password_field_callback'),
+            $this->settings_page,
+            'x_api_section',
+            array(
+                'field' => 'x_api_consumer_key',
+                'description' => __('Your X API consumer key for reading repost data from target accounts.', 'xelite-repost-engine')
+            )
+        );
+        
+        add_settings_field(
+            'x_api_consumer_secret',
+            __('API Secret (Consumer Secret)', 'xelite-repost-engine'),
+            array($this, 'password_field_callback'),
+            $this->settings_page,
+            'x_api_section',
+            array(
+                'field' => 'x_api_consumer_secret',
+                'description' => __('Your X API consumer secret for reading repost data from target accounts.', 'xelite-repost-engine')
+            )
+        );
+        
+        add_settings_field(
+            'x_api_access_token',
+            __('Access Token', 'xelite-repost-engine'),
+            array($this, 'password_field_callback'),
+            $this->settings_page,
+            'x_api_section',
+            array(
+                'field' => 'x_api_access_token',
+                'description' => __('Your X API access token for reading repost data from target accounts.', 'xelite-repost-engine')
+            )
+        );
+        
+        add_settings_field(
+            'x_api_access_token_secret',
+            __('Access Token Secret', 'xelite-repost-engine'),
+            array($this, 'password_field_callback'),
+            $this->settings_page,
+            'x_api_section',
+            array(
+                'field' => 'x_api_access_token_secret',
+                'description' => __('Your X API access token secret for reading repost data from target accounts.', 'xelite-repost-engine')
+            )
+        );
+        
+        // Connection Status
+        add_settings_field(
+            'x_connection_status',
+            __('Connection Status', 'xelite-repost-engine'),
+            array($this, 'x_connection_status_field_callback'),
+            $this->settings_page,
+            'x_oauth_section',
+            array(
+                'description' => __('Current status of your X API connection. Test to verify your credentials.', 'xelite-repost-engine')
             )
         );
     }
@@ -777,10 +859,24 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
             'auto_scraping_enabled' => true,
             'scraping_frequency' => 'daily',
             'max_reposts_per_account' => 100,
-            'x_api_key' => '',
-            'x_api_secret' => '',
-            'x_bearer_token' => '',
+            // X OAuth 2.0 settings (for user authentication and posting)
+            'xelite_x_client_id' => '',
+            'xelite_x_client_secret' => '',
+            'xelite_x_redirect_uri' => '',
+            // X API credentials (for scraping/reading repost data)
+            'x_api_consumer_key' => '',
+            'x_api_consumer_secret' => '',
+            'x_api_access_token' => '',
+            'x_api_access_token_secret' => '',
+            // OpenAI settings
             'openai_api_key' => '',
+            'openai_model' => 'gpt-4',
+            'openai_temperature' => 0.7,
+            'openai_max_tokens' => 280,
+            'openai_content_tone' => 'conversational',
+            'openai_daily_limit' => 0,
+            'openai_monthly_budget' => 0,
+            // Other settings
             'target_accounts' => array(),
             'debug_mode' => false,
             'log_retention_days' => 30,
@@ -816,11 +912,27 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
                         $sanitized[$key] = absint($input[$key]);
                         break;
                         
-                    case 'x_api_key':
-                    case 'x_api_secret':
-                    case 'x_bearer_token':
+                    case 'xelite_x_client_id':
+                    case 'xelite_x_client_secret':
+                    case 'xelite_x_redirect_uri':
+                    case 'x_api_consumer_key':
+                    case 'x_api_consumer_secret':
+                    case 'x_api_access_token':
+                    case 'x_api_access_token_secret':
                     case 'openai_api_key':
+                    case 'openai_model':
+                    case 'openai_content_tone':
                         $sanitized[$key] = sanitize_text_field($input[$key]);
+                        break;
+                        
+                    case 'openai_temperature':
+                        $sanitized[$key] = floatval($input[$key]);
+                        break;
+                        
+                    case 'openai_max_tokens':
+                    case 'openai_daily_limit':
+                    case 'openai_monthly_budget':
+                        $sanitized[$key] = absint($input[$key]);
                         break;
                         
                     case 'target_accounts':
@@ -1306,133 +1418,8 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         return $preview;
     }
     
-    /**
-     * X API Authentication field callback
-     *
-     * @param array $args Field arguments
-     */
-    public function x_api_auth_field_callback($args) {
-        // Get X Auth service
-        $x_auth = $this->get_plugin()->container->get('x_auth');
-        $credentials = $x_auth->get_credentials();
-        $connection_status = $x_auth->get_connection_status();
-        
-        ?>
-        <div class="x-api-auth-container">
-            <?php if ($credentials): ?>
-                <!-- Connected State -->
-                <div class="x-api-connected">
-                    <div class="connection-status success">
-                        <span class="dashicons dashicons-yes-alt"></span>
-                        <?php _e('X API Connected', 'xelite-repost-engine'); ?>
-                    </div>
-                    
-                    <?php if ($connection_status && $connection_status['success']): ?>
-                        <div class="user-info">
-                            <p><strong><?php _e('Authenticated as:', 'xelite-repost-engine'); ?></strong> 
-                               @<?php echo esc_html($connection_status['user_info']['screen_name']); ?></p>
-                            <p><strong><?php _e('Name:', 'xelite-repost-engine'); ?></strong> 
-                               <?php echo esc_html($connection_status['user_info']['name']); ?></p>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <div class="auth-actions">
-                        <button type="button" class="button button-secondary test-x-connection" 
-                                data-nonce="<?php echo wp_create_nonce('xelite_x_test_connection'); ?>">
-                            <span class="dashicons dashicons-update"></span>
-                            <?php _e('Test Connection', 'xelite-repost-engine'); ?>
-                        </button>
-                        
-                        <button type="button" class="button button-link-delete revoke-x-connection" 
-                                data-nonce="<?php echo wp_create_nonce('xelite_x_revoke_connection'); ?>">
-                            <span class="dashicons dashicons-trash"></span>
-                            <?php _e('Revoke Connection', 'xelite-repost-engine'); ?>
-                        </button>
-                    </div>
-                </div>
-            <?php else: ?>
-                <!-- Manual Credentials Form -->
-                <div class="x-api-manual-setup">
-                    <p class="description"><?php echo esc_html($args['description']); ?></p>
-                    
-                    <table class="form-table">
-                        <tr>
-                            <th scope="row">
-                                <label for="x_api_consumer_key"><?php _e('API Key (Consumer Key)', 'xelite-repost-engine'); ?></label>
-                            </th>
-                            <td>
-                                <input type="password" id="x_api_consumer_key" name="x_api_consumer_key" 
-                                       class="regular-text" value="<?php echo esc_attr($credentials ? $credentials['consumer_key'] : ''); ?>" />
-                                <p class="description"><?php _e('Your X API consumer key from the X Developer Portal.', 'xelite-repost-engine'); ?></p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row">
-                                <label for="x_api_consumer_secret"><?php _e('API Secret (Consumer Secret)', 'xelite-repost-engine'); ?></label>
-                            </th>
-                            <td>
-                                <input type="password" id="x_api_consumer_secret" name="x_api_consumer_secret" 
-                                       class="regular-text" value="<?php echo esc_attr($credentials ? $credentials['consumer_secret'] : ''); ?>" />
-                                <p class="description"><?php _e('Your X API consumer secret from the X Developer Portal.', 'xelite-repost-engine'); ?></p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row">
-                                <label for="x_api_access_token"><?php _e('Access Token', 'xelite-repost-engine'); ?></label>
-                            </th>
-                            <td>
-                                <input type="password" id="x_api_access_token" name="x_api_access_token" 
-                                       class="regular-text" value="<?php echo esc_attr($credentials ? $credentials['access_token'] : ''); ?>" />
-                                <p class="description"><?php _e('Your X API access token from the X Developer Portal.', 'xelite-repost-engine'); ?></p>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th scope="row">
-                                <label for="x_api_access_token_secret"><?php _e('Access Token Secret', 'xelite-repost-engine'); ?></label>
-                            </th>
-                            <td>
-                                <input type="password" id="x_api_access_token_secret" name="x_api_access_token_secret" 
-                                       class="regular-text" value="<?php echo esc_attr($credentials ? $credentials['access_token_secret'] : ''); ?>" />
-                                <p class="description"><?php _e('Your X API access token secret from the X Developer Portal.', 'xelite-repost-engine'); ?></p>
-                            </td>
-                        </tr>
-                    </table>
-                    
-                    <div class="auth-actions">
-                        <button type="button" class="button button-primary save-x-credentials">
-                            <span class="dashicons dashicons-saved"></span>
-                            <?php _e('Save Credentials', 'xelite-repost-engine'); ?>
-                        </button>
-                        
-                        <button type="button" class="button button-secondary test-x-connection" 
-                                data-nonce="<?php echo wp_create_nonce('xelite_x_test_connection'); ?>">
-                            <span class="dashicons dashicons-update"></span>
-                            <?php _e('Test Connection', 'xelite-repost-engine'); ?>
-                        </button>
-                    </div>
-                </div>
-            <?php endif; ?>
-            
-            <div class="x-api-help">
-                <h4><?php _e('How to get X API credentials:', 'xelite-repost-engine'); ?></h4>
-                <ol>
-                    <li><?php _e('Go to the <a href="https://developer.twitter.com/" target="_blank">X Developer Portal</a>', 'xelite-repost-engine'); ?></li>
-                    <li><?php _e('Create a new app or use an existing one', 'xelite-repost-engine'); ?></li>
-                    <li><?php _e('Navigate to "Keys and tokens" section', 'xelite-repost-engine'); ?></li>
-                    <li><?php _e('Copy your API Key, API Secret, Access Token, and Access Token Secret', 'xelite-repost-engine'); ?></li>
-                    <li><?php _e('Paste them in the fields above and save', 'xelite-repost-engine'); ?></li>
-                </ol>
-            </div>
-        </div>
-        <?php
-    }
-    
-    /**
-     * AJAX handler for fetching posts
-     */
+
+
     public function ajax_fetch_posts() {
         check_ajax_referer('xelite_fetch_posts', 'nonce');
         
@@ -1830,5 +1817,218 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         }
         
         return round(($total_tokens / 1000) * $cost_per_1k_tokens, 4);
+    }
+
+    /**
+     * X OAuth section callback
+     */
+    public function x_oauth_section_callback() {
+        echo '<p>' . __('Configure OAuth 2.0 authentication for X (Twitter) API access. This is used for user authentication and posting content to X.', 'xelite-repost-engine') . '</p>';
+    }
+
+    /**
+     * X API section callback
+     */
+    public function x_api_section_callback() {
+        echo '<p>' . __('Configure API credentials for reading repost data from target accounts. These credentials are used to scrape and analyze repost patterns.', 'xelite-repost-engine') . '</p>';
+    }
+
+
+
+    /**
+     * X connection status field callback
+     */
+    public function x_connection_status_field_callback($args) {
+        $settings = $this->get_settings();
+        $has_oauth = !empty($settings['xelite_x_client_id']) && !empty($settings['xelite_x_client_secret']);
+        $has_api_credentials = !empty($settings['x_api_consumer_key']) && !empty($settings['x_api_consumer_secret']) && 
+                              !empty($settings['x_api_access_token']) && !empty($settings['x_api_access_token_secret']);
+        
+        // Get X Poster service to check authentication status
+        $x_poster = null;
+        try {
+            $x_poster = $this->get_plugin()->container->get('x_poster');
+        } catch (Exception $e) {
+            // Service not available
+        }
+        
+        $is_authenticated = false;
+        if ($x_poster && $has_oauth) {
+            $is_authenticated = $x_poster->is_user_authenticated();
+        }
+        
+        ?>
+        <div class="x-connection-status">
+            <!-- OAuth 2.0 Status -->
+            <div class="credential-section">
+                <h4><?php _e('OAuth 2.0 Status (User Authentication & Posting)', 'xelite-repost-engine'); ?></h4>
+                <?php if ($has_oauth): ?>
+                    <div class="connection-status success">
+                        <span class="dashicons dashicons-yes-alt"></span>
+                        <?php _e('OAuth 2.0 credentials configured', 'xelite-repost-engine'); ?>
+                    </div>
+                    
+                    <div class="auth-actions">
+                        <?php if ($is_authenticated): ?>
+                            <div class="auth-status success">
+                                <span class="dashicons dashicons-yes-alt"></span>
+                                <?php _e('Authenticated with X', 'xelite-repost-engine'); ?>
+                            </div>
+                            
+                            <button type="button" class="button button-secondary test-oauth-connection" 
+                                    data-nonce="<?php echo wp_create_nonce('xelite_x_test_oauth_connection'); ?>">
+                                <span class="dashicons dashicons-update"></span>
+                                <?php _e('Test OAuth Connection', 'xelite-repost-engine'); ?>
+                            </button>
+                            
+                            <button type="button" class="button button-link-delete revoke-x-auth" 
+                                    data-nonce="<?php echo wp_create_nonce('xelite_x_revoke_auth'); ?>">
+                                <span class="dashicons dashicons-trash"></span>
+                                <?php _e('Revoke Authentication', 'xelite-repost-engine'); ?>
+                            </button>
+                        <?php else: ?>
+                            <div class="auth-status warning">
+                                <span class="dashicons dashicons-warning"></span>
+                                <?php _e('Not authenticated with X', 'xelite-repost-engine'); ?>
+                            </div>
+                            
+                            <a href="<?php echo esc_url($x_poster ? $x_poster->get_authorization_url() : '#'); ?>" 
+                               class="button button-primary authenticate-x">
+                                <span class="dashicons dashicons-admin-users"></span>
+                                <?php _e('Authenticate with X', 'xelite-repost-engine'); ?>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="connection-status error">
+                        <span class="dashicons dashicons-no-alt"></span>
+                        <?php _e('OAuth 2.0 credentials not configured', 'xelite-repost-engine'); ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <!-- API Credentials Status -->
+            <div class="credential-section">
+                <h4><?php _e('API Credentials Status (Data Scraping)', 'xelite-repost-engine'); ?></h4>
+                <?php if ($has_api_credentials): ?>
+                    <div class="connection-status success">
+                        <span class="dashicons dashicons-yes-alt"></span>
+                        <?php _e('API credentials configured', 'xelite-repost-engine'); ?>
+                    </div>
+                    
+                    <button type="button" class="button button-secondary test-api-connection" 
+                            data-nonce="<?php echo wp_create_nonce('xelite_x_test_api_connection'); ?>">
+                        <span class="dashicons dashicons-update"></span>
+                        <?php _e('Test API Connection', 'xelite-repost-engine'); ?>
+                    </button>
+                <?php else: ?>
+                    <div class="connection-status error">
+                        <span class="dashicons dashicons-no-alt"></span>
+                        <?php _e('API credentials not configured', 'xelite-repost-engine'); ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <p class="description"><?php echo esc_html($args['description']); ?></p>
+        </div>
+        
+        <style>
+        .x-connection-status {
+            margin: 10px 0;
+        }
+        .credential-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .credential-section h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .connection-status, .auth-status {
+            display: inline-flex;
+            align-items: center;
+            margin: 5px 0;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .connection-status.success, .auth-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .connection-status.error, .auth-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .auth-status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .auth-actions {
+            margin-top: 10px;
+        }
+        .auth-actions .button {
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+        </style>
+        <?php
+    }
+
+    /**
+     * Text field callback
+     */
+    public function text_field_callback($args) {
+        $settings = $this->get_settings();
+        $field = $args['field'];
+        $value = isset($settings[$field]) ? $settings[$field] : '';
+        ?>
+        <input type="text" 
+               id="<?php echo esc_attr($field); ?>" 
+               name="<?php echo esc_attr($this->option_name . '[' . $field . ']'); ?>" 
+               value="<?php echo esc_attr($value); ?>" 
+               class="regular-text" />
+        <p class="description"><?php echo esc_html($args['description']); ?></p>
+        <?php
+    }
+
+    /**
+     * Password field callback
+     */
+    public function password_field_callback($args) {
+        $settings = $this->get_settings();
+        $field = $args['field'];
+        $value = isset($settings[$field]) ? $settings[$field] : '';
+        ?>
+        <input type="password" 
+               id="<?php echo esc_attr($field); ?>" 
+               name="<?php echo esc_attr($this->option_name . '[' . $field . ']'); ?>" 
+               value="<?php echo esc_attr($value); ?>" 
+               class="regular-text" />
+        <p class="description"><?php echo esc_html($args['description']); ?></p>
+        <?php
+    }
+
+    /**
+     * URL field callback
+     */
+    public function url_field_callback($args) {
+        $settings = $this->get_settings();
+        $field = $args['field'];
+        $value = isset($settings[$field]) ? $settings[$field] : '';
+        ?>
+        <input type="url" 
+               id="<?php echo esc_attr($field); ?>" 
+               name="<?php echo esc_attr($this->option_name . '[' . $field . ']'); ?>" 
+               value="<?php echo esc_attr($value); ?>" 
+               class="regular-text" />
+        <p class="description"><?php echo esc_html($args['description']); ?></p>
+        <?php
     }
 } 

@@ -828,7 +828,7 @@ class XeliteRepostEngine_X_Poster extends XeliteRepostEngine_Abstract_Base {
      * Display missing credentials notice
      */
     public function missing_credentials_notice() {
-        echo '<div class="notice notice-warning"><p>X API credentials are not configured. Please configure them in the <a href="' . admin_url('admin.php?page=xelite-x-settings') . '">X Settings</a> page.</p></div>';
+        echo '<div class="notice notice-warning"><p>X API credentials are not configured. Please configure them in the <a href="' . admin_url('admin.php?page=xelite-repost-engine&tab=x_integration') . '">X Integration</a> tab.</p></div>';
     }
 
     /**
@@ -962,9 +962,12 @@ class XeliteRepostEngine_X_Poster extends XeliteRepostEngine_Abstract_Base {
     }
 
     /**
-     * Add settings page
+     * Add settings page (DEPRECATED - Now integrated into main settings)
      */
     public function add_settings_page() {
+        // This functionality has been moved to the main settings page under "X Integration" tab
+        // Keeping this method for backward compatibility but not adding the menu item
+        /*
         add_submenu_page(
             'xelite-repost-engine',
             'X Settings',
@@ -973,6 +976,7 @@ class XeliteRepostEngine_X_Poster extends XeliteRepostEngine_Abstract_Base {
             'xelite-x-settings',
             array($this, 'render_settings_page')
         );
+        */
     }
 
     /**

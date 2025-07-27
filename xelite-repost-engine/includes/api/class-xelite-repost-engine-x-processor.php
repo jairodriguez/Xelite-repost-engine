@@ -73,7 +73,7 @@ class XeliteRepostEngine_X_Processor {
         add_action('wp_ajax_xelite_clear_repost_data', array($this, 'ajax_clear_data'));
         
         // Deactivation cleanup
-        register_deactivation_hook(XELITE_REPOST_ENGINE_FILE, array($this, 'clear_cron_events'));
+        register_deactivation_hook(XELITE_REPOST_ENGINE_PLUGIN_BASENAME, array($this, 'clear_cron_events'));
     }
 
     /**
@@ -870,7 +870,7 @@ class XeliteRepostEngine_X_Processor {
         $reposts = $this->database->get_all_reposts();
         $analysis = get_option('xelite_repost_analysis', array());
         
-        include plugin_dir_path(XELITE_REPOST_ENGINE_FILE) . 'admin/partials/x-data-management.php';
+        include plugin_dir_path(XELITE_REPOST_ENGINE_PLUGIN_BASENAME) . 'admin/partials/x-data-management.php';
     }
 
     /**

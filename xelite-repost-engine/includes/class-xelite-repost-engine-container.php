@@ -264,6 +264,34 @@ class XeliteRepostEngine_Container {
             return new Repost_Intelligence_Dashboard();
         }, true);
 
+        // Register Shortcodes service
+        $this->register('shortcodes', function($container) {
+            return new Repost_Intelligence_Shortcodes();
+        }, true);
+
+        // Register Logger service
+        $this->register('logger', function($container) {
+            return new class {
+                public function log($level, $message, $context = array()) {
+                    if (defined('WP_DEBUG') && WP_DEBUG) {
+                        error_log("Xelite Repost Engine [{$level}]: {$message}");
+                    }
+                }
+                
+                public function debug($message, $context = array()) {
+                    $this->log('debug', $message, $context);
+                }
+                
+                public function error($message, $context = array()) {
+                    $this->log('error', $message, $context);
+                }
+                
+                public function info($message, $context = array()) {
+                    $this->log('info', $message, $context);
+                }
+            };
+        }, true);
+
         // Register Extension API service
         $this->register('extension_api', function($container) {
             return new XeliteRepostEngine_Extension_API();

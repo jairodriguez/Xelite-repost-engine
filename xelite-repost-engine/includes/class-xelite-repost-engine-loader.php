@@ -94,8 +94,7 @@ class XeliteRepostEngine_Loader {
         
         // Public scripts and styles are handled by the assets class
         
-        // Add shortcodes
-        add_action('init', array($public, 'register_shortcodes'));
+        // Shortcodes are handled by Repost_Intelligence_Shortcodes class
         
         // Add public AJAX handlers
         add_action('wp_ajax_xelite_repost_engine_public_action', array($public, 'handle_public_ajax'));
@@ -146,7 +145,7 @@ class XeliteRepostEngine_Loader {
         $assets = $this->container->get('assets');
         
         // Initialize extension API
-        $extension_api = new XeliteRepostEngine_Extension_API();
+        $extension_api = $this->container->get('extension_api');
         
         // Setup cron jobs for scraping
         add_action('xelite_repost_engine_scraper_cron', array($this, 'run_scraper_cron'));

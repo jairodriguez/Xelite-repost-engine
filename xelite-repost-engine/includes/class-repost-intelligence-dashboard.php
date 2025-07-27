@@ -150,21 +150,20 @@ class Repost_Intelligence_Dashboard extends XeliteRepostEngine_Abstract_Base {
             return;
         }
 
-        // Add main dashboard page
-        add_menu_page(
-            __('Repost Intelligence', 'xelite-repost-engine'),
-            __('Repost Intelligence', 'xelite-repost-engine'),
+        // Add main dashboard page as submenu to Repost Engine
+        add_submenu_page(
+            'xelite-repost-engine',
+            __('Dashboard', 'xelite-repost-engine'),
+            __('Dashboard', 'xelite-repost-engine'),
             $this->capability,
             $this->dashboard_page,
-            array($this, 'render_dashboard_page'),
-            'dashicons-share',
-            30
+            array($this, 'render_dashboard_page')
         );
 
         // Add submenu pages for each tab
         foreach ($this->tabs as $tab_slug => $tab) {
             add_submenu_page(
-                $this->dashboard_page,
+                'xelite-repost-engine',
                 $tab['title'],
                 $tab['title'],
                 $this->capability,

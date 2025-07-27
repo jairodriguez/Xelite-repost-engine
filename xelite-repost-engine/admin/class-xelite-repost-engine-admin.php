@@ -31,4 +31,13 @@ class XeliteRepostEngine_Admin extends XeliteRepostEngine_Abstract_Base {
         $this->admin_settings = new XeliteRepostEngine_Admin_Settings();
         $this->log_debug('Admin class initialized with settings page');
     }
+    
+    /**
+     * Add admin menu - delegate to admin settings
+     */
+    public function add_admin_menu() {
+        if ($this->admin_settings) {
+            $this->admin_settings->add_admin_menu();
+        }
+    }
 } 

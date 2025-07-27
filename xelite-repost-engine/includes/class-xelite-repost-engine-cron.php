@@ -97,8 +97,8 @@ class XeliteRepostEngine_Cron extends XeliteRepostEngine_Abstract_Base {
         add_action($this->cron_hooks['monitoring'], array($this, 'run_monitoring_cron'));
         
         // Activation/deactivation hooks
-        register_activation_hook(XELITE_REPOST_ENGINE_FILE, array($this, 'activate_cron_jobs'));
-        register_deactivation_hook(XELITE_REPOST_ENGINE_FILE, array($this, 'deactivate_cron_jobs'));
+        register_activation_hook(XELITE_REPOST_ENGINE_PLUGIN_BASENAME, array($this, 'activate_cron_jobs'));
+        register_deactivation_hook(XELITE_REPOST_ENGINE_PLUGIN_BASENAME, array($this, 'deactivate_cron_jobs'));
         
         // Admin hooks
         add_action('admin_init', array($this, 'handle_cron_actions'));

@@ -148,7 +148,7 @@ class XeliteRepostEngine_Cron_Admin {
 
         wp_enqueue_script(
             'xelite-cron-admin',
-            plugin_dir_url(XELITE_REPOST_ENGINE_FILE) . 'assets/js/cron-admin.js',
+            plugin_dir_url(XELITE_REPOST_ENGINE_PLUGIN_BASENAME) . 'assets/js/cron-admin.js',
             array('jquery'),
             XELITE_REPOST_ENGINE_VERSION,
             true
@@ -168,7 +168,7 @@ class XeliteRepostEngine_Cron_Admin {
 
         wp_enqueue_style(
             'xelite-cron-admin',
-            plugin_dir_url(XELITE_REPOST_ENGINE_FILE) . 'assets/css/cron-admin.css',
+            plugin_dir_url(XELITE_REPOST_ENGINE_PLUGIN_BASENAME) . 'assets/css/cron-admin.css',
             array(),
             XELITE_REPOST_ENGINE_VERSION
         );

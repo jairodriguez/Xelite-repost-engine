@@ -185,11 +185,11 @@ class Xelite_Repost_Engine_Tutorials {
      */
     public function add_tutorials_menu() {
         add_submenu_page(
-            'repost-intelligence',
+            'xelite-repost-engine',
             'Video Tutorials',
             'Video Tutorials',
             'manage_options',
-            'repost-intelligence-tutorials',
+            'xelite-repost-engine-tutorials',
             array($this, 'render_tutorials_page')
         );
     }
@@ -199,7 +199,7 @@ class Xelite_Repost_Engine_Tutorials {
      */
     public function enqueue_tutorial_scripts($hook) {
         // Only load on plugin pages
-        if (strpos($hook, 'repost-intelligence') === false) {
+        if (strpos($hook, 'xelite-repost-engine') === false) {
             return;
         }
 

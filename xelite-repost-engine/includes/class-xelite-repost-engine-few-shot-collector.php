@@ -145,8 +145,7 @@ class XeliteRepostEngine_Few_Shot_Collector extends XeliteRepostEngine_Abstract_
             KEY is_auto_identified (is_auto_identified),
             KEY is_active (is_active),
             KEY created_at (created_at),
-            KEY updated_at (updated_at),
-            FOREIGN KEY (repost_id) REFERENCES {$wpdb->prefix}xelite_reposts(id) ON DELETE CASCADE
+            KEY updated_at (updated_at)
         ) $charset_collate;";
         
         // Example categories table
@@ -164,8 +163,7 @@ class XeliteRepostEngine_Few_Shot_Collector extends XeliteRepostEngine_Abstract_
             PRIMARY KEY (id),
             KEY parent_id (parent_id),
             KEY is_active (is_active),
-            KEY created_at (created_at),
-            FOREIGN KEY (parent_id) REFERENCES $categories_table(id) ON DELETE SET NULL
+            KEY created_at (created_at)
         ) $charset_collate;";
         
         // Example performance tracking table
@@ -185,8 +183,7 @@ class XeliteRepostEngine_Few_Shot_Collector extends XeliteRepostEngine_Abstract_
             KEY prompt_id (prompt_id),
             KEY generated_content_id (generated_content_id),
             KEY performance_score (performance_score),
-            KEY created_at (created_at),
-            FOREIGN KEY (example_id) REFERENCES $examples_table(id) ON DELETE CASCADE
+            KEY created_at (created_at)
         ) $charset_collate;";
         
         // Execute table creation

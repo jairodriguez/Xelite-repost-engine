@@ -1124,7 +1124,7 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         }
         
         // Get X Auth service
-        $x_auth = $this->container->get('x_auth');
+        $x_auth = $this->get_plugin()->container->get('x_auth');
         
         // Validate required fields
         $required_fields = array('consumer_key', 'consumer_secret', 'access_token', 'access_token_secret');
@@ -1170,7 +1170,7 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         }
         
         // Get user meta service
-        $user_meta = $this->container->get('user_meta');
+        $user_meta = $this->get_plugin()->container->get('user_meta');
         
         // Define allowed fields
         $allowed_fields = array(
@@ -1313,7 +1313,7 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
      */
     public function x_api_auth_field_callback($args) {
         // Get X Auth service
-        $x_auth = $this->container->get('x_auth');
+        $x_auth = $this->get_plugin()->container->get('x_auth');
         $credentials = $x_auth->get_credentials();
         $connection_status = $x_auth->get_connection_status();
         

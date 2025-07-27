@@ -72,8 +72,8 @@ class XeliteRepostEngine_Analytics_Collector extends XeliteRepostEngine_Abstract
         add_action('wp_ajax_xelite_export_analytics', array($this, 'ajax_export_analytics'));
         
         // Activation/deactivation hooks
-        register_activation_hook(XELITE_REPOST_ENGINE_FILE, array($this, 'activate_analytics'));
-        register_deactivation_hook(XELITE_REPOST_ENGINE_FILE, array($this, 'deactivate_analytics'));
+        register_activation_hook(XELITE_REPOST_ENGINE_PLUGIN_BASENAME, array($this, 'activate_analytics'));
+        register_deactivation_hook(XELITE_REPOST_ENGINE_PLUGIN_BASENAME, array($this, 'deactivate_analytics'));
         
         // Schedule aggregation tasks
         if (!wp_next_scheduled('xelite_aggregate_analytics_daily')) {

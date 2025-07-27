@@ -76,11 +76,11 @@ class Xelite_Repost_Engine_Onboarding {
      */
     public function add_onboarding_page() {
         add_submenu_page(
-            'repost-intelligence',
+            'xelite-repost-engine',
             'Setup Wizard',
             'Setup Wizard',
             'manage_options',
-            'repost-intelligence-onboarding',
+            'xelite-repost-engine-onboarding',
             array($this, 'render_onboarding_page')
         );
     }
@@ -103,7 +103,7 @@ class Xelite_Repost_Engine_Onboarding {
      * Enqueue onboarding scripts and styles
      */
     public function enqueue_onboarding_scripts($hook) {
-        if ($hook !== 'repost-intelligence_page_repost-intelligence-onboarding') {
+        if ($hook !== 'xelite-repost-engine_page_xelite-repost-engine-onboarding') {
             return;
         }
 

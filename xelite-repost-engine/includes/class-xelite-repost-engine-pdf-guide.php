@@ -45,11 +45,11 @@ class Xelite_Repost_Engine_PDF_Guide {
      */
     public function add_pdf_menu() {
         add_submenu_page(
-            'repost-intelligence',
+            'xelite-repost-engine',
             'User Guide PDF',
             'User Guide PDF',
             'manage_options',
-            'repost-intelligence-pdf-guide',
+            'xelite-repost-engine-pdf-guide',
             array($this, 'render_pdf_page')
         );
     }
@@ -58,7 +58,7 @@ class Xelite_Repost_Engine_PDF_Guide {
      * Enqueue PDF scripts
      */
     public function enqueue_pdf_scripts($hook) {
-        if ($hook !== 'repost-intelligence_page_repost-intelligence-pdf-guide') {
+        if ($hook !== 'xelite-repost-engine_page_xelite-repost-engine-pdf-guide') {
             return;
         }
 

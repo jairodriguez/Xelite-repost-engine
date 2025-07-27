@@ -148,6 +148,7 @@ class XeliteRepostEngine {
         require_once $this->plugin_dir . 'includes/api/class-xelite-repost-engine-x-auth.php';
         require_once $this->plugin_dir . 'includes/api/class-xelite-repost-engine-x-api.php';
         require_once $this->plugin_dir . 'includes/api/class-xelite-repost-engine-x-processor.php';
+        require_once $this->plugin_dir . 'includes/api/class-xelite-repost-engine-extension-api.php';
         
         // Load X Poster class
         require_once $this->plugin_dir . 'includes/class-xelite-repost-engine-x-poster.php';
@@ -237,7 +238,7 @@ class XeliteRepostEngine {
         
         // Initialize admin settings
         if (is_admin()) {
-            $this->container->get('admin_settings');
+            $this->container->get('admin');
             
             // Initialize help tabs
             new Xelite_Repost_Engine_Help_Tabs();

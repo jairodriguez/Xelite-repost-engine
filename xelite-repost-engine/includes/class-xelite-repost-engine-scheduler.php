@@ -91,8 +91,8 @@ class XeliteRepostEngine_Scheduler extends XeliteRepostEngine_Abstract_Base {
         add_action('admin_menu', array($this, 'add_settings_page'));
         
         // Activation/deactivation hooks
-        register_activation_hook(XELITE_REPOST_ENGINE_FILE, array($this, 'activate_scheduler'));
-        register_deactivation_hook(XELITE_REPOST_ENGINE_FILE, array($this, 'deactivate_scheduler'));
+        register_activation_hook(XELITE_REPOST_ENGINE_PLUGIN_BASENAME, array($this, 'activate_scheduler'));
+        register_deactivation_hook(XELITE_REPOST_ENGINE_PLUGIN_BASENAME, array($this, 'deactivate_scheduler'));
         
         // Daily cleanup
         if (!wp_next_scheduled('xelite_cleanup_expired_schedules')) {

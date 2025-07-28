@@ -26,6 +26,11 @@
          * Bind event handlers
          */
         bindEvents: function() {
+            // Only bind events if we're on the dashboard page
+            if (!$('#xelite-dashboard').length && !$('#dashboard-page').length) {
+                return;
+            }
+            
             // Quick generate button
             $(document).on('click', '#quick-generate', this.showQuickGenerateModal);
             

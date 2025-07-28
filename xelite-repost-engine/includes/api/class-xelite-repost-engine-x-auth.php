@@ -66,19 +66,42 @@ class XeliteRepostEngine_X_Auth extends XeliteRepostEngine_Abstract_Base {
      * @return array|false Credentials array or false if not found
      */
     public function get_credentials() {
+        // Debug: Log what we're checking
+        error_log('Xelite Debug: Checking for X credentials...');
+        
+        // First try to get encrypted credentials (legacy)
         $encrypted_credentials = get_option($this->credentials_option);
         
-        if (!$encrypted_credentials) {
-            return false;
+        if ($encrypted_credentials) {
+            error_log('Xelite Debug: Found encrypted credentials');
+            try {
+                $credentials = $this->decrypt_data($encrypted_credentials);
+                return json_decode($credentials, true);
+            } catch (Exception $e) {
+                $this->log_error('Failed to decrypt X credentials: ' . $e->getMessage());
+            }
         }
         
-        try {
-            $credentials = $this->decrypt_data($encrypted_credentials);
-            return json_decode($credentials, true);
-        } catch (Exception $e) {
-            $this->log_error('Failed to decrypt X credentials: ' . $e->getMessage());
-            return false;
+        // Fallback to main settings (new method)
+        $settings = get_option('xelite_repost_engine_settings', array());
+        error_log('Xelite Debug: Settings keys found: ' . implode(', ', array_keys($settings)));
+        
+        if (!empty($settings['x_api_consumer_key']) && 
+            !empty($settings['x_api_consumer_secret']) && 
+            !empty($settings['x_api_access_token']) && 
+            !empty($settings['x_api_access_token_secret'])) {
+            
+            error_log('Xelite Debug: Found API credentials in settings');
+            return array(
+                'consumer_key' => $settings['x_api_consumer_key'],
+                'consumer_secret' => $settings['x_api_consumer_secret'],
+                'access_token' => $settings['x_api_access_token'],
+                'access_token_secret' => $settings['x_api_access_token_secret']
+            );
         }
+        
+        error_log('Xelite Debug: No credentials found');
+        return false;
     }
     
     /**

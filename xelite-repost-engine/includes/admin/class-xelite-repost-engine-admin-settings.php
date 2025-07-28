@@ -66,7 +66,6 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         
         // AJAX handlers
-        add_action('wp_ajax_xelite_test_api_connection', array($this, 'test_api_connection'));
         add_action('wp_ajax_xelite_save_settings', array($this, 'save_settings'));
         add_action('wp_ajax_xelite_save_x_credentials', array($this, 'save_x_credentials'));
         
@@ -78,6 +77,11 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         add_action('wp_ajax_xelite_test_openai_connection', array($this, 'ajax_test_openai_connection'));
         add_action('wp_ajax_xelite_refresh_openai_usage', array($this, 'ajax_refresh_openai_usage'));
         add_action('wp_ajax_xelite_test_content_generation', array($this, 'ajax_test_content_generation'));
+        
+        // X API Test AJAX handlers
+        add_action('wp_ajax_xelite_test_oauth_connection', array($this, 'ajax_test_oauth_connection'));
+        add_action('wp_ajax_xelite_test_api_connection', array($this, 'ajax_test_api_connection'));
+        add_action('wp_ajax_xelite_revoke_auth', array($this, 'ajax_revoke_auth'));
     }
     
     /**
@@ -171,6 +175,11 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
      * Register settings
      */
     public function register_settings() {
+        // Re-determine current tab
+        $this->current_tab = isset($_GET['tab']) && array_key_exists($_GET['tab'], $this->tabs) 
+            ? sanitize_text_field($_GET['tab']) 
+            : 'general';
+        
         // Register the main settings
         register_setting(
             'xelite_repost_engine_settings',
@@ -381,15 +390,23 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
             )
         );
         
-        // Connection Status
+        // Connection Status Section
+        add_settings_section(
+            'x_connection_status_section',
+            __('Connection Status', 'xelite-repost-engine'),
+            array($this, 'x_connection_status_section_callback'),
+            $this->settings_page
+        );
+        
+        // Connection Status Field
         add_settings_field(
             'x_connection_status',
-            __('Connection Status', 'xelite-repost-engine'),
+            __('X API Status', 'xelite-repost-engine'),
             array($this, 'x_connection_status_field_callback'),
             $this->settings_page,
-            'x_oauth_section',
+            'x_connection_status_section',
             array(
-                'description' => __('Current status of your X API connection. Test to verify your credentials.', 'xelite-repost-engine')
+                'description' => __('Current status of your X API connections. Test to verify your credentials.', 'xelite-repost-engine')
             )
         );
     }
@@ -662,7 +679,7 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
             'xelite-repost-engine-admin',
             XELITE_REPOST_ENGINE_PLUGIN_URL . 'assets/js/xelite-repost-engine-admin.js',
             array('jquery', 'wp-util'),
-            XELITE_REPOST_ENGINE_VERSION,
+            XELITE_REPOST_ENGINE_VERSION . '.' . time(),
             true
         );
         
@@ -699,6 +716,9 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
         if (isset($_POST['submit']) && !wp_verify_nonce($_POST['_wpnonce'], 'xelite_repost_engine_settings')) {
             wp_die(__('Security check failed.', 'xelite-repost-engine'));
         }
+        
+        // Re-register settings for current tab
+        $this->register_settings();
         
         $settings = $this->get_settings();
         ?>
@@ -890,6 +910,7 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
     public function sanitize_settings($input) {
         $sanitized = array();
         $defaults = $this->get_default_settings();
+        $current_settings = get_option('xelite_repost_engine_settings', array());
         
         // Sanitize each field
         foreach ($defaults as $key => $default_value) {
@@ -944,7 +965,12 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
                         break;
                 }
             } else {
-                $sanitized[$key] = $default_value;
+                // For sensitive fields (API credentials), preserve existing values if not provided
+                if (in_array($key, array('x_api_consumer_key', 'x_api_consumer_secret', 'x_api_access_token', 'x_api_access_token_secret', 'openai_api_key'))) {
+                    $sanitized[$key] = isset($current_settings[$key]) ? $current_settings[$key] : $default_value;
+                } else {
+                    $sanitized[$key] = $default_value;
+                }
             }
         }
         
@@ -1431,14 +1457,21 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
             $container = XeliteRepostEngine_Container::instance();
             $processor = $container->get('x_processor');
             
+            // Debug: Check if target accounts are found
+            $target_accounts = $processor->get_target_accounts();
+            error_log('Xelite Debug: Target accounts found: ' . json_encode($target_accounts));
+            
             $result = $processor->fetch_and_store_posts();
             
             if (is_wp_error($result)) {
+                error_log('Xelite Debug: Fetch posts error: ' . $result->get_error_message());
                 wp_send_json_error($result->get_error_message());
             } else {
+                error_log('Xelite Debug: Fetch posts success: ' . json_encode($result));
                 wp_send_json_success($result);
             }
         } catch (Exception $e) {
+            error_log('Xelite Debug: Fetch posts exception: ' . $e->getMessage());
             wp_send_json_error('Error: ' . $e->getMessage());
         }
     }
@@ -1823,14 +1856,43 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
      * X OAuth section callback
      */
     public function x_oauth_section_callback() {
-        echo '<p>' . __('Configure OAuth 2.0 authentication for X (Twitter) API access. This is used for user authentication and posting content to X.', 'xelite-repost-engine') . '</p>';
+        echo '<div class="xelite-credentials-help">';
+        echo '<h4>' . __('How to Get OAuth 2.0 Credentials', 'xelite-repost-engine') . '</h4>';
+        echo '<ol>';
+        echo '<li>' . __('Go to <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">Twitter Developer Portal</a>', 'xelite-repost-engine') . '</li>';
+        echo '<li>' . __('Create a new app or select an existing one', 'xelite-repost-engine') . '</li>';
+        echo '<li>' . __('Navigate to "Keys and tokens" → "OAuth 2.0"', 'xelite-repost-engine') . '</li>';
+        echo '<li>' . __('Copy your Client ID and Client Secret', 'xelite-repost-engine') . '</li>';
+        echo '<li>' . __('Set your Redirect URI to: <code>' . home_url('/wp-admin/admin.php?page=xelite-repost-engine&tab=x_integration') . '</code>', 'xelite-repost-engine') . '</li>';
+        echo '</ol>';
+        echo '<p><strong>' . __('Purpose:', 'xelite-repost-engine') . '</strong> ' . __('These credentials allow users to authenticate with their X accounts and post content.', 'xelite-repost-engine') . '</p>';
+        echo '</div>';
     }
 
     /**
      * X API section callback
      */
     public function x_api_section_callback() {
-        echo '<p>' . __('Configure API credentials for reading repost data from target accounts. These credentials are used to scrape and analyze repost patterns.', 'xelite-repost-engine') . '</p>';
+        echo '<div class="xelite-credentials-help">';
+        echo '<h4>' . __('How to Get API Credentials', 'xelite-repost-engine') . '</h4>';
+        echo '<ol>';
+        echo '<li>' . __('Go to <a href="https://developer.twitter.com/en/portal/dashboard" target="_blank">Twitter Developer Portal</a>', 'xelite-repost-engine') . '</li>';
+        echo '<li>' . __('Create a new app or select an existing one', 'xelite-repost-engine') . '</li>';
+        echo '<li>' . __('Navigate to "Keys and tokens" → "Consumer Keys"', 'xelite-repost-engine') . '</li>';
+        echo '<li>' . __('Copy your API Key (Consumer Key) and API Secret (Consumer Secret)', 'xelite-repost-engine') . '</li>';
+        echo '<li>' . __('Navigate to "Keys and tokens" → "Authentication Tokens"', 'xelite-repost-engine') . '</li>';
+        echo '<li>' . __('Generate Access Token and Access Token Secret', 'xelite-repost-engine') . '</li>';
+        echo '<li>' . __('Ensure your app has "Read" permissions enabled', 'xelite-repost-engine') . '</li>';
+        echo '</ol>';
+        echo '<p><strong>' . __('Purpose:', 'xelite-repost-engine') . '</strong> ' . __('These credentials allow the plugin to read public data from target accounts for repost pattern analysis.', 'xelite-repost-engine') . '</p>';
+        echo '</div>';
+    }
+
+    /**
+     * X Connection Status section callback
+     */
+    public function x_connection_status_section_callback() {
+        echo '<p>' . __('Monitor the status of your X API connections and test your credentials.', 'xelite-repost-engine') . '</p>';
     }
 
 
@@ -1948,6 +2010,30 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
             margin-bottom: 10px;
             color: #333;
         }
+        .xelite-credentials-help {
+            background-color: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .xelite-credentials-help h4 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+        .xelite-credentials-help ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .xelite-credentials-help li {
+            margin-bottom: 5px;
+        }
+        .xelite-credentials-help code {
+            background-color: #f1f1f1;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
         .connection-status, .auth-status {
             display: inline-flex;
             align-items: center;
@@ -2030,5 +2116,133 @@ class XeliteRepostEngine_Admin_Settings extends XeliteRepostEngine_Abstract_Base
                class="regular-text" />
         <p class="description"><?php echo esc_html($args['description']); ?></p>
         <?php
+    }
+
+    /**
+     * AJAX handler for testing OAuth connection
+     */
+    public function ajax_test_oauth_connection() {
+        check_ajax_referer('xelite_repost_engine_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Insufficient permissions.', 'xelite-repost-engine'));
+        }
+        
+        try {
+            $x_poster = $this->get_plugin()->container->get('x_poster');
+            $is_authenticated = $x_poster->is_user_authenticated();
+            
+            if ($is_authenticated) {
+                wp_send_json_success(array(
+                    'message' => __('OAuth connection successful!', 'xelite-repost-engine')
+                ));
+            } else {
+                wp_send_json_error(__('Not authenticated with X. Please authenticate first.', 'xelite-repost-engine'));
+            }
+            
+        } catch (Exception $e) {
+            wp_send_json_error(__('Error testing OAuth connection: ', 'xelite-repost-engine') . $e->getMessage());
+        }
+    }
+
+    /**
+     * AJAX handler for testing API connection
+     */
+    public function ajax_test_api_connection() {
+        check_ajax_referer('xelite_repost_engine_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Insufficient permissions.', 'xelite-repost-engine'));
+        }
+        
+        try {
+            $settings = $this->get_settings();
+            $api_key = $settings['x_api_consumer_key'] ?? '';
+            $api_secret = $settings['x_api_consumer_secret'] ?? '';
+            $access_token = $settings['x_api_access_token'] ?? '';
+            $access_token_secret = $settings['x_api_access_token_secret'] ?? '';
+            
+            if (empty($api_key) || empty($api_secret) || empty($access_token) || empty($access_token_secret)) {
+                wp_send_json_error(__('API credentials not configured. Please fill in all API credential fields.', 'xelite-repost-engine'));
+            }
+            
+            // Test the API connection by making a simple request
+            $response = wp_remote_get('https://api.twitter.com/2/users/me', array(
+                'headers' => array(
+                    'Authorization' => 'Bearer ' . $this->get_bearer_token($api_key, $api_secret),
+                    'Content-Type' => 'application/json'
+                ),
+                'timeout' => 30
+            ));
+            
+            if (is_wp_error($response)) {
+                wp_send_json_error(__('Failed to connect to X API: ', 'xelite-repost-engine') . $response->get_error_message());
+            }
+            
+            $body = wp_remote_retrieve_body($response);
+            $data = json_decode($body, true);
+            
+            if (isset($data['errors'])) {
+                wp_send_json_error(__('X API Error: ', 'xelite-repost-engine') . $data['errors'][0]['message']);
+            }
+            
+            wp_send_json_success(array(
+                'message' => __('API connection successful!', 'xelite-repost-engine'),
+                'data' => $data
+            ));
+            
+        } catch (Exception $e) {
+            wp_send_json_error(__('Error testing API connection: ', 'xelite-repost-engine') . $e->getMessage());
+        }
+    }
+
+    /**
+     * AJAX handler for revoking authentication
+     */
+    public function ajax_revoke_auth() {
+        check_ajax_referer('xelite_repost_engine_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Insufficient permissions.', 'xelite-repost-engine'));
+        }
+        
+        try {
+            $x_poster = $this->get_plugin()->container->get('x_poster');
+            $x_poster->revoke_authentication();
+            
+            wp_send_json_success(__('Authentication revoked successfully.', 'xelite-repost-engine'));
+            
+        } catch (Exception $e) {
+            wp_send_json_error(__('Error revoking authentication: ', 'xelite-repost-engine') . $e->getMessage());
+        }
+    }
+
+    /**
+     * Helper method to get bearer token for API requests
+     */
+    private function get_bearer_token($api_key, $api_secret) {
+        $credentials = base64_encode($api_key . ':' . $api_secret);
+        
+        $response = wp_remote_post('https://api.twitter.com/oauth2/token', array(
+            'headers' => array(
+                'Authorization' => 'Basic ' . $credentials,
+                'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8'
+            ),
+            'body' => 'grant_type=client_credentials',
+            'timeout' => 30
+        ));
+        
+        if (is_wp_error($response)) {
+            throw new Exception('Failed to get bearer token: ' . $response->get_error_message());
+        }
+        
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+        
+        if (isset($data['access_token'])) {
+            return $data['access_token'];
+        } else {
+            throw new Exception('Failed to get bearer token from response');
+        }
     }
 } 

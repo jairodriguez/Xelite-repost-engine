@@ -842,11 +842,19 @@ class XeliteRepostEngine_X_Processor {
      *
      * @return array Array of account handles.
      */
-    private function get_target_accounts() {
-        $accounts = get_option('xelite_repost_engine_target_accounts', array());
-        return array_filter($accounts, function($account) {
-            return !empty($account['handle']) && !empty($account['active']);
-        });
+    public function get_target_accounts() {
+        $settings = get_option('xelite_repost_engine_settings', array());
+        $accounts = isset($settings['target_accounts']) ? $settings['target_accounts'] : array();
+        
+        // Extract handles from the account objects
+        $handles = array();
+        foreach ($accounts as $account) {
+            if (is_array($account) && isset($account['handle']) && !empty($account['handle']) && isset($account['enabled']) && $account['enabled']) {
+                $handles[] = $account['handle'];
+            }
+        }
+        
+        return $handles;
     }
 
     /**
@@ -867,10 +875,12 @@ class XeliteRepostEngine_X_Processor {
      * Render admin page
      */
     public function render_admin_page() {
-        $reposts = $this->database->get_all_reposts();
+        $reposts = $this->database->get_reposts();
         $analysis = get_option('xelite_repost_analysis', array());
         
-        include plugin_dir_path(XELITE_REPOST_ENGINE_PLUGIN_BASENAME) . 'admin/partials/x-data-management.php';
+
+        
+        include XELITE_REPOST_ENGINE_PLUGIN_DIR . 'admin/partials/x-data-management.php';
     }
 
     /**
@@ -884,7 +894,7 @@ class XeliteRepostEngine_X_Processor {
         }
 
         $format = sanitize_text_field($_POST['format'] ?? 'csv');
-        $reposts = $this->database->get_all_reposts();
+        $reposts = $this->database->get_reposts();
 
         if ($format === 'json') {
             $this->export_json($reposts);

@@ -47,6 +47,17 @@
             $('.save-x-credentials').on('click', this.saveXCredentials);
             $('.test-x-connection').on('click', this.testXConnection);
             $('.revoke-x-connection').on('click', this.revokeXConnection);
+            
+            // X Integration Test Buttons
+            $('.test-oauth-connection').on('click', this.testOAuthConnection);
+            $('.test-api-connection').on('click', this.testApiConnection);
+            $('.revoke-auth').on('click', this.revokeAuth);
+            
+            // Debug: Log button binding
+            console.log('Xelite Repost Engine: Binding test buttons');
+            console.log('Found test-oauth-connection buttons:', $('.test-oauth-connection').length);
+            console.log('Found test-api-connection buttons:', $('.test-api-connection').length);
+            console.log('Found revoke-auth buttons:', $('.revoke-auth').length);
         },
 
         /**
@@ -254,27 +265,43 @@
          * Initialize tooltips
          */
         initTooltips: function() {
-            $('.xelite-tooltip').tooltip({
-                position: { my: 'left+5 center', at: 'right center' }
-            });
+            // Check if jQuery UI tooltip is available
+            if (typeof $.fn.tooltip !== 'undefined') {
+                $('.xelite-tooltip').tooltip({
+                    position: { my: 'left+5 center', at: 'right center' }
+                });
+            }
         },
 
         /**
          * Initialize tabs
          */
         initTabs: function() {
-            $('.xelite-tabs').tabs();
+            // Check if jQuery UI tabs is available
+            if (typeof $.fn.tabs !== 'undefined') {
+                $('.xelite-tabs').tabs();
+            }
         },
 
         /**
          * Show notification
          */
         showNotification: function(message, type) {
+            console.log('Xelite Repost Engine: showNotification called with:', {message: message, type: type});
+            
             type = type || 'info';
             
-            var $notification = $('<div class="notice notice-' + type + ' is-dismissible"><p>' + message + '</p></div>');
+            // Create notification with better styling and positioning
+            var $notification = $('<div class="xelite-notification notice notice-' + type + ' is-dismissible" style="position: fixed; top: 32px; right: 20px; z-index: 999999; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.2); background: ' + (type === 'success' ? '#28a745' : '#dc3545') + '; color: white; font-weight: bold;"><p style="margin: 0; color: white;">' + message + '</p><button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button></div>');
             
-            $('.xelite-repost-engine-wrap').prepend($notification);
+            // Add dismiss functionality
+            $notification.find('.notice-dismiss').on('click', function() {
+                $notification.fadeOut();
+            });
+            
+            // Add to body with proper positioning
+            $('body').append($notification);
+            console.log('Xelite Repost Engine: Notification added to body with fixed positioning');
             
             // Auto-dismiss after 5 seconds
             setTimeout(function() {
@@ -455,6 +482,125 @@
                 complete: function() {
                     $button.prop('disabled', false).text('Revoke Connection');
                     $container.removeClass('loading');
+                }
+            });
+        },
+
+        /**
+         * Test OAuth connection
+         */
+        testOAuthConnection: function(e) {
+            e.preventDefault();
+            
+            var $button = $(this);
+            var originalText = $button.text();
+            
+            $button.prop('disabled', true).text('Testing...');
+            
+            $.ajax({
+                url: xelite_repost_engine.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'xelite_test_oauth_connection',
+                    nonce: xelite_repost_engine.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        XeliteRepostEngine.showNotification(response.data.message, 'success');
+                    } else {
+                        XeliteRepostEngine.showNotification(response.data, 'error');
+                    }
+                },
+                error: function() {
+                    XeliteRepostEngine.showNotification('Connection test failed. Please try again.', 'error');
+                },
+                complete: function() {
+                    $button.prop('disabled', false).text(originalText);
+                }
+            });
+        },
+
+        /**
+         * Test API connection
+         */
+        testApiConnection: function(e) {
+            e.preventDefault();
+            
+            console.log('Xelite Repost Engine: testApiConnection called');
+            
+            var $button = $(this);
+            var originalText = $button.text();
+            
+            $button.prop('disabled', true).text('Testing...');
+            
+            $.ajax({
+                url: xelite_repost_engine.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'xelite_test_api_connection',
+                    nonce: xelite_repost_engine.nonce
+                },
+                success: function(response) {
+                    console.log('Xelite Repost Engine: AJAX success response:', response);
+                    if (response.success) {
+                        console.log('Xelite Repost Engine: Showing success notification');
+                        var message = response.data.message || response.data;
+                        XeliteRepostEngine.showNotification(message, 'success');
+                    } else {
+                        console.log('Xelite Repost Engine: Showing error notification');
+                        var message = response.data.message || response.data;
+                        XeliteRepostEngine.showNotification(message, 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log('Xelite Repost Engine: AJAX error:', {xhr: xhr, status: status, error: error});
+                    XeliteRepostEngine.showNotification('Connection test failed. Please try again.', 'error');
+                },
+                complete: function() {
+                    console.log('Xelite Repost Engine: AJAX complete');
+                    $button.prop('disabled', false).text(originalText);
+                }
+            });
+        },
+
+        /**
+         * Revoke authentication
+         */
+        revokeAuth: function(e) {
+            e.preventDefault();
+            
+            if (!confirm('Are you sure you want to revoke the X authentication? This will remove all stored OAuth tokens.')) {
+                return;
+            }
+            
+            var $button = $(this);
+            var originalText = $button.text();
+            
+            $button.prop('disabled', true).text('Revoking...');
+            
+            $.ajax({
+                url: xelite_repost_engine.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'xelite_revoke_auth',
+                    nonce: xelite_repost_engine.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        XeliteRepostEngine.showNotification(response.data, 'success');
+                        // Reload page to update status
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        XeliteRepostEngine.showNotification(response.data, 'error');
+                    }
+                },
+                error: function() {
+                    XeliteRepostEngine.showNotification('Failed to revoke authentication. Please try again.', 'error');
+                },
+                complete: function() {
+                    $button.prop('disabled', false).text(originalText);
                 }
             });
         }
